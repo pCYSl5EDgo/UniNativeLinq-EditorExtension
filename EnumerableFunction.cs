@@ -158,6 +158,17 @@ namespace pcysl5edgo.Collections.LINQ
             return resultFunc.Calc(ref seed);
         }
 
+        public static TResult Aggregate<TSource, TAccumulate, TResult, TFunc, TResultFunc>(this NativeArray<TSource> array, ref TAccumulate seed, TFunc func, TResultFunc resultFunc)
+            where TFunc : struct, IRefAction<TAccumulate, TSource>
+            where TResultFunc : struct, IRefFunc<TAccumulate, TResult>
+            where TSource : unmanaged
+        {
+            var ptr = array.GetPointer();
+            for (int i = 0; i < array.Length; i++, ptr++)
+                func.Execute(ref seed, ref *ptr);
+            return resultFunc.Calc(ref seed);
+        }
+
         public static TAccumulate Aggregate<TSource, TAccumulate, TFunc>(this NativeArray<TSource> array, TAccumulate seed, TFunc func)
             where TFunc : struct, IRefAction<TAccumulate, TSource>
             where TSource : unmanaged
@@ -166,6 +177,15 @@ namespace pcysl5edgo.Collections.LINQ
             for (int i = 0; i < array.Length; i++, ptr++)
                 func.Execute(ref seed, ref *ptr);
             return seed;
+        }
+
+        public static void Aggregate<TSource, TAccumulate, TFunc>(this NativeArray<TSource> array, ref TAccumulate seed, TFunc func)
+            where TFunc : struct, IRefAction<TAccumulate, TSource>
+            where TSource : unmanaged
+        {
+            var ptr = array.GetPointer();
+            for (int i = 0; i < array.Length; i++, ptr++)
+                func.Execute(ref seed, ref *ptr);
         }
 
         public static void Aggregate<TSource, TFunc>(this NativeArray<TSource> array, ref TSource seed, TFunc func)
@@ -181,7 +201,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TFunc : struct, IRefAction<TSource, TSource>
             where TSource : unmanaged
         {
-            Aggregate(array, ref seed, func);
+            Aggregate<TSource, TFunc>(array, ref seed, func);
             return seed;
         }
 
@@ -304,6 +324,20 @@ namespace pcysl5edgo.Collections.LINQ
             var count = 0;
             while (enumerator.MoveNext())
                 ++count;
+            enumerator.Dispose();
+            return count;
+        }
+
+        public static int Count<TEnumerable, TEnumerator, TSource>(ref this TEnumerable @this, Func<TSource, bool> predicate)
+            where TEnumerable : struct, IRefEnumerable<TEnumerator, TSource>
+            where TEnumerator : struct, IRefEnumerator<TSource>
+            where TSource : unmanaged
+        {
+            var enumerator = @this.GetEnumerator();
+            var count = 0;
+            while (enumerator.MoveNext())
+                if (predicate(enumerator.Current))
+                    ++count;
             enumerator.Dispose();
             return count;
         }
@@ -857,13 +891,12 @@ namespace pcysl5edgo.Collections.LINQ
             return count;
         }
 
-        public static long LongCount<TEnumerable, TEnumerator, TSource, TPredicate>(ref this TEnumerable @this)
+        public static long LongCount<TEnumerable, TEnumerator, TSource, TPredicate>(ref this TEnumerable @this, TPredicate predicate)
             where TEnumerable : struct, IRefEnumerable<TEnumerator, TSource>
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TSource : unmanaged
             where TPredicate : struct, IRefFunc<TSource, bool>
         {
-            TPredicate predicate = default;
             var enumerator = @this.GetEnumerator();
             var count = 0L;
             while (enumerator.MoveNext())
@@ -873,7 +906,23 @@ namespace pcysl5edgo.Collections.LINQ
             return count;
         }
 
+        public static long LongCount<TEnumerable, TEnumerator, TSource>(ref this TEnumerable @this, Func<TSource, bool> predicate)
+            where TEnumerable : struct, IRefEnumerable<TEnumerator, TSource>
+            where TEnumerator : struct, IRefEnumerator<TSource>
+            where TSource : unmanaged
+        {
+            var enumerator = @this.GetEnumerator();
+            var count = 0L;
+            while (enumerator.MoveNext())
+                if (predicate(enumerator.Current))
+                    ++count;
+            enumerator.Dispose();
+            return count;
+        }
+
         public static long LongCount<TSource>(this NativeArray<TSource> array) where TSource : unmanaged => (long)array.Length;
+        public static long LongCount<TSource>(this NativeArray<TSource> array, Func<TSource, bool> predicate) where TSource : unmanaged => (long)Count(array, predicate);
+        public static long LongCount<TSource, TPredicate>(this NativeArray<TSource> array, TPredicate predicate) where TSource : unmanaged where TPredicate : struct, IRefFunc<TSource, bool> => (long)Count(array, predicate);
         #endregion
 
         #region MinMax
@@ -1539,6 +1588,29 @@ namespace pcysl5edgo.Collections.LINQ
             enumerator.Dispose();
             return count == 1;
         }
+        public static bool TryGetSingle<TEnumerable, TEnumerator, TSource>(ref this TEnumerable @this, out TSource value, Func<TSource, bool> predicate)
+            where TEnumerable : struct, IRefEnumerable<TEnumerator, TSource>
+            where TEnumerator : struct, IRefEnumerator<TSource>
+            where TSource : unmanaged
+        {
+            value = default;
+            var enumerator = @this.GetEnumerator();
+            var count = 0;
+            while (enumerator.MoveNext())
+            {
+                if (predicate(enumerator.Current))
+                {
+                    value = enumerator.Current;
+                    if (++count > 1)
+                    {
+                        enumerator.Dispose();
+                        return false;
+                    }
+                }
+            }
+            enumerator.Dispose();
+            return count == 1;
+        }
         public static bool TryGetSingle<TEnumerable, TEnumerator, TSource>(ref this TEnumerable @this, out TSource value)
             where TEnumerable : struct, IRefEnumerable<TEnumerator, TSource>
             where TEnumerator : struct, IRefEnumerator<TSource>
@@ -1582,6 +1654,25 @@ namespace pcysl5edgo.Collections.LINQ
             for (int i = 0; i < array.Length; i++, ptr++)
             {
                 if (predicate.Calc(ref *ptr))
+                {
+                    if (++count > 1) return false;
+                    value = *ptr;
+                }
+            }
+            if (count == 0) return false;
+            return true;
+        }
+        public static bool TryGetSingle<TSource>(this NativeArray<TSource> array, out TSource value, Func<TSource, bool> predicate)
+            where TSource : unmanaged
+        {
+            value = default;
+            if (!array.IsCreated || array.Length == 0)
+                return false;
+            var count = 0;
+            var ptr = array.GetPointer();
+            for (int i = 0; i < array.Length; i++, ptr++)
+            {
+                if (predicate(*ptr))
                 {
                     if (++count > 1) return false;
                     value = *ptr;
@@ -1853,8 +1944,23 @@ namespace pcysl5edgo.Collections.LINQ
             enumerator.Dispose();
             return answer;
         }
+        public static System.Collections.Generic.Dictionary<TKey, TElement> ToDictionary<TEnumerable, TEnumerator, TSource, TKey, TElement>(ref this TEnumerable @this, Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector)
+            where TEnumerable : struct, IRefEnumerable<TEnumerator, TSource>
+            where TEnumerator : struct, IRefEnumerator<TSource>
+            where TSource : unmanaged
+        {
+            var answer = new System.Collections.Generic.Dictionary<TKey, TElement>();
+            var enumerator = @this.GetEnumerator();
+            while (enumerator.MoveNext())
+            {
+                ref var current = ref enumerator.Current;
+                answer.Add(keySelector(current), elementSelector(current));
+            }
+            enumerator.Dispose();
+            return answer;
+        }
 
-        public static System.Collections.Generic.Dictionary<TKey, TElement> ToDictionary<TSource, TKey, TElement, TKeyFunc, TValueFunc>(ref this NativeArray<TSource> @this, TKeyFunc keySelector, TValueFunc elementSelector)
+        public static System.Collections.Generic.Dictionary<TKey, TElement> ToDictionary<TSource, TKey, TElement, TKeyFunc, TValueFunc>(this NativeArray<TSource> @this, TKeyFunc keySelector, TValueFunc elementSelector)
             where TSource : unmanaged
             where TKeyFunc : struct, IRefFunc<TSource, TKey>
             where TValueFunc : struct, IRefFunc<TSource, TElement>
@@ -1866,7 +1972,7 @@ namespace pcysl5edgo.Collections.LINQ
             return answer;
         }
 
-        public static System.Collections.Generic.Dictionary<TKey, TElement> ToDictionary<TSource, TKey, TElement>(ref this NativeArray<TSource> array, Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector)
+        public static System.Collections.Generic.Dictionary<TKey, TElement> ToDictionary<TSource, TKey, TElement>(this NativeArray<TSource> array, Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector)
             where TSource : unmanaged
         {
             var answer = new System.Collections.Generic.Dictionary<TKey, TElement>();
