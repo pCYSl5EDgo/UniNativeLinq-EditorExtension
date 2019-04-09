@@ -1,0 +1,10 @@
+{
+    "name": "jp.co.pcysl5edgo.linq2nativearray",
+    "displayName": "LINQ to NativeArray",
+    "version": "0.0.1",
+    "unity": "2018.1",
+    "description": "This package provides the LINQ extension to the NativeArray<T> without any allocation.",
+    "keywords": [],
+    "category": "Controllers",
+    "dependencies": {}
+}
