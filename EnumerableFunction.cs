@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 
@@ -8,7 +10,13 @@ namespace pcysl5edgo.Collections.LINQ
     {
         #region  Any
         public static bool Any<TEnumerable, TEnumerator, TSource>(ref this TEnumerable @this)
-            where TEnumerable : struct, IRefEnumerable<TEnumerator, TSource>
+            where TEnumerable :
+#if !STRICT_ENUMERABLE
+            struct,
+#else
+            unmanaged,
+#endif
+            IRefEnumerable<TEnumerator, TSource>
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TSource : unmanaged
         {
@@ -18,14 +26,18 @@ namespace pcysl5edgo.Collections.LINQ
                 enumerator.Dispose();
                 return true;
             }
-            else
-            {
-                enumerator.Dispose();
-                return false;
-            }
+            enumerator.Dispose();
+            return false;
         }
+
         public static bool Any<TEnumerable, TEnumerator, TSource, TPredicate>(ref this TEnumerable @this, TPredicate predicate)
-            where TEnumerable : struct, IRefEnumerable<TEnumerator, TSource>
+            where TEnumerable :
+#if !STRICT_ENUMERABLE
+            struct,
+#else
+            unmanaged,
+#endif
+            IRefEnumerable<TEnumerator, TSource>
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TSource : unmanaged
             where TPredicate : struct, IRefFunc<TSource, bool>
@@ -33,34 +45,59 @@ namespace pcysl5edgo.Collections.LINQ
             var enumerator = @this.GetEnumerator();
             while (enumerator.MoveNext())
             {
-                if (predicate.Calc(ref enumerator.Current))
-                {
-                    enumerator.Dispose();
-                    return true;
-                }
+                if (!predicate.Calc(ref enumerator.Current)) continue;
+                enumerator.Dispose();
+                return true;
+            }
+
+            enumerator.Dispose();
+            return false;
+        }
+
+        public static bool Any<TEnumerable, TEnumerator, TSource>(ref this TEnumerable @this, Func<TSource, bool> predicate)
+            where TSource : unmanaged
+            where TEnumerator : struct, IRefEnumerator<TSource>
+            where TEnumerable :
+#if !STRICT_ENUMERABLE
+            struct,
+#else
+            unmanaged,
+#endif
+            IRefEnumerable<TEnumerator, TSource>
+        {
+            var enumerator = @this.GetEnumerator();
+            while (enumerator.MoveNext())
+            {
+                if (!predicate(enumerator.Current)) continue;
+                enumerator.Dispose();
+                return true;
             }
             enumerator.Dispose();
             return false;
         }
 
-        public static bool Any<TSource>(this NativeArray<TSource> array) where TSource : unmanaged => array.IsCreated && array.Length != 0;
+        public static bool Any<TSource>(this NativeArray<TSource> array)
+            where TSource : unmanaged
+            => array.IsCreated && array.Length != 0;
+
         public static bool Any<TSource, TPredicate>(this NativeArray<TSource> array, TPredicate predicate)
             where TSource : unmanaged
             where TPredicate : struct, IRefFunc<TSource, bool>
         {
             if (!array.Any()) return false;
             var ptr = array.GetPointer();
-            for (int i = 0; i < array.Length; i++, ptr++)
+            for (var i = 0; i < array.Length; i++, ptr++)
                 if (predicate.Calc(ref *ptr))
                     return true;
             return false;
         }
+
         public static bool Any<TSource>(this NativeArray<TSource> array, Func<TSource, bool> predicate)
             where TSource : unmanaged
         {
             if (!array.Any()) return false;
             var ptr = array.GetPointer();
-            for (int i = 0; i < array.Length; i++, ptr++)
+            for (var i = 0; i < array.Length; i++, ptr++)
                 if (predicate(*ptr))
                     return true;
             return false;
@@ -69,7 +106,13 @@ namespace pcysl5edgo.Collections.LINQ
 
         #region All
         public static bool All<TEnumerable, TEnumerator, TSource, TPredicate>(ref this TEnumerable @this, TPredicate predicate)
-            where TEnumerable : struct, IRefEnumerable<TEnumerator, TSource>
+            where TEnumerable :
+#if !STRICT_ENUMERABLE
+            struct,
+#else
+            unmanaged,
+#endif
+            IRefEnumerable<TEnumerator, TSource>
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TSource : unmanaged
             where TPredicate : struct, IRefFunc<TSource, bool>
@@ -77,11 +120,32 @@ namespace pcysl5edgo.Collections.LINQ
             var enumerator = @this.GetEnumerator();
             while (enumerator.MoveNext())
             {
-                if (!predicate.Calc(ref enumerator.Current))
-                {
-                    enumerator.Dispose();
-                    return false;
-                }
+                if (predicate.Calc(ref enumerator.Current)) continue;
+                enumerator.Dispose();
+                return false;
+            }
+
+            enumerator.Dispose();
+            return true;
+        }
+
+        public static bool All<TEnumerable, TEnumerator, TSource>(ref this TEnumerable @this, Func<TSource, bool> predicate)
+            where TEnumerable :
+#if !STRICT_ENUMERABLE
+            struct,
+#else
+            unmanaged,
+#endif
+            IRefEnumerable<TEnumerator, TSource>
+            where TEnumerator : struct, IRefEnumerator<TSource>
+            where TSource : unmanaged
+        {
+            var enumerator = @this.GetEnumerator();
+            while (enumerator.MoveNext())
+            {
+                if (predicate(enumerator.Current)) continue;
+                enumerator.Dispose();
+                return false;
             }
             enumerator.Dispose();
             return true;
@@ -93,17 +157,18 @@ namespace pcysl5edgo.Collections.LINQ
         {
             if (!array.Any()) return false;
             var ptr = array.GetPointer();
-            for (int i = 0; i < array.Length; i++, ptr++)
+            for (var i = 0; i < array.Length; i++, ptr++)
                 if (!predicate.Calc(ref *ptr))
                     return false;
             return true;
         }
+
         public static bool All<TSource>(this NativeArray<TSource> array, Func<TSource, bool> predicate)
             where TSource : unmanaged
         {
             if (!array.Any()) return false;
             var ptr = array.GetPointer();
-            for (int i = 0; i < array.Length; i++, ptr++)
+            for (var i = 0; i < array.Length; i++, ptr++)
                 if (!predicate(*ptr))
                     return false;
             return true;
@@ -113,7 +178,13 @@ namespace pcysl5edgo.Collections.LINQ
         #region Aggregate
         public static void Aggregate<TEnumerable, TEnumerator, TSource, TFunc>(ref this TEnumerable @this, ref TSource seed, TFunc func)
             where TFunc : struct, IRefAction<TSource, TSource>
-            where TEnumerable : struct, IRefEnumerable<TEnumerator, TSource>
+            where TEnumerable :
+#if !STRICT_ENUMERABLE
+            struct,
+#else
+            unmanaged,
+#endif
+            IRefEnumerable<TEnumerator, TSource>
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TSource : unmanaged
         {
@@ -122,23 +193,37 @@ namespace pcysl5edgo.Collections.LINQ
                 func.Execute(ref seed, ref enumerator.Current);
             enumerator.Dispose();
         }
+
         public static void Aggregate<TEnumerable, TEnumerator, TSource, TAccumulate, TFunc>(ref this TEnumerable @this, ref TAccumulate seed, TFunc func)
-            where TFunc : struct, IRefAction<TAccumulate, TSource>
-            where TEnumerable : struct, IRefEnumerable<TEnumerator, TSource>
-            where TEnumerator : struct, IRefEnumerator<TSource>
             where TSource : unmanaged
+            where TFunc : struct, IRefAction<TAccumulate, TSource>
+            where TEnumerable :
+#if !STRICT_ENUMERABLE
+            struct,
+#else
+            unmanaged,
+#endif
+            IRefEnumerable<TEnumerator, TSource>
+            where TEnumerator : struct, IRefEnumerator<TSource>
         {
             var enumerator = @this.GetEnumerator();
             while (enumerator.MoveNext())
                 func.Execute(ref seed, ref enumerator.Current);
             enumerator.Dispose();
         }
+
         public static TResult Aggregate<TEnumerable, TEnumerator, TSource, TAccumulate, TResult, TFunc, TResultFunc>(ref this TEnumerable @this, ref TAccumulate seed, TFunc func, TResultFunc resultFunc)
+            where TSource : unmanaged
             where TFunc : struct, IRefAction<TAccumulate, TSource>
             where TResultFunc : struct, IRefFunc<TAccumulate, TResult>
-            where TEnumerable : struct, IRefEnumerable<TEnumerator, TSource>
+            where TEnumerable :
+#if !STRICT_ENUMERABLE
+            struct,
+#else
+            unmanaged,
+#endif
+            IRefEnumerable<TEnumerator, TSource>
             where TEnumerator : struct, IRefEnumerator<TSource>
-            where TSource : unmanaged
         {
             var enumerator = @this.GetEnumerator();
             while (enumerator.MoveNext())
@@ -153,7 +238,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TSource : unmanaged
         {
             var ptr = array.GetPointer();
-            for (int i = 0; i < array.Length; i++, ptr++)
+            for (var i = 0; i < array.Length; i++, ptr++)
                 func.Execute(ref seed, ref *ptr);
             return resultFunc.Calc(ref seed);
         }
@@ -164,7 +249,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TSource : unmanaged
         {
             var ptr = array.GetPointer();
-            for (int i = 0; i < array.Length; i++, ptr++)
+            for (var i = 0; i < array.Length; i++, ptr++)
                 func.Execute(ref seed, ref *ptr);
             return resultFunc.Calc(ref seed);
         }
@@ -174,7 +259,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TSource : unmanaged
         {
             var ptr = array.GetPointer();
-            for (int i = 0; i < array.Length; i++, ptr++)
+            for (var i = 0; i < array.Length; i++, ptr++)
                 func.Execute(ref seed, ref *ptr);
             return seed;
         }
@@ -184,7 +269,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TSource : unmanaged
         {
             var ptr = array.GetPointer();
-            for (int i = 0; i < array.Length; i++, ptr++)
+            for (var i = 0; i < array.Length; i++, ptr++)
                 func.Execute(ref seed, ref *ptr);
         }
 
@@ -193,7 +278,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TSource : unmanaged
         {
             var ptr = array.GetPointer();
-            for (int i = 0; i < array.Length; i++, ptr++)
+            for (var i = 0; i < array.Length; i++, ptr++)
                 func.Execute(ref seed, ref *ptr);
         }
 
@@ -205,21 +290,75 @@ namespace pcysl5edgo.Collections.LINQ
             return seed;
         }
 
+        public static TResult Aggregate<TEnumerable, TEnumerator, TSource, TAccumulate, TResult>(ref this TEnumerable @this, TAccumulate seed, Func<TAccumulate, TSource, TAccumulate> func, Func<TAccumulate, TResult> resultFunc)
+            where TSource : unmanaged
+            where TEnumerator : struct, IRefEnumerator<TSource>
+            where TEnumerable :
+#if !STRICT_ENUMERABLE
+            struct,
+#else
+            unmanaged,
+#endif
+            IRefEnumerable<TEnumerator, TSource>
+        {
+            var enumerator = @this.GetEnumerator();
+            while (enumerator.MoveNext())
+                seed = func(seed, enumerator.Current);
+            enumerator.Dispose();
+            return resultFunc(seed);
+        }
+
         public static TResult Aggregate<TSource, TAccumulate, TResult>(this NativeArray<TSource> array, TAccumulate seed, Func<TAccumulate, TSource, TAccumulate> func, Func<TAccumulate, TResult> resultFunc)
             where TSource : unmanaged
         {
             var ptr = array.GetPointer();
-            for (int i = 0; i < array.Length; i++, ptr++)
+            for (var i = 0; i < array.Length; i++, ptr++)
                 seed = func(seed, *ptr);
             return resultFunc(seed);
+        }
+
+        public static TAccumulate Aggregate<TEnumerable, TEnumerator, TSource, TAccumulate>(ref this TEnumerable @this, TAccumulate seed, Func<TAccumulate, TSource, TAccumulate> func)
+            where TSource : unmanaged
+            where TEnumerator : struct, IRefEnumerator<TSource>
+            where TEnumerable :
+#if !STRICT_ENUMERABLE
+            struct,
+#else
+            unmanaged,
+#endif
+            IRefEnumerable<TEnumerator, TSource>
+        {
+            var enumerator = @this.GetEnumerator();
+            while (enumerator.MoveNext())
+                seed = func(seed, enumerator.Current);
+            enumerator.Dispose();
+            return seed;
         }
 
         public static TAccumulate Aggregate<TSource, TAccumulate>(this NativeArray<TSource> array, TAccumulate seed, Func<TAccumulate, TSource, TAccumulate> func)
             where TSource : unmanaged
         {
             var ptr = array.GetPointer();
-            for (int i = 0; i < array.Length; i++, ptr++)
+            for (var i = 0; i < array.Length; i++, ptr++)
                 seed = func(seed, *ptr);
+            return seed;
+        }
+
+        public static TSource Aggregate<TEnumerable, TEnumerator, TSource>(ref this TEnumerable @this, TSource seed, Func<TSource, TSource, TSource> func)
+            where TSource : unmanaged
+            where TEnumerable :
+#if !STRICT_ENUMERABLE
+            struct,
+#else
+            unmanaged,
+#endif
+            IRefEnumerable<TEnumerator, TSource>
+            where TEnumerator : struct, IRefEnumerator<TSource>
+        {
+            var enumerator = @this.GetEnumerator();
+            while (enumerator.MoveNext())
+                seed = func(seed, enumerator.Current);
+            enumerator.Dispose();
             return seed;
         }
 
@@ -227,7 +366,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TSource : unmanaged
         {
             var ptr = array.GetPointer();
-            for (int i = 0; i < array.Length; i++, ptr++)
+            for (var i = 0; i < array.Length; i++, ptr++)
                 seed = func(seed, *ptr);
             return seed;
         }
@@ -242,7 +381,7 @@ namespace pcysl5edgo.Collections.LINQ
             var src = array.GetPointer();
             var answer = new NativeArray<TResult>(array.Length, allocator, NativeArrayOptions.UninitializedMemory);
             var dest = answer.GetPointer();
-            for (int i = 0; i < array.Length; i++, src++, dest++)
+            for (var i = 0; i < array.Length; i++, src++, dest++)
                 cast.Execute(ref *src, ref *dest);
             return answer;
         }
@@ -250,64 +389,117 @@ namespace pcysl5edgo.Collections.LINQ
 
         #region Contains
         public static bool Contains<TEnumerable, TEnumerator, TSource>(ref this TEnumerable @this, TSource value)
-            where TEnumerable : struct, IRefEnumerable<TEnumerator, TSource>
+            where TEnumerable :
+#if !STRICT_ENUMERABLE
+            struct,
+#else
+            unmanaged,
+#endif
+            IRefEnumerable<TEnumerator, TSource>
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TSource : unmanaged
+#if STRICT_EQUALITY
+            , IEquatable<TSource>
+#endif
         {
             var enumerator = @this.GetEnumerator();
             while (enumerator.MoveNext())
             {
-                if (value.Equals(enumerator.Current))
-                {
-                    enumerator.Dispose();
-                    return true;
-                }
+                if (!value.Equals(enumerator.Current)) continue;
+                enumerator.Dispose();
+                return true;
             }
             enumerator.Dispose();
             return false;
         }
+
         public static bool Contains<TEnumerable, TEnumerator, TSource, TEqualityComparer>(ref this TEnumerable @this, TSource value, TEqualityComparer comparer)
-            where TEnumerable : struct, IRefEnumerable<TEnumerator, TSource>
+            where TEnumerable :
+#if !STRICT_ENUMERABLE
+            struct,
+#else
+            unmanaged,
+#endif
+            IRefEnumerable<TEnumerator, TSource>
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TSource : unmanaged
+#if STRICT_EQUALITY
+            , IEquatable<TSource>
+#endif
             where TEqualityComparer : struct, IRefFunc<TSource, TSource, bool>
         {
             var enumerator = @this.GetEnumerator();
             while (enumerator.MoveNext())
             {
-                if (comparer.Calc(ref value, ref enumerator.Current))
-                {
-                    enumerator.Dispose();
-                    return true;
-                }
+                if (!comparer.Calc(ref value, ref enumerator.Current)) continue;
+                enumerator.Dispose();
+                return true;
             }
             enumerator.Dispose();
             return false;
         }
+
+        public static bool Contains<TEnumerable, TEnumerator, TSource>(ref this TEnumerable @this, TSource value, IEqualityComparer<TSource> comparer)
+            where TSource : unmanaged
+#if STRICT_EQUALITY
+            , IEquatable<TSource>
+#endif
+            where TEnumerator : struct, IRefEnumerator<TSource>
+            where TEnumerable :
+#if !STRICT_ENUMERABLE
+            struct,
+#else
+            unmanaged,
+#endif
+            IRefEnumerable<TEnumerator, TSource>
+        {
+#if UNITY_EDITOR
+            Debug.Assert(comparer != null, nameof(comparer) + " != null");
+#endif
+            var enumerator = @this.GetEnumerator();
+            while (enumerator.MoveNext())
+            {
+                // ReSharper disable once SuspiciousTypeConversion.Global
+                if (!comparer.Equals(value, enumerator.Current)) continue;
+                enumerator.Dispose();
+                return true;
+            }
+            enumerator.Dispose();
+            return false;
+        }
+
         public static bool Contains<TSource>(this NativeArray<TSource> array, in TSource value)
             where TSource : unmanaged
+#if STRICT_EQUALITY
+            , IEquatable<TSource>
+#endif
         {
-            var ptr = UnsafeUtilityEx.GetPointer(array);
-            for (int i = 0; i < array.Length; i++, ptr++)
+            var ptr = array.GetPointer();
+            for (var i = 0; i < array.Length; i++, ptr++)
                 if (ptr->Equals(value))
                     return true;
             return false;
         }
+
         public static bool Contains<TSource, TEqualityComparer>(this NativeArray<TSource> array, TSource value, TEqualityComparer comparer)
             where TSource : unmanaged
             where TEqualityComparer : struct, IRefFunc<TSource, TSource, bool>
         {
-            var ptr = UnsafeUtilityEx.GetPointer(array);
-            for (int i = 0; i < array.Length; i++, ptr++)
+            var ptr = array.GetPointer();
+            for (var i = 0; i < array.Length; i++, ptr++)
                 if (comparer.Calc(ref *ptr, ref value))
                     return true;
             return false;
         }
-        public static bool Contains<TSource>(this NativeArray<TSource> array, TSource value, System.Collections.Generic.IEqualityComparer<TSource> comparer)
+
+        public static bool Contains<TSource>(this NativeArray<TSource> array, TSource value, IEqualityComparer<TSource> comparer)
             where TSource : unmanaged
+#if STRICT_EQUALITY
+            , IEquatable<TSource>
+#endif
         {
-            var ptr = UnsafeUtilityEx.GetPointer(array);
-            for (int i = 0; i < array.Length; i++, ptr++)
+            var ptr = array.GetPointer();
+            for (var i = 0; i < array.Length; i++, ptr++)
                 if (comparer.Equals(*ptr, value))
                     return true;
             return false;
@@ -316,9 +508,18 @@ namespace pcysl5edgo.Collections.LINQ
 
         #region Count
         public static int Count<TEnumerable, TEnumerator, TSource>(ref this TEnumerable @this)
-            where TEnumerable : struct, IRefEnumerable<TEnumerator, TSource>
+            where TEnumerable :
+#if !STRICT_ENUMERABLE
+            struct,
+#else
+            unmanaged,
+#endif
+            IRefEnumerable<TEnumerator, TSource>
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TSource : unmanaged
+#if STRICT_EQUALITY
+            , IEquatable<TSource>
+#endif
         {
             var enumerator = @this.GetEnumerator();
             var count = 0;
@@ -329,7 +530,13 @@ namespace pcysl5edgo.Collections.LINQ
         }
 
         public static int Count<TEnumerable, TEnumerator, TSource>(ref this TEnumerable @this, Func<TSource, bool> predicate)
-            where TEnumerable : struct, IRefEnumerable<TEnumerator, TSource>
+            where TEnumerable :
+#if !STRICT_ENUMERABLE
+            struct,
+#else
+            unmanaged,
+#endif
+            IRefEnumerable<TEnumerator, TSource>
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TSource : unmanaged
         {
@@ -357,24 +564,28 @@ namespace pcysl5edgo.Collections.LINQ
             return count;
         }
 
-        public static int Count<TSource>(this NativeArray<TSource> array) where TSource : unmanaged => array.Length;
+        public static int Count<TSource>(this NativeArray<TSource> array)
+            where TSource : unmanaged
+            => array.Length;
+
         public static int Count<TSource, TPredicate>(this NativeArray<TSource> array, TPredicate predicate)
             where TSource : unmanaged
             where TPredicate : struct, IRefFunc<TSource, bool>
         {
             var count = 0;
             var ptr = array.GetPointer();
-            for (int i = 0; i < array.Length; i++, ptr++)
+            for (var i = 0; i < array.Length; i++, ptr++)
                 if (predicate.Calc(ref *ptr))
                     ++count;
             return count;
         }
+
         public static int Count<TSource>(this NativeArray<TSource> array, Func<TSource, bool> predicate)
             where TSource : unmanaged
         {
             var count = 0;
             var ptr = array.GetPointer();
-            for (int i = 0; i < array.Length; i++, ptr++)
+            for (var i = 0; i < array.Length; i++, ptr++)
                 if (predicate(*ptr))
                     ++count;
             return count;
@@ -383,7 +594,13 @@ namespace pcysl5edgo.Collections.LINQ
 
         #region Average
         public static Int32 AverageInt32<TEnumerable, TEnumerator>(ref this TEnumerable @this)
-            where TEnumerable : struct, IRefEnumerable<TEnumerator, Int32>
+            where TEnumerable :
+#if !STRICT_ENUMERABLE
+            struct,
+#else
+            unmanaged,
+#endif
+            IRefEnumerable<TEnumerator, Int32>
             where TEnumerator : struct, IRefEnumerator<Int32>
         {
             Int32 sum = default;
@@ -393,10 +610,18 @@ namespace pcysl5edgo.Collections.LINQ
                 sum += item;
                 ++count;
             }
+
             return sum / count;
         }
+
         public static Int32 AverageInt32<TEnumerable, TEnumerator, TSource, TFunc>(ref this TEnumerable @this, TFunc func)
-            where TEnumerable : struct, IRefEnumerable<TEnumerator, TSource>
+            where TEnumerable :
+#if !STRICT_ENUMERABLE
+            struct,
+#else
+            unmanaged,
+#endif
+            IRefEnumerable<TEnumerator, TSource>
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TSource : unmanaged
             where TFunc : struct, IRefFunc<TSource, Int32>
@@ -412,7 +637,13 @@ namespace pcysl5edgo.Collections.LINQ
         }
 
         public static Int64 AverageInt64<TEnumerable, TEnumerator>(ref this TEnumerable @this)
-            where TEnumerable : struct, IRefEnumerable<TEnumerator, Int64>
+            where TEnumerable :
+#if !STRICT_ENUMERABLE
+            struct,
+#else
+            unmanaged,
+#endif
+            IRefEnumerable<TEnumerator, Int64>
             where TEnumerator : struct, IRefEnumerator<Int64>
         {
             Int64 sum = default;
@@ -424,8 +655,15 @@ namespace pcysl5edgo.Collections.LINQ
             }
             return sum / count;
         }
+
         public static Int64 AverageInt64<TEnumerable, TEnumerator, TSource, TFunc>(ref this TEnumerable @this, TFunc func)
-            where TEnumerable : struct, IRefEnumerable<TEnumerator, TSource>
+            where TEnumerable :
+#if !STRICT_ENUMERABLE
+            struct,
+#else
+            unmanaged,
+#endif
+            IRefEnumerable<TEnumerator, TSource>
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TSource : unmanaged
             where TFunc : struct, IRefFunc<TSource, Int64>
@@ -451,10 +689,18 @@ namespace pcysl5edgo.Collections.LINQ
                 sum += item;
                 ++count;
             }
+
             return sum / count;
         }
+
         public static UInt32 AverageUInt32<TEnumerable, TEnumerator, TSource, TFunc>(ref this TEnumerable @this, TFunc func)
-            where TEnumerable : struct, IRefEnumerable<TEnumerator, TSource>
+            where TEnumerable :
+#if !STRICT_ENUMERABLE
+            struct,
+#else
+            unmanaged,
+#endif
+            IRefEnumerable<TEnumerator, TSource>
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TSource : unmanaged
             where TFunc : struct, IRefFunc<TSource, UInt32>
@@ -468,8 +714,15 @@ namespace pcysl5edgo.Collections.LINQ
             }
             return sum / count;
         }
+
         public static UInt64 AverageUInt64<TEnumerable, TEnumerator>(ref this TEnumerable @this)
-            where TEnumerable : struct, IRefEnumerable<TEnumerator, UInt64>
+            where TEnumerable :
+#if !STRICT_ENUMERABLE
+            struct,
+#else
+            unmanaged,
+#endif
+            IRefEnumerable<TEnumerator, UInt64>
             where TEnumerator : struct, IRefEnumerator<UInt64>
         {
             UInt64 sum = default;
@@ -481,8 +734,15 @@ namespace pcysl5edgo.Collections.LINQ
             }
             return sum / count;
         }
+
         public static UInt64 AverageUInt64<TEnumerable, TEnumerator, TSource, TFunc>(ref this TEnumerable @this, TFunc func)
-            where TEnumerable : struct, IRefEnumerable<TEnumerator, TSource>
+            where TEnumerable :
+#if !STRICT_ENUMERABLE
+            struct,
+#else
+            unmanaged,
+#endif
+            IRefEnumerable<TEnumerator, TSource>
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TSource : unmanaged
             where TFunc : struct, IRefFunc<TSource, UInt64>
@@ -498,7 +758,13 @@ namespace pcysl5edgo.Collections.LINQ
         }
 
         public static Single AverageSingle<TEnumerable, TEnumerator>(ref this TEnumerable @this)
-            where TEnumerable : struct, IRefEnumerable<TEnumerator, Single>
+            where TEnumerable :
+#if !STRICT_ENUMERABLE
+            struct,
+#else
+            unmanaged,
+#endif
+            IRefEnumerable<TEnumerator, Single>
             where TEnumerator : struct, IRefEnumerator<Single>
         {
             Single sum = default;
@@ -510,8 +776,15 @@ namespace pcysl5edgo.Collections.LINQ
             }
             return sum / count;
         }
+
         public static Single AverageSingle<TEnumerable, TEnumerator, TSource, TFunc>(ref this TEnumerable @this, TFunc func)
-            where TEnumerable : struct, IRefEnumerable<TEnumerator, TSource>
+            where TEnumerable :
+#if !STRICT_ENUMERABLE
+            struct,
+#else
+            unmanaged,
+#endif
+            IRefEnumerable<TEnumerator, TSource>
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TSource : unmanaged
             where TFunc : struct, IRefFunc<TSource, Single>
@@ -527,7 +800,13 @@ namespace pcysl5edgo.Collections.LINQ
         }
 
         public static Double AverageDouble<TEnumerable, TEnumerator>(ref this TEnumerable @this)
-            where TEnumerable : struct, IRefEnumerable<TEnumerator, Double>
+            where TEnumerable :
+#if !STRICT_ENUMERABLE
+            struct,
+#else
+            unmanaged,
+#endif
+            IRefEnumerable<TEnumerator, Double>
             where TEnumerator : struct, IRefEnumerator<Double>
         {
             Double sum = default;
@@ -539,6 +818,7 @@ namespace pcysl5edgo.Collections.LINQ
             }
             return sum / count;
         }
+
         public static Double AverageDouble<TEnumerable, TEnumerator, TSource, TFunc>(ref this TEnumerable @this, TFunc func)
             where TEnumerable : struct, IRefEnumerable<TEnumerator, TSource>
             where TEnumerator : struct, IRefEnumerator<TSource>
@@ -556,7 +836,13 @@ namespace pcysl5edgo.Collections.LINQ
         }
 
         public static Decimal AverageDecimal<TEnumerable, TEnumerator>(ref this TEnumerable @this)
-            where TEnumerable : struct, IRefEnumerable<TEnumerator, Decimal>
+            where TEnumerable :
+#if !STRICT_ENUMERABLE
+            struct,
+#else
+            unmanaged,
+#endif
+            IRefEnumerable<TEnumerator, Decimal>
             where TEnumerator : struct, IRefEnumerator<Decimal>
         {
             Decimal sum = default;
@@ -568,8 +854,15 @@ namespace pcysl5edgo.Collections.LINQ
             }
             return sum / count;
         }
+
         public static Decimal AverageDecimal<TEnumerable, TEnumerator, TSource, TFunc>(ref this TEnumerable @this, TFunc func)
-            where TEnumerable : struct, IRefEnumerable<TEnumerator, TSource>
+            where TEnumerable :
+#if !STRICT_ENUMERABLE
+            struct,
+#else
+            unmanaged,
+#endif
+            IRefEnumerable<TEnumerator, TSource>
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TSource : unmanaged
             where TFunc : struct, IRefFunc<TSource, Decimal>
@@ -634,7 +927,7 @@ namespace pcysl5edgo.Collections.LINQ
             uint sum = default;
             foreach (var item in array)
                 sum += item;
-            return sum / (uint)array.Length;
+            return sum / (uint) array.Length;
         }
 
         public static ulong Average(this NativeArray<ulong> array)
@@ -642,7 +935,7 @@ namespace pcysl5edgo.Collections.LINQ
             ulong sum = default;
             foreach (var item in array)
                 sum += item;
-            return sum / (ulong)array.Length;
+            return sum / (ulong) array.Length;
         }
 
         public static float AverageSingle<T, TFunc>(this NativeArray<T> array, TFunc func)
@@ -651,7 +944,7 @@ namespace pcysl5edgo.Collections.LINQ
         {
             float sum = default;
             var ptr = array.GetPointer();
-            for (int i = 0; i < array.Length; i++, ptr++)
+            for (var i = 0; i < array.Length; i++, ptr++)
                 sum += func.Calc(ref *ptr);
             return sum / array.Length;
         }
@@ -662,7 +955,7 @@ namespace pcysl5edgo.Collections.LINQ
         {
             double sum = default;
             var ptr = array.GetPointer();
-            for (int i = 0; i < array.Length; i++, ptr++)
+            for (var i = 0; i < array.Length; i++, ptr++)
                 sum += func.Calc(ref *ptr);
             return sum / array.Length;
         }
@@ -673,7 +966,7 @@ namespace pcysl5edgo.Collections.LINQ
         {
             decimal sum = default;
             var ptr = array.GetPointer();
-            for (int i = 0; i < array.Length; i++, ptr++)
+            for (var i = 0; i < array.Length; i++, ptr++)
                 sum += func.Calc(ref *ptr);
             return sum / array.Length;
         }
@@ -684,7 +977,7 @@ namespace pcysl5edgo.Collections.LINQ
         {
             int sum = default;
             var ptr = array.GetPointer();
-            for (int i = 0; i < array.Length; i++, ptr++)
+            for (var i = 0; i < array.Length; i++, ptr++)
                 sum += func.Calc(ref *ptr);
             return sum / array.Length;
         }
@@ -695,9 +988,9 @@ namespace pcysl5edgo.Collections.LINQ
         {
             uint sum = default;
             var ptr = array.GetPointer();
-            for (int i = 0; i < array.Length; i++, ptr++)
+            for (var i = 0; i < array.Length; i++, ptr++)
                 sum += func.Calc(ref *ptr);
-            return sum / (uint)array.Length;
+            return sum / (uint) array.Length;
         }
 
         public static long AverageInt64<T, TFunc>(this NativeArray<T> array, TFunc func)
@@ -706,7 +999,7 @@ namespace pcysl5edgo.Collections.LINQ
         {
             long sum = default;
             var ptr = array.GetPointer();
-            for (int i = 0; i < array.Length; i++, ptr++)
+            for (var i = 0; i < array.Length; i++, ptr++)
                 sum += func.Calc(ref *ptr);
             return sum / array.Length;
         }
@@ -717,16 +1010,16 @@ namespace pcysl5edgo.Collections.LINQ
         {
             ulong sum = default;
             var ptr = array.GetPointer();
-            for (int i = 0; i < array.Length; i++, ptr++)
+            for (var i = 0; i < array.Length; i++, ptr++)
                 sum += func.Calc(ref *ptr);
-            return sum / (ulong)array.Length;
+            return sum / (ulong) array.Length;
         }
 
         public static float Average<T>(this NativeArray<T> array, Func<T, Single> func)
             where T : unmanaged
         {
             float sum = default;
-            for (int i = 0; i < array.Length; i++)
+            for (var i = 0; i < array.Length; i++)
                 sum += func(array[i]);
             return sum / array.Length;
         }
@@ -735,7 +1028,7 @@ namespace pcysl5edgo.Collections.LINQ
             where T : unmanaged
         {
             double sum = default;
-            for (int i = 0; i < array.Length; i++)
+            for (var i = 0; i < array.Length; i++)
                 sum += func(array[i]);
             return sum / array.Length;
         }
@@ -744,7 +1037,7 @@ namespace pcysl5edgo.Collections.LINQ
             where T : unmanaged
         {
             decimal sum = default;
-            for (int i = 0; i < array.Length; i++)
+            for (var i = 0; i < array.Length; i++)
                 sum += func(array[i]);
             return sum / array.Length;
         }
@@ -753,7 +1046,7 @@ namespace pcysl5edgo.Collections.LINQ
             where T : unmanaged
         {
             int sum = default;
-            for (int i = 0; i < array.Length; i++)
+            for (var i = 0; i < array.Length; i++)
                 sum += func(array[i]);
             return sum / array.Length;
         }
@@ -762,16 +1055,16 @@ namespace pcysl5edgo.Collections.LINQ
             where T : unmanaged
         {
             uint sum = default;
-            for (int i = 0; i < array.Length; i++)
+            for (var i = 0; i < array.Length; i++)
                 sum += func(array[i]);
-            return sum / (uint)array.Length;
+            return sum / (uint) array.Length;
         }
 
         public static long Average<T>(this NativeArray<T> array, Func<T, Int64> func)
             where T : unmanaged
         {
             long sum = default;
-            for (int i = 0; i < array.Length; i++)
+            for (var i = 0; i < array.Length; i++)
                 sum += func(array[i]);
             return sum / array.Length;
         }
@@ -780,14 +1073,20 @@ namespace pcysl5edgo.Collections.LINQ
             where T : unmanaged
         {
             ulong sum = default;
-            for (int i = 0; i < array.Length; i++)
+            for (var i = 0; i < array.Length; i++)
                 sum += func(array[i]);
-            return sum / (ulong)array.Length;
+            return sum / (ulong) array.Length;
         }
         #endregion
 
         public static bool TryGetElementAt<TEnumerable, TEnumerator, TSource>(ref this TEnumerable @this, int index, out TSource value)
-            where TEnumerable : struct, IRefEnumerable<TEnumerator, TSource>
+            where TEnumerable :
+#if !STRICT_ENUMERABLE
+            struct,
+#else
+            unmanaged,
+#endif
+            IRefEnumerable<TEnumerator, TSource>
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TSource : unmanaged
         {
@@ -797,7 +1096,7 @@ namespace pcysl5edgo.Collections.LINQ
                 return false;
             }
             var enumerator = @this.GetEnumerator();
-            for (int i = 0; i < index; i++)
+            for (var i = 0; i < index; i++)
             {
                 if (enumerator.MoveNext()) continue;
                 value = default;
@@ -821,6 +1120,7 @@ namespace pcysl5edgo.Collections.LINQ
             return true;
         }
 
+        [Obsolete("This API cannot be used in the Burst Job.")]
         public static ref TSource ElementAt<TSource>(this NativeArray<TSource> array, int index)
             where TSource : unmanaged
         {
@@ -829,11 +1129,19 @@ namespace pcysl5edgo.Collections.LINQ
             return ref array.GetPointer()[index];
         }
 
-        public static NativeArray<T> Empty<T>() where T : unmanaged => default;
+        public static NativeArray<T> Empty<T>()
+            where T : unmanaged
+            => default;
 
         #region  First & Last
         public static bool TryGetFirst<TEnumerable, TEnumerator, TSource>(ref this TEnumerable @this, out TSource first)
-            where TEnumerable : struct, IRefEnumerable<TEnumerator, TSource>
+            where TEnumerable :
+#if !STRICT_ENUMERABLE
+            struct,
+#else
+            unmanaged,
+#endif
+            IRefEnumerable<TEnumerator, TSource>
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TSource : unmanaged
         {
@@ -844,22 +1152,33 @@ namespace pcysl5edgo.Collections.LINQ
                 enumerator.Dispose();
                 return true;
             }
-            else
-            {
-                first = default;
-                enumerator.Dispose();
-                return false;
-            }
+            first = default;
+            enumerator.Dispose();
+            return false;
         }
 
-        public static ref TSource First<TSource>(this NativeArray<TSource> array) where TSource : unmanaged => ref array.ElementAt(0);
-        public static ref TSource Last<TSource>(this NativeArray<TSource> array) where TSource : unmanaged => ref array.ElementAt(array.Length - 1);
+        [Obsolete("This API cannot be used in the Burst Job.")]
+        public static ref TSource First<TSource>(this NativeArray<TSource> array)
+            where TSource : unmanaged => ref array.ElementAt(0);
 
-        public static TSource FirstOrDefault<TSource>(this NativeArray<TSource> array) where TSource : unmanaged => array.IsCreated && array.Length != 0 ? array[0] : default;
-        public static TSource LastOrDefault<TSource>(this NativeArray<TSource> array) where TSource : unmanaged => array.IsCreated && array.Length != 0 ? array[array.Length - 1] : default;
+        [Obsolete("This API cannot be used in the Burst Job.")]
+        public static ref TSource Last<TSource>(this NativeArray<TSource> array)
+            where TSource : unmanaged => ref array.ElementAt(array.Length - 1);
+
+        public static TSource FirstOrDefault<TSource>(this NativeArray<TSource> array)
+            where TSource : unmanaged => array.IsCreated && array.Length != 0 ? array[0] : default;
+
+        public static TSource LastOrDefault<TSource>(this NativeArray<TSource> array)
+            where TSource : unmanaged => array.IsCreated && array.Length != 0 ? array[array.Length - 1] : default;
 
         public static bool TryGetLast<TEnumerable, TEnumerator, TSource>(ref this TEnumerable @this, out TSource last)
-            where TEnumerable : struct, IRefEnumerable<TEnumerator, TSource>
+            where TEnumerable :
+#if !STRICT_ENUMERABLE
+            struct,
+#else
+            unmanaged,
+#endif
+            IRefEnumerable<TEnumerator, TSource>
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TSource : unmanaged
         {
@@ -871,7 +1190,8 @@ namespace pcysl5edgo.Collections.LINQ
                 return false;
             }
             last = enumerator.Current;
-            while (enumerator.MoveNext()) ;
+            while (enumerator.MoveNext()) { }
+
             enumerator.Dispose();
             return true;
         }
@@ -879,7 +1199,13 @@ namespace pcysl5edgo.Collections.LINQ
 
         #region LongCount
         public static long LongCount<TEnumerable, TEnumerator, TSource>(ref this TEnumerable @this)
-            where TEnumerable : struct, IRefEnumerable<TEnumerator, TSource>
+            where TEnumerable :
+#if !STRICT_ENUMERABLE
+            struct,
+#else
+            unmanaged,
+#endif
+            IRefEnumerable<TEnumerator, TSource>
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TSource : unmanaged
         {
@@ -892,7 +1218,13 @@ namespace pcysl5edgo.Collections.LINQ
         }
 
         public static long LongCount<TEnumerable, TEnumerator, TSource, TPredicate>(ref this TEnumerable @this, TPredicate predicate)
-            where TEnumerable : struct, IRefEnumerable<TEnumerator, TSource>
+            where TEnumerable :
+#if !STRICT_ENUMERABLE
+            struct,
+#else
+            unmanaged,
+#endif
+            IRefEnumerable<TEnumerator, TSource>
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TSource : unmanaged
             where TPredicate : struct, IRefFunc<TSource, bool>
@@ -907,7 +1239,13 @@ namespace pcysl5edgo.Collections.LINQ
         }
 
         public static long LongCount<TEnumerable, TEnumerator, TSource>(ref this TEnumerable @this, Func<TSource, bool> predicate)
-            where TEnumerable : struct, IRefEnumerable<TEnumerator, TSource>
+            where TEnumerable :
+#if !STRICT_ENUMERABLE
+            struct,
+#else
+            unmanaged,
+#endif
+            IRefEnumerable<TEnumerator, TSource>
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TSource : unmanaged
         {
@@ -920,14 +1258,26 @@ namespace pcysl5edgo.Collections.LINQ
             return count;
         }
 
-        public static long LongCount<TSource>(this NativeArray<TSource> array) where TSource : unmanaged => (long)array.Length;
-        public static long LongCount<TSource>(this NativeArray<TSource> array, Func<TSource, bool> predicate) where TSource : unmanaged => (long)Count(array, predicate);
-        public static long LongCount<TSource, TPredicate>(this NativeArray<TSource> array, TPredicate predicate) where TSource : unmanaged where TPredicate : struct, IRefFunc<TSource, bool> => (long)Count(array, predicate);
+        public static long LongCount<TSource>(this NativeArray<TSource> array)
+            where TSource : unmanaged => array.Length;
+
+        public static long LongCount<TSource>(this NativeArray<TSource> array, Func<TSource, bool> predicate)
+            where TSource : unmanaged => Count(array, predicate);
+
+        public static long LongCount<TSource, TPredicate>(this NativeArray<TSource> array, TPredicate predicate)
+            where TSource : unmanaged
+            where TPredicate : struct, IRefFunc<TSource, bool> => Count(array, predicate);
         #endregion
 
         #region MinMax
         public static bool TryGetMinMaxInt32<TEnumerable, TEnumerator>(ref this TEnumerable @this, out Int32 min, out Int32 max)
-            where TEnumerable : struct, IRefEnumerable<TEnumerator, Int32>
+            where TEnumerable :
+#if !STRICT_ENUMERABLE
+            struct,
+#else
+            unmanaged,
+#endif
+            IRefEnumerable<TEnumerator, Int32>
             where TEnumerator : struct, IRefEnumerator<Int32>
         {
             var enumerator = @this.GetEnumerator();
@@ -949,8 +1299,15 @@ namespace pcysl5edgo.Collections.LINQ
             enumerator.Dispose();
             return true;
         }
+
         public static bool TryGetMinMaxInt64<TEnumerable, TEnumerator>(ref this TEnumerable @this, out Int64 min, out Int64 max)
-            where TEnumerable : struct, IRefEnumerable<TEnumerator, Int64>
+            where TEnumerable :
+#if !STRICT_ENUMERABLE
+            struct,
+#else
+            unmanaged,
+#endif
+            IRefEnumerable<TEnumerator, Int64>
             where TEnumerator : struct, IRefEnumerator<Int64>
         {
             var enumerator = @this.GetEnumerator();
@@ -974,7 +1331,13 @@ namespace pcysl5edgo.Collections.LINQ
         }
 
         public static bool TryGetMinMaxUInt32<TEnumerable, TEnumerator>(ref this TEnumerable @this, out UInt32 min, out UInt32 max)
-            where TEnumerable : struct, IRefEnumerable<TEnumerator, UInt32>
+            where TEnumerable :
+#if !STRICT_ENUMERABLE
+            struct,
+#else
+            unmanaged,
+#endif
+            IRefEnumerable<TEnumerator, UInt32>
             where TEnumerator : struct, IRefEnumerator<UInt32>
         {
             var enumerator = @this.GetEnumerator();
@@ -998,7 +1361,13 @@ namespace pcysl5edgo.Collections.LINQ
         }
 
         public static bool TryGetMinMaxUInt64<TEnumerable, TEnumerator>(ref this TEnumerable @this, out UInt64 min, out UInt64 max)
-            where TEnumerable : struct, IRefEnumerable<TEnumerator, UInt64>
+            where TEnumerable :
+#if !STRICT_ENUMERABLE
+            struct,
+#else
+            unmanaged,
+#endif
+            IRefEnumerable<TEnumerator, UInt64>
             where TEnumerator : struct, IRefEnumerator<UInt64>
         {
             var enumerator = @this.GetEnumerator();
@@ -1022,7 +1391,13 @@ namespace pcysl5edgo.Collections.LINQ
         }
 
         public static bool TryGetMinMaxSingle<TEnumerable, TEnumerator>(ref this TEnumerable @this, out Single min, out Single max)
-            where TEnumerable : struct, IRefEnumerable<TEnumerator, Single>
+            where TEnumerable :
+#if !STRICT_ENUMERABLE
+            struct,
+#else
+            unmanaged,
+#endif
+            IRefEnumerable<TEnumerator, Single>
             where TEnumerator : struct, IRefEnumerator<Single>
         {
             var enumerator = @this.GetEnumerator();
@@ -1046,7 +1421,13 @@ namespace pcysl5edgo.Collections.LINQ
         }
 
         public static bool TryGetMinMaxDouble<TEnumerable, TEnumerator>(ref this TEnumerable @this, out Double min, out Double max)
-            where TEnumerable : struct, IRefEnumerable<TEnumerator, Double>
+            where TEnumerable :
+#if !STRICT_ENUMERABLE
+            struct,
+#else
+            unmanaged,
+#endif
+            IRefEnumerable<TEnumerator, Double>
             where TEnumerator : struct, IRefEnumerator<Double>
         {
             var enumerator = @this.GetEnumerator();
@@ -1070,7 +1451,13 @@ namespace pcysl5edgo.Collections.LINQ
         }
 
         public static bool TryGetMinMaxDecimal<TEnumerable, TEnumerator>(ref this TEnumerable @this, out Decimal min, out Decimal max)
-            where TEnumerable : struct, IRefEnumerable<TEnumerator, Decimal>
+            where TEnumerable :
+#if !STRICT_ENUMERABLE
+            struct,
+#else
+            unmanaged,
+#endif
+            IRefEnumerable<TEnumerator, Decimal>
             where TEnumerator : struct, IRefEnumerator<Decimal>
         {
             var enumerator = @this.GetEnumerator();
@@ -1101,7 +1488,7 @@ namespace pcysl5edgo.Collections.LINQ
                 return false;
             }
             min = max = @this[0];
-            for (int i = 1; i < @this.Length; i++)
+            for (var i = 1; i < @this.Length; i++)
             {
                 if (min > @this[i])
                     min = @this[i];
@@ -1119,7 +1506,7 @@ namespace pcysl5edgo.Collections.LINQ
                 return false;
             }
             min = max = @this[0];
-            for (int i = 1; i < @this.Length; i++)
+            for (var i = 1; i < @this.Length; i++)
             {
                 if (min > @this[i])
                     min = @this[i];
@@ -1128,6 +1515,7 @@ namespace pcysl5edgo.Collections.LINQ
             }
             return true;
         }
+
         public static bool TryGetMinMax(this NativeArray<Int64> @this, out Int64 min, out Int64 max)
         {
             if (!@this.IsCreated || @this.Length == 0)
@@ -1136,7 +1524,7 @@ namespace pcysl5edgo.Collections.LINQ
                 return false;
             }
             min = max = @this[0];
-            for (int i = 1; i < @this.Length; i++)
+            for (var i = 1; i < @this.Length; i++)
             {
                 if (min > @this[i])
                     min = @this[i];
@@ -1145,6 +1533,7 @@ namespace pcysl5edgo.Collections.LINQ
             }
             return true;
         }
+
         public static bool TryGetMinMax(this NativeArray<UInt64> @this, out UInt64 min, out UInt64 max)
         {
             if (!@this.IsCreated || @this.Length == 0)
@@ -1153,7 +1542,7 @@ namespace pcysl5edgo.Collections.LINQ
                 return false;
             }
             min = max = @this[0];
-            for (int i = 1; i < @this.Length; i++)
+            for (var i = 1; i < @this.Length; i++)
             {
                 if (min > @this[i])
                     min = @this[i];
@@ -1162,6 +1551,7 @@ namespace pcysl5edgo.Collections.LINQ
             }
             return true;
         }
+
         public static bool TryGetMinMax(this NativeArray<Single> @this, out Single min, out Single max)
         {
             if (!@this.IsCreated || @this.Length == 0)
@@ -1170,7 +1560,7 @@ namespace pcysl5edgo.Collections.LINQ
                 return false;
             }
             min = max = @this[0];
-            for (int i = 1; i < @this.Length; i++)
+            for (var i = 1; i < @this.Length; i++)
             {
                 if (min > @this[i])
                     min = @this[i];
@@ -1179,6 +1569,7 @@ namespace pcysl5edgo.Collections.LINQ
             }
             return true;
         }
+
         public static bool TryGetMinMax(this NativeArray<Double> @this, out Double min, out Double max)
         {
             if (!@this.IsCreated || @this.Length == 0)
@@ -1187,7 +1578,7 @@ namespace pcysl5edgo.Collections.LINQ
                 return false;
             }
             min = max = @this[0];
-            for (int i = 1; i < @this.Length; i++)
+            for (var i = 1; i < @this.Length; i++)
             {
                 if (min > @this[i])
                     min = @this[i];
@@ -1196,6 +1587,7 @@ namespace pcysl5edgo.Collections.LINQ
             }
             return true;
         }
+
         public static bool TryGetMinMax(this NativeArray<Decimal> @this, out Decimal min, out Decimal max)
         {
             if (!@this.IsCreated || @this.Length == 0)
@@ -1204,7 +1596,7 @@ namespace pcysl5edgo.Collections.LINQ
                 return false;
             }
             min = max = @this[0];
-            for (int i = 1; i < @this.Length; i++)
+            for (var i = 1; i < @this.Length; i++)
             {
                 if (min > @this[i])
                     min = @this[i];
@@ -1213,6 +1605,7 @@ namespace pcysl5edgo.Collections.LINQ
             }
             return true;
         }
+
         public static bool TryGetMinMax(this NativeArray<Byte> @this, out Byte min, out Byte max)
         {
             if (!@this.IsCreated || @this.Length == 0)
@@ -1221,7 +1614,7 @@ namespace pcysl5edgo.Collections.LINQ
                 return false;
             }
             min = max = @this[0];
-            for (int i = 1; i < @this.Length; i++)
+            for (var i = 1; i < @this.Length; i++)
             {
                 if (min > @this[i])
                     min = @this[i];
@@ -1230,6 +1623,7 @@ namespace pcysl5edgo.Collections.LINQ
             }
             return true;
         }
+
         public static bool TryGetMinMax(this NativeArray<SByte> @this, out SByte min, out SByte max)
         {
             if (!@this.IsCreated || @this.Length == 0)
@@ -1238,7 +1632,7 @@ namespace pcysl5edgo.Collections.LINQ
                 return false;
             }
             min = max = @this[0];
-            for (int i = 1; i < @this.Length; i++)
+            for (var i = 1; i < @this.Length; i++)
             {
                 if (min > @this[i])
                     min = @this[i];
@@ -1247,6 +1641,7 @@ namespace pcysl5edgo.Collections.LINQ
             }
             return true;
         }
+
         public static bool TryGetMinMax(this NativeArray<Int16> @this, out Int16 min, out Int16 max)
         {
             if (!@this.IsCreated || @this.Length == 0)
@@ -1255,7 +1650,7 @@ namespace pcysl5edgo.Collections.LINQ
                 return false;
             }
             min = max = @this[0];
-            for (int i = 1; i < @this.Length; i++)
+            for (var i = 1; i < @this.Length; i++)
             {
                 if (min > @this[i])
                     min = @this[i];
@@ -1264,6 +1659,7 @@ namespace pcysl5edgo.Collections.LINQ
             }
             return true;
         }
+
         public static bool TryGetMinMax(this NativeArray<UInt16> @this, out UInt16 min, out UInt16 max)
         {
             if (!@this.IsCreated || @this.Length == 0)
@@ -1272,7 +1668,7 @@ namespace pcysl5edgo.Collections.LINQ
                 return false;
             }
             min = max = @this[0];
-            for (int i = 1; i < @this.Length; i++)
+            for (var i = 1; i < @this.Length; i++)
             {
                 if (min > @this[i])
                     min = @this[i];
@@ -1281,237 +1677,281 @@ namespace pcysl5edgo.Collections.LINQ
             }
             return true;
         }
+
+        [Obsolete("This API cannot be used in Burst Jobs.")]
         public static UInt16 Min(this NativeArray<UInt16> @this)
         {
             if (!@this.IsCreated || @this.Length == 0)
                 throw new InvalidOperationException();
-            UInt16 value = @this[0];
-            for (int i = 1; i < @this.Length; i++)
+            var value = @this[0];
+            for (var i = 1; i < @this.Length; i++)
                 if (value > @this[i])
                     value = @this[i];
             return value;
         }
+
+        [Obsolete("This API cannot be used in Burst Jobs.")]
         public static UInt16 Max(this NativeArray<UInt16> @this)
         {
             if (!@this.IsCreated || @this.Length == 0)
                 throw new InvalidOperationException();
-            UInt16 value = @this[0];
-            for (int i = 1; i < @this.Length; i++)
-                if (value < @this[i])
-                    value = @this[i];
-            return value;
-        }
-        public static UInt32 Min(this NativeArray<UInt32> @this)
-        {
-            if (!@this.IsCreated || @this.Length == 0)
-                throw new InvalidOperationException();
-            UInt32 value = @this[0];
-            for (int i = 1; i < @this.Length; i++)
-                if (value > @this[i])
-                    value = @this[i];
-            return value;
-        }
-        public static UInt32 Max(this NativeArray<UInt32> @this)
-        {
-            if (!@this.IsCreated || @this.Length == 0)
-                throw new InvalidOperationException();
-            UInt32 value = @this[0];
-            for (int i = 1; i < @this.Length; i++)
-                if (value < @this[i])
-                    value = @this[i];
-            return value;
-        }
-        public static UInt64 Min(this NativeArray<UInt64> @this)
-        {
-            if (!@this.IsCreated || @this.Length == 0)
-                throw new InvalidOperationException();
-            UInt64 value = @this[0];
-            for (int i = 1; i < @this.Length; i++)
-                if (value > @this[i])
-                    value = @this[i];
-            return value;
-        }
-        public static UInt64 Max(this NativeArray<UInt64> @this)
-        {
-            if (!@this.IsCreated || @this.Length == 0)
-                throw new InvalidOperationException();
-            UInt64 value = @this[0];
-            for (int i = 1; i < @this.Length; i++)
-                if (value < @this[i])
-                    value = @this[i];
-            return value;
-        }
-        public static Int16 Min(this NativeArray<Int16> @this)
-        {
-            if (!@this.IsCreated || @this.Length == 0)
-                throw new InvalidOperationException();
-            Int16 value = @this[0];
-            for (int i = 1; i < @this.Length; i++)
-                if (value > @this[i])
-                    value = @this[i];
-            return value;
-        }
-        public static Int16 Max(this NativeArray<Int16> @this)
-        {
-            if (!@this.IsCreated || @this.Length == 0)
-                throw new InvalidOperationException();
-            Int16 value = @this[0];
-            for (int i = 1; i < @this.Length; i++)
-                if (value < @this[i])
-                    value = @this[i];
-            return value;
-        }
-        public static Int32 Min(this NativeArray<Int32> @this)
-        {
-            if (!@this.IsCreated || @this.Length == 0)
-                throw new InvalidOperationException();
-            Int32 value = @this[0];
-            for (int i = 1; i < @this.Length; i++)
-                if (value > @this[i])
-                    value = @this[i];
-            return value;
-        }
-        public static Int32 Max(this NativeArray<Int32> @this)
-        {
-            if (!@this.IsCreated || @this.Length == 0)
-                throw new InvalidOperationException();
-            Int32 value = @this[0];
-            for (int i = 1; i < @this.Length; i++)
-                if (value < @this[i])
-                    value = @this[i];
-            return value;
-        }
-        public static Int64 Min(this NativeArray<Int64> @this)
-        {
-            if (!@this.IsCreated || @this.Length == 0)
-                throw new InvalidOperationException();
-            Int64 value = @this[0];
-            for (int i = 1; i < @this.Length; i++)
-                if (value > @this[i])
-                    value = @this[i];
-            return value;
-        }
-        public static Int64 Max(this NativeArray<Int64> @this)
-        {
-            if (!@this.IsCreated || @this.Length == 0)
-                throw new InvalidOperationException();
-            Int64 value = @this[0];
-            for (int i = 1; i < @this.Length; i++)
-                if (value < @this[i])
-                    value = @this[i];
-            return value;
-        }
-        public static Single Min(this NativeArray<Single> @this)
-        {
-            if (!@this.IsCreated || @this.Length == 0)
-                throw new InvalidOperationException();
-            Single value = @this[0];
-            for (int i = 1; i < @this.Length; i++)
-                if (value > @this[i])
-                    value = @this[i];
-            return value;
-        }
-        public static Single Max(this NativeArray<Single> @this)
-        {
-            if (!@this.IsCreated || @this.Length == 0)
-                throw new InvalidOperationException();
-            Single value = @this[0];
-            for (int i = 1; i < @this.Length; i++)
-                if (value < @this[i])
-                    value = @this[i];
-            return value;
-        }
-        public static Double Min(this NativeArray<Double> @this)
-        {
-            if (!@this.IsCreated || @this.Length == 0)
-                throw new InvalidOperationException();
-            Double value = @this[0];
-            for (int i = 1; i < @this.Length; i++)
-                if (value > @this[i])
-                    value = @this[i];
-            return value;
-        }
-        public static Double Max(this NativeArray<Double> @this)
-        {
-            if (!@this.IsCreated || @this.Length == 0)
-                throw new InvalidOperationException();
-            Double value = @this[0];
-            for (int i = 1; i < @this.Length; i++)
-                if (value < @this[i])
-                    value = @this[i];
-            return value;
-        }
-        public static Decimal Min(this NativeArray<Decimal> @this)
-        {
-            if (!@this.IsCreated || @this.Length == 0)
-                throw new InvalidOperationException();
-            Decimal value = @this[0];
-            for (int i = 1; i < @this.Length; i++)
-                if (value > @this[i])
-                    value = @this[i];
-            return value;
-        }
-        public static Decimal Max(this NativeArray<Decimal> @this)
-        {
-            if (!@this.IsCreated || @this.Length == 0)
-                throw new InvalidOperationException();
-            Decimal value = @this[0];
-            for (int i = 1; i < @this.Length; i++)
-                if (value < @this[i])
-                    value = @this[i];
-            return value;
-        }
-        public static Byte Min(this NativeArray<Byte> @this)
-        {
-            if (!@this.IsCreated || @this.Length == 0)
-                throw new InvalidOperationException();
-            Byte value = @this[0];
-            for (int i = 1; i < @this.Length; i++)
-                if (value > @this[i])
-                    value = @this[i];
-            return value;
-        }
-        public static Byte Max(this NativeArray<Byte> @this)
-        {
-            if (!@this.IsCreated || @this.Length == 0)
-                throw new InvalidOperationException();
-            Byte value = @this[0];
-            for (int i = 1; i < @this.Length; i++)
-                if (value < @this[i])
-                    value = @this[i];
-            return value;
-        }
-        public static SByte Min(this NativeArray<SByte> @this)
-        {
-            if (!@this.IsCreated || @this.Length == 0)
-                throw new InvalidOperationException();
-            SByte value = @this[0];
-            for (int i = 1; i < @this.Length; i++)
-                if (value > @this[i])
-                    value = @this[i];
-            return value;
-        }
-        public static SByte Max(this NativeArray<SByte> @this)
-        {
-            if (!@this.IsCreated || @this.Length == 0)
-                throw new InvalidOperationException();
-            SByte value = @this[0];
-            for (int i = 1; i < @this.Length; i++)
+            var value = @this[0];
+            for (var i = 1; i < @this.Length; i++)
                 if (value < @this[i])
                     value = @this[i];
             return value;
         }
 
+        [Obsolete("This API cannot be used in Burst Jobs.")]
+        public static UInt32 Min(this NativeArray<UInt32> @this)
+        {
+            if (!@this.IsCreated || @this.Length == 0)
+                throw new InvalidOperationException();
+            var value = @this[0];
+            for (var i = 1; i < @this.Length; i++)
+                if (value > @this[i])
+                    value = @this[i];
+            return value;
+        }
+
+        [Obsolete("This API cannot be used in Burst Jobs.")]
+        public static UInt32 Max(this NativeArray<UInt32> @this)
+        {
+            if (!@this.IsCreated || @this.Length == 0)
+                throw new InvalidOperationException();
+            var value = @this[0];
+            for (var i = 1; i < @this.Length; i++)
+                if (value < @this[i])
+                    value = @this[i];
+            return value;
+        }
+
+        [Obsolete("This API cannot be used in Burst Jobs.")]
+        public static UInt64 Min(this NativeArray<UInt64> @this)
+        {
+            if (!@this.IsCreated || @this.Length == 0)
+                throw new InvalidOperationException();
+            var value = @this[0];
+            for (var i = 1; i < @this.Length; i++)
+                if (value > @this[i])
+                    value = @this[i];
+            return value;
+        }
+
+        [Obsolete("This API cannot be used in Burst Jobs.")]
+        public static UInt64 Max(this NativeArray<UInt64> @this)
+        {
+            if (!@this.IsCreated || @this.Length == 0)
+                throw new InvalidOperationException();
+            var value = @this[0];
+            for (var i = 1; i < @this.Length; i++)
+                if (value < @this[i])
+                    value = @this[i];
+            return value;
+        }
+
+        [Obsolete("This API cannot be used in Burst Jobs.")]
+        public static Int16 Min(this NativeArray<Int16> @this)
+        {
+            if (!@this.IsCreated || @this.Length == 0)
+                throw new InvalidOperationException();
+            var value = @this[0];
+            for (var i = 1; i < @this.Length; i++)
+                if (value > @this[i])
+                    value = @this[i];
+            return value;
+        }
+
+        [Obsolete("This API cannot be used in Burst Jobs.")]
+        public static Int16 Max(this NativeArray<Int16> @this)
+        {
+            if (!@this.IsCreated || @this.Length == 0)
+                throw new InvalidOperationException();
+            var value = @this[0];
+            for (var i = 1; i < @this.Length; i++)
+                if (value < @this[i])
+                    value = @this[i];
+            return value;
+        }
+
+        [Obsolete("This API cannot be used in Burst Jobs.")]
+        public static Int32 Min(this NativeArray<Int32> @this)
+        {
+            if (!@this.IsCreated || @this.Length == 0)
+                throw new InvalidOperationException();
+            var value = @this[0];
+            for (var i = 1; i < @this.Length; i++)
+                if (value > @this[i])
+                    value = @this[i];
+            return value;
+        }
+
+        [Obsolete("This API cannot be used in Burst Jobs.")]
+        public static Int32 Max(this NativeArray<Int32> @this)
+        {
+            if (!@this.IsCreated || @this.Length == 0)
+                throw new InvalidOperationException();
+            var value = @this[0];
+            for (var i = 1; i < @this.Length; i++)
+                if (value < @this[i])
+                    value = @this[i];
+            return value;
+        }
+
+        [Obsolete("This API cannot be used in Burst Jobs.")]
+        public static Int64 Min(this NativeArray<Int64> @this)
+        {
+            if (!@this.IsCreated || @this.Length == 0)
+                throw new InvalidOperationException();
+            var value = @this[0];
+            for (var i = 1; i < @this.Length; i++)
+                if (value > @this[i])
+                    value = @this[i];
+            return value;
+        }
+
+        [Obsolete("This API cannot be used in Burst Jobs.")]
+        public static Int64 Max(this NativeArray<Int64> @this)
+        {
+            if (!@this.IsCreated || @this.Length == 0)
+                throw new InvalidOperationException();
+            var value = @this[0];
+            for (var i = 1; i < @this.Length; i++)
+                if (value < @this[i])
+                    value = @this[i];
+            return value;
+        }
+
+        [Obsolete("This API cannot be used in Burst Jobs.")]
+        public static Single Min(this NativeArray<Single> @this)
+        {
+            if (!@this.IsCreated || @this.Length == 0)
+                throw new InvalidOperationException();
+            var value = @this[0];
+            for (var i = 1; i < @this.Length; i++)
+                if (value > @this[i])
+                    value = @this[i];
+            return value;
+        }
+
+        [Obsolete("This API cannot be used in Burst Jobs.")]
+        public static Single Max(this NativeArray<Single> @this)
+        {
+            if (!@this.IsCreated || @this.Length == 0)
+                throw new InvalidOperationException();
+            var value = @this[0];
+            for (var i = 1; i < @this.Length; i++)
+                if (value < @this[i])
+                    value = @this[i];
+            return value;
+        }
+
+        [Obsolete("This API cannot be used in Burst Jobs.")]
+        public static Double Min(this NativeArray<Double> @this)
+        {
+            if (!@this.IsCreated || @this.Length == 0)
+                throw new InvalidOperationException();
+            var value = @this[0];
+            for (var i = 1; i < @this.Length; i++)
+                if (value > @this[i])
+                    value = @this[i];
+            return value;
+        }
+
+        [Obsolete("This API cannot be used in Burst Jobs.")]
+        public static Double Max(this NativeArray<Double> @this)
+        {
+            if (!@this.IsCreated || @this.Length == 0)
+                throw new InvalidOperationException();
+            var value = @this[0];
+            for (var i = 1; i < @this.Length; i++)
+                if (value < @this[i])
+                    value = @this[i];
+            return value;
+        }
+
+        [Obsolete("This API cannot be used in Burst Jobs.")]
+        public static Decimal Min(this NativeArray<Decimal> @this)
+        {
+            if (!@this.IsCreated || @this.Length == 0)
+                throw new InvalidOperationException();
+            var value = @this[0];
+            for (var i = 1; i < @this.Length; i++)
+                if (value > @this[i])
+                    value = @this[i];
+            return value;
+        }
+
+        [Obsolete("This API cannot be used in Burst Jobs.")]
+        public static Decimal Max(this NativeArray<Decimal> @this)
+        {
+            if (!@this.IsCreated || @this.Length == 0)
+                throw new InvalidOperationException();
+            var value = @this[0];
+            for (var i = 1; i < @this.Length; i++)
+                if (value < @this[i])
+                    value = @this[i];
+            return value;
+        }
+
+        [Obsolete("This API cannot be used in Burst Jobs.")]
+        public static Byte Min(this NativeArray<Byte> @this)
+        {
+            if (!@this.IsCreated || @this.Length == 0)
+                throw new InvalidOperationException();
+            var value = @this[0];
+            for (var i = 1; i < @this.Length; i++)
+                if (value > @this[i])
+                    value = @this[i];
+            return value;
+        }
+
+        [Obsolete("This API cannot be used in Burst Jobs.")]
+        public static Byte Max(this NativeArray<Byte> @this)
+        {
+            if (!@this.IsCreated || @this.Length == 0)
+                throw new InvalidOperationException();
+            var value = @this[0];
+            for (var i = 1; i < @this.Length; i++)
+                if (value < @this[i])
+                    value = @this[i];
+            return value;
+        }
+
+        [Obsolete("This API cannot be used in Burst Jobs.")]
+        public static SByte Min(this NativeArray<SByte> @this)
+        {
+            if (!@this.IsCreated || @this.Length == 0)
+                throw new InvalidOperationException();
+            var value = @this[0];
+            for (var i = 1; i < @this.Length; i++)
+                if (value > @this[i])
+                    value = @this[i];
+            return value;
+        }
+
+        [Obsolete("This API cannot be used in Burst Jobs.")]
+        public static SByte Max(this NativeArray<SByte> @this)
+        {
+            if (!@this.IsCreated || @this.Length == 0)
+                throw new InvalidOperationException();
+            var value = @this[0];
+            for (var i = 1; i < @this.Length; i++)
+                if (value < @this[i])
+                    value = @this[i];
+            return value;
+        }
         #endregion
 
         #region Range
         public static NativeArray<Int32> Range(Int32 start, int count, Allocator allocator)
         {
             var answer = new NativeArray<Int32>(count, allocator, NativeArrayOptions.UninitializedMemory);
-            for (int i = 0; i < count; i++)
+            for (var i = 0; i < count; i++)
                 answer[i] = start + i;
             return answer;
         }
+
         public static NativeArray<Int64> Range(Int64 start, int count, Allocator allocator)
         {
             var answer = new NativeArray<Int64>(count, allocator, NativeArrayOptions.UninitializedMemory);
@@ -1519,6 +1959,7 @@ namespace pcysl5edgo.Collections.LINQ
                 answer[i] = start + i;
             return answer;
         }
+
         public static NativeArray<Single> Range(Single start, int count, Allocator allocator)
         {
             var answer = new NativeArray<Single>(count, allocator, NativeArrayOptions.UninitializedMemory);
@@ -1526,6 +1967,7 @@ namespace pcysl5edgo.Collections.LINQ
                 answer[i] = start + i;
             return answer;
         }
+
         public static NativeArray<Double> Range(Double start, int count, Allocator allocator)
         {
             var answer = new NativeArray<Double>(count, allocator, NativeArrayOptions.UninitializedMemory);
@@ -1533,30 +1975,34 @@ namespace pcysl5edgo.Collections.LINQ
                 answer[i] = start + i;
             return answer;
         }
+
         public static NativeArray<UInt32> Range(UInt32 start, int count, Allocator allocator)
         {
             var answer = new NativeArray<UInt32>(count, allocator, NativeArrayOptions.UninitializedMemory);
             for (var i = 0; i < count; i++)
-                answer[i] = start + (uint)i;
+                answer[i] = start + (uint) i;
             return answer;
         }
+
         public static NativeArray<UInt64> Range(UInt64 start, int count, Allocator allocator)
         {
             var answer = new NativeArray<UInt64>(count, allocator, NativeArrayOptions.UninitializedMemory);
             for (var i = 0; i < count; i++)
-                answer[i] = start + (ulong)i;
+                answer[i] = start + (ulong) i;
             return answer;
         }
+
         public static NativeArray<Decimal> Range(Decimal start, int count, Allocator allocator)
         {
             var answer = new NativeArray<Decimal>(count, allocator, NativeArrayOptions.UninitializedMemory);
             for (var i = 0; i < count; i++)
-                answer[i] = start + (decimal)i;
+                answer[i] = start + i;
             return answer;
         }
         #endregion
 
-        public static NativeArray<TResult> Repeat<TResult>(TResult value, int count, Allocator allocator) where TResult : unmanaged
+        public static NativeArray<TResult> Repeat<TResult>(TResult value, int count, Allocator allocator)
+            where TResult : unmanaged
         {
             var answer = new NativeArray<TResult>(count, allocator, NativeArrayOptions.UninitializedMemory);
             UnsafeUtility.MemCpyReplicate(answer.GetPointer(), &value, sizeof(TResult), count);
@@ -1565,7 +2011,13 @@ namespace pcysl5edgo.Collections.LINQ
 
         #region Single
         public static bool TryGetSingle<TEnumerable, TEnumerator, TSource, TPredicate>(ref this TEnumerable @this, out TSource value, TPredicate predicate)
-            where TEnumerable : struct, IRefEnumerable<TEnumerator, TSource>
+            where TEnumerable :
+#if !STRICT_ENUMERABLE
+            struct,
+#else
+            unmanaged,
+#endif
+            IRefEnumerable<TEnumerator, TSource>
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TSource : unmanaged
             where TPredicate : struct, IRefFunc<TSource, bool>
@@ -1575,21 +2027,24 @@ namespace pcysl5edgo.Collections.LINQ
             var count = 0;
             while (enumerator.MoveNext())
             {
-                if (predicate.Calc(ref enumerator.Current))
-                {
-                    value = enumerator.Current;
-                    if (++count > 1)
-                    {
-                        enumerator.Dispose();
-                        return false;
-                    }
-                }
+                if (!predicate.Calc(ref enumerator.Current)) continue;
+                value = enumerator.Current;
+                if (++count <= 1) continue;
+                enumerator.Dispose();
+                return false;
             }
             enumerator.Dispose();
             return count == 1;
         }
+
         public static bool TryGetSingle<TEnumerable, TEnumerator, TSource>(ref this TEnumerable @this, out TSource value, Func<TSource, bool> predicate)
-            where TEnumerable : struct, IRefEnumerable<TEnumerator, TSource>
+            where TEnumerable :
+#if !STRICT_ENUMERABLE
+            struct,
+#else
+            unmanaged,
+#endif
+            IRefEnumerable<TEnumerator, TSource>
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TSource : unmanaged
         {
@@ -1598,21 +2053,24 @@ namespace pcysl5edgo.Collections.LINQ
             var count = 0;
             while (enumerator.MoveNext())
             {
-                if (predicate(enumerator.Current))
-                {
-                    value = enumerator.Current;
-                    if (++count > 1)
-                    {
-                        enumerator.Dispose();
-                        return false;
-                    }
-                }
+                if (!predicate(enumerator.Current)) continue;
+                value = enumerator.Current;
+                if (++count <= 1) continue;
+                enumerator.Dispose();
+                return false;
             }
             enumerator.Dispose();
             return count == 1;
         }
+
         public static bool TryGetSingle<TEnumerable, TEnumerator, TSource>(ref this TEnumerable @this, out TSource value)
-            where TEnumerable : struct, IRefEnumerable<TEnumerator, TSource>
+            where TEnumerable :
+#if !STRICT_ENUMERABLE
+            struct,
+#else
+            unmanaged,
+#endif
+            IRefEnumerable<TEnumerator, TSource>
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TSource : unmanaged
         {
@@ -1624,24 +2082,24 @@ namespace pcysl5edgo.Collections.LINQ
                 goto ERROR;
             enumerator.Dispose();
             return true;
-        ERROR:
+            ERROR:
             enumerator.Dispose();
             value = default;
             return false;
         }
-        public static bool TryGetSingle<TSource>(this NativeArray<TSource> array, out TSource value) where TSource : unmanaged
+
+        public static bool TryGetSingle<TSource>(this NativeArray<TSource> array, out TSource value)
+            where TSource : unmanaged
         {
             if (array.IsCreated && array.Length == 1)
             {
                 value = array[0];
                 return true;
             }
-            else
-            {
-                value = default;
-                return false;
-            }
+            value = default;
+            return false;
         }
+
         public static bool TryGetSingle<TSource, TPredicate>(this NativeArray<TSource> array, out TSource value, TPredicate predicate)
             where TSource : unmanaged
             where TPredicate : struct, IRefFunc<TSource, bool>
@@ -1651,17 +2109,15 @@ namespace pcysl5edgo.Collections.LINQ
                 return false;
             var count = 0;
             var ptr = array.GetPointer();
-            for (int i = 0; i < array.Length; i++, ptr++)
+            for (var i = 0; i < array.Length; i++, ptr++)
             {
-                if (predicate.Calc(ref *ptr))
-                {
-                    if (++count > 1) return false;
-                    value = *ptr;
-                }
+                if (!predicate.Calc(ref *ptr)) continue;
+                if (++count > 1) return false;
+                value = *ptr;
             }
-            if (count == 0) return false;
-            return true;
+            return count != 0;
         }
+
         public static bool TryGetSingle<TSource>(this NativeArray<TSource> array, out TSource value, Func<TSource, bool> predicate)
             where TSource : unmanaged
         {
@@ -1670,23 +2126,25 @@ namespace pcysl5edgo.Collections.LINQ
                 return false;
             var count = 0;
             var ptr = array.GetPointer();
-            for (int i = 0; i < array.Length; i++, ptr++)
+            for (var i = 0; i < array.Length; i++, ptr++)
             {
-                if (predicate(*ptr))
-                {
-                    if (++count > 1) return false;
-                    value = *ptr;
-                }
+                if (!predicate(*ptr)) continue;
+                if (++count > 1) return false;
+                value = *ptr;
             }
-            if (count == 0) return false;
-            return true;
+            return count != 0;
         }
-        public static ref TSource Single<TSource>(this NativeArray<TSource> array) where TSource : unmanaged
+
+        [Obsolete("This API cannot be used in Burst Jobs.")]
+        public static ref TSource Single<TSource>(this NativeArray<TSource> array)
+            where TSource : unmanaged
         {
             if (array.IsCreated && array.Length == 1)
                 return ref *array.GetPointer();
             throw new InvalidOperationException();
         }
+
+        [Obsolete("This API cannot be used in Burst Jobs.")]
         public static ref TSource Single<TSource, TPredicate>(this NativeArray<TSource> array, TPredicate predicate)
             where TSource : unmanaged
             where TPredicate : struct, IRefFunc<TSource, bool>
@@ -1695,17 +2153,17 @@ namespace pcysl5edgo.Collections.LINQ
             var count = 0;
             TSource* answer = default;
             var ptr = array.GetPointer();
-            for (int i = 0; i < array.Length; i++, ptr++)
+            for (var i = 0; i < array.Length; i++, ptr++)
             {
-                if (predicate.Calc(ref *ptr))
-                {
-                    if (++count > 1) throw new InvalidOperationException();
-                    answer = ptr;
-                }
+                if (!predicate.Calc(ref *ptr)) continue;
+                if (++count > 1) throw new InvalidOperationException();
+                answer = ptr;
             }
             if (count == 0) throw new InvalidOperationException();
             return ref *answer;
         }
+
+        [Obsolete("This API cannot be used in Burst Jobs.")]
         public static ref TSource Single<TSource>(this NativeArray<TSource> array, Func<TSource, bool> predicate)
             where TSource : unmanaged
         {
@@ -1713,13 +2171,11 @@ namespace pcysl5edgo.Collections.LINQ
             var count = 0;
             TSource* answer = default;
             var ptr = array.GetPointer();
-            for (int i = 0; i < array.Length; i++, ptr++)
+            for (var i = 0; i < array.Length; i++, ptr++)
             {
-                if (predicate(*ptr))
-                {
-                    if (++count > 1) throw new InvalidOperationException();
-                    answer = ptr;
-                }
+                if (!predicate(*ptr)) continue;
+                if (++count > 1) throw new InvalidOperationException();
+                answer = ptr;
             }
             if (count == 0) throw new InvalidOperationException();
             return ref *answer;
@@ -1728,7 +2184,13 @@ namespace pcysl5edgo.Collections.LINQ
 
         #region Sum
         public static Int32 SumInt32<TEnumerable, TEnumerator>(ref this TEnumerable @this)
-            where TEnumerable : struct, IRefEnumerable<TEnumerator, Int32>
+            where TEnumerable :
+#if !STRICT_ENUMERABLE
+            struct,
+#else
+            unmanaged,
+#endif
+            IRefEnumerable<TEnumerator, Int32>
             where TEnumerator : struct, IRefEnumerator<Int32>
         {
             Int32 sum = default;
@@ -1738,8 +2200,15 @@ namespace pcysl5edgo.Collections.LINQ
             enumerator.Dispose();
             return sum;
         }
+
         public static Int64 SumInt64<TEnumerable, TEnumerator>(ref this TEnumerable @this)
-            where TEnumerable : struct, IRefEnumerable<TEnumerator, Int64>
+            where TEnumerable :
+#if !STRICT_ENUMERABLE
+            struct,
+#else
+            unmanaged,
+#endif
+            IRefEnumerable<TEnumerator, Int64>
             where TEnumerator : struct, IRefEnumerator<Int64>
         {
             Int64 sum = default;
@@ -1749,8 +2218,15 @@ namespace pcysl5edgo.Collections.LINQ
             enumerator.Dispose();
             return sum;
         }
+
         public static UInt32 SumUInt32<TEnumerable, TEnumerator>(ref this TEnumerable @this)
-            where TEnumerable : struct, IRefEnumerable<TEnumerator, UInt32>
+            where TEnumerable :
+#if !STRICT_ENUMERABLE
+            struct,
+#else
+            unmanaged,
+#endif
+            IRefEnumerable<TEnumerator, UInt32>
             where TEnumerator : struct, IRefEnumerator<UInt32>
         {
             UInt32 sum = default;
@@ -1760,8 +2236,15 @@ namespace pcysl5edgo.Collections.LINQ
             enumerator.Dispose();
             return sum;
         }
+
         public static UInt64 SumUInt64<TEnumerable, TEnumerator>(ref this TEnumerable @this)
-            where TEnumerable : struct, IRefEnumerable<TEnumerator, UInt64>
+            where TEnumerable :
+#if !STRICT_ENUMERABLE
+            struct,
+#else
+            unmanaged,
+#endif
+            IRefEnumerable<TEnumerator, UInt64>
             where TEnumerator : struct, IRefEnumerator<UInt64>
         {
             UInt64 sum = default;
@@ -1771,8 +2254,15 @@ namespace pcysl5edgo.Collections.LINQ
             enumerator.Dispose();
             return sum;
         }
+
         public static Single SumSingle<TEnumerable, TEnumerator>(ref this TEnumerable @this)
-            where TEnumerable : struct, IRefEnumerable<TEnumerator, Single>
+            where TEnumerable :
+#if !STRICT_ENUMERABLE
+            struct,
+#else
+            unmanaged,
+#endif
+            IRefEnumerable<TEnumerator, Single>
             where TEnumerator : struct, IRefEnumerator<Single>
         {
             Single sum = default;
@@ -1782,8 +2272,15 @@ namespace pcysl5edgo.Collections.LINQ
             enumerator.Dispose();
             return sum;
         }
+
         public static Double SumDouble<TEnumerable, TEnumerator>(ref this TEnumerable @this)
-            where TEnumerable : struct, IRefEnumerable<TEnumerator, Double>
+            where TEnumerable :
+#if !STRICT_ENUMERABLE
+            struct,
+#else
+            unmanaged,
+#endif
+            IRefEnumerable<TEnumerator, Double>
             where TEnumerator : struct, IRefEnumerator<Double>
         {
             Double sum = default;
@@ -1793,8 +2290,15 @@ namespace pcysl5edgo.Collections.LINQ
             enumerator.Dispose();
             return sum;
         }
+
         public static Decimal SumDecimal<TEnumerable, TEnumerator>(ref this TEnumerable @this)
-            where TEnumerable : struct, IRefEnumerable<TEnumerator, Decimal>
+            where TEnumerable :
+#if !STRICT_ENUMERABLE
+            struct,
+#else
+            unmanaged,
+#endif
+            IRefEnumerable<TEnumerator, Decimal>
             where TEnumerator : struct, IRefEnumerator<Decimal>
         {
             Decimal sum = default;
@@ -1807,50 +2311,56 @@ namespace pcysl5edgo.Collections.LINQ
 
         public static Int32 Sum(this NativeArray<Int32> array)
         {
-            Int32 sum = 0;
-            for (int i = 0; i < array.Length; i++)
+            var sum = 0;
+            for (var i = 0; i < array.Length; i++)
                 sum += array[i];
             return sum;
         }
+
         public static UInt32 Sum(this NativeArray<UInt32> array)
         {
             UInt32 sum = 0;
-            for (int i = 0; i < array.Length; i++)
+            for (var i = 0; i < array.Length; i++)
                 sum += array[i];
             return sum;
         }
+
         public static Int64 Sum(this NativeArray<Int64> array)
         {
             Int64 sum = 0;
-            for (int i = 0; i < array.Length; i++)
+            for (var i = 0; i < array.Length; i++)
                 sum += array[i];
             return sum;
         }
+
         public static UInt64 Sum(this NativeArray<UInt64> array)
         {
             UInt64 sum = 0;
-            for (int i = 0; i < array.Length; i++)
+            for (var i = 0; i < array.Length; i++)
                 sum += array[i];
             return sum;
         }
+
         public static Single Sum(this NativeArray<Single> array)
         {
             Single sum = 0;
-            for (int i = 0; i < array.Length; i++)
+            for (var i = 0; i < array.Length; i++)
                 sum += array[i];
             return sum;
         }
+
         public static Double Sum(this NativeArray<Double> array)
         {
             Double sum = 0;
-            for (int i = 0; i < array.Length; i++)
+            for (var i = 0; i < array.Length; i++)
                 sum += array[i];
             return sum;
         }
+
         public static Decimal Sum(this NativeArray<Decimal> array)
         {
             Decimal sum = 0;
-            for (int i = 0; i < array.Length; i++)
+            for (var i = 0; i < array.Length; i++)
                 sum += array[i];
             return sum;
         }
@@ -1858,7 +2368,13 @@ namespace pcysl5edgo.Collections.LINQ
 
         #region ToArray
         public static TSource[] ToArray<TEnumerable, TEnumerator, TSource>(ref this TEnumerable @this)
-            where TEnumerable : struct, IRefEnumerable<TEnumerator, TSource>
+            where TEnumerable :
+#if !STRICT_ENUMERABLE
+            struct,
+#else
+            unmanaged,
+#endif
+            IRefEnumerable<TEnumerator, TSource>
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TSource : unmanaged
         {
@@ -1868,13 +2384,18 @@ namespace pcysl5edgo.Collections.LINQ
                 return Array.Empty<TSource>();
             var answer = new TSource[count];
             fixed (TSource* destination = &answer[0])
-            {
                 CopyToAndCleanUp(ptr, count, destination);
-            }
             return answer;
         }
+
         public static NativeArray<TSource> ToNativeArray<TEnumerable, TEnumerator, TSource>(ref this TEnumerable @this, Allocator allocator)
-            where TEnumerable : struct, IRefEnumerable<TEnumerator, TSource>
+            where TEnumerable :
+#if !STRICT_ENUMERABLE
+            struct,
+#else
+            unmanaged,
+#endif
+            IRefEnumerable<TEnumerator, TSource>
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TSource : unmanaged
         {
@@ -1886,6 +2407,7 @@ namespace pcysl5edgo.Collections.LINQ
             CopyToAndCleanUp(ptr, count, answer.GetPointer());
             return answer;
         }
+
         private static TSource* CountUp<TEnumerator, TSource>(ref TEnumerator enumerator, out int count)
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TSource : unmanaged
@@ -1903,21 +2425,23 @@ namespace pcysl5edgo.Collections.LINQ
             while (enumerator.MoveNext())
             {
                 ptr[count] = enumerator.Current;
-                if (++count == capacity)
-                {
-                    ptr = Lengthen(ptr, capacity, Allocator.Temp);
-                    capacity <<= 1;
-                }
+                if (++count != capacity) continue;
+                ptr = Lengthen(ptr, capacity, Allocator.Temp);
+                capacity <<= 1;
             }
             enumerator.Dispose();
             return ptr;
         }
-        private static void CopyToAndCleanUp<TSource>(TSource* ptr, int count, TSource* destination) where TSource : unmanaged
+
+        private static void CopyToAndCleanUp<TSource>(TSource* ptr, int count, TSource* destination)
+            where TSource : unmanaged
         {
             UnsafeUtility.MemCpy(destination, ptr, sizeof(TSource) * count);
             UnsafeUtility.Free(ptr, Allocator.Temp);
         }
-        private static T* Lengthen<T>(T* source, int capacity, Allocator allocator) where T : unmanaged
+
+        private static T* Lengthen<T>(T* source, int capacity, Allocator allocator)
+            where T : unmanaged
         {
             var answer = UnsafeUtilityEx.Malloc<T>(capacity << 1, allocator);
             UnsafeUtility.MemCpy(answer, source, sizeof(T) * capacity);
@@ -1927,14 +2451,20 @@ namespace pcysl5edgo.Collections.LINQ
         #endregion
 
         #region ToDictionary
-        public static System.Collections.Generic.Dictionary<TKey, TElement> ToDictionary<TEnumerable, TEnumerator, TSource, TKey, TElement, TKeyFunc, TValueFunc>(ref this TEnumerable @this, TKeyFunc keySelector, TValueFunc elementSelector)
-            where TEnumerable : struct, IRefEnumerable<TEnumerator, TSource>
+        public static Dictionary<TKey, TElement> ToDictionary<TEnumerable, TEnumerator, TSource, TKey, TElement, TKeyFunc, TValueFunc>(ref this TEnumerable @this, TKeyFunc keySelector, TValueFunc elementSelector)
+            where TEnumerable :
+#if !STRICT_ENUMERABLE
+            struct,
+#else
+            unmanaged,
+#endif
+            IRefEnumerable<TEnumerator, TSource>
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TSource : unmanaged
             where TKeyFunc : struct, IRefFunc<TSource, TKey>
             where TValueFunc : struct, IRefFunc<TSource, TElement>
         {
-            var answer = new System.Collections.Generic.Dictionary<TKey, TElement>();
+            var answer = new Dictionary<TKey, TElement>();
             var enumerator = @this.GetEnumerator();
             while (enumerator.MoveNext())
             {
@@ -1944,12 +2474,19 @@ namespace pcysl5edgo.Collections.LINQ
             enumerator.Dispose();
             return answer;
         }
-        public static System.Collections.Generic.Dictionary<TKey, TElement> ToDictionary<TEnumerable, TEnumerator, TSource, TKey, TElement>(ref this TEnumerable @this, Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector)
-            where TEnumerable : struct, IRefEnumerable<TEnumerator, TSource>
+
+        public static Dictionary<TKey, TElement> ToDictionary<TEnumerable, TEnumerator, TSource, TKey, TElement>(ref this TEnumerable @this, Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector)
+            where TEnumerable :
+#if !STRICT_ENUMERABLE
+            struct,
+#else
+            unmanaged,
+#endif
+            IRefEnumerable<TEnumerator, TSource>
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TSource : unmanaged
         {
-            var answer = new System.Collections.Generic.Dictionary<TKey, TElement>();
+            var answer = new Dictionary<TKey, TElement>();
             var enumerator = @this.GetEnumerator();
             while (enumerator.MoveNext())
             {
@@ -1960,35 +2497,41 @@ namespace pcysl5edgo.Collections.LINQ
             return answer;
         }
 
-        public static System.Collections.Generic.Dictionary<TKey, TElement> ToDictionary<TSource, TKey, TElement, TKeyFunc, TValueFunc>(this NativeArray<TSource> @this, TKeyFunc keySelector, TValueFunc elementSelector)
+        public static Dictionary<TKey, TElement> ToDictionary<TSource, TKey, TElement, TKeyFunc, TValueFunc>(this NativeArray<TSource> @this, TKeyFunc keySelector, TValueFunc elementSelector)
             where TSource : unmanaged
             where TKeyFunc : struct, IRefFunc<TSource, TKey>
             where TValueFunc : struct, IRefFunc<TSource, TElement>
         {
-            var answer = new System.Collections.Generic.Dictionary<TKey, TElement>();
+            var answer = new Dictionary<TKey, TElement>();
             var ptr = @this.GetPointer();
-            for (int i = 0; i < @this.Length; i++, ptr++)
+            for (var i = 0; i < @this.Length; i++, ptr++)
                 answer.Add(keySelector.Calc(ref *ptr), elementSelector.Calc(ref *ptr));
             return answer;
         }
 
-        public static System.Collections.Generic.Dictionary<TKey, TElement> ToDictionary<TSource, TKey, TElement>(this NativeArray<TSource> array, Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector)
+        public static Dictionary<TKey, TElement> ToDictionary<TSource, TKey, TElement>(this NativeArray<TSource> array, Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector)
             where TSource : unmanaged
         {
-            var answer = new System.Collections.Generic.Dictionary<TKey, TElement>();
-            for (int i = 0; i < array.Length; i++)
+            var answer = new Dictionary<TKey, TElement>();
+            for (var i = 0; i < array.Length; i++)
                 answer.Add(keySelector(array[i]), elementSelector(array[i]));
             return answer;
         }
         #endregion
 
         #region ToHashSet
-        public static System.Collections.Generic.HashSet<TSource> ToHashSet<TEnumerable, TEnumerator, TSource>(ref this TEnumerable @this, System.Collections.Generic.IEqualityComparer<TSource> comparer)
-            where TEnumerable : struct, IRefEnumerable<TEnumerator, TSource>
+        public static HashSet<TSource> ToHashSet<TEnumerable, TEnumerator, TSource>(ref this TEnumerable @this, IEqualityComparer<TSource> comparer)
+            where TEnumerable :
+#if !STRICT_ENUMERABLE
+            struct,
+#else
+            unmanaged,
+#endif
+            IRefEnumerable<TEnumerator, TSource>
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TSource : unmanaged
         {
-            var answer = new System.Collections.Generic.HashSet<TSource>(comparer);
+            var answer = new HashSet<TSource>(comparer);
             var enumerator = @this.GetEnumerator();
             while (enumerator.MoveNext())
                 answer.Add(enumerator.Current);
@@ -1996,12 +2539,18 @@ namespace pcysl5edgo.Collections.LINQ
             return answer;
         }
 
-        public static System.Collections.Generic.HashSet<TSource> ToHashSet<TEnumerable, TEnumerator, TSource>(ref this TEnumerable @this)
-            where TEnumerable : struct, IRefEnumerable<TEnumerator, TSource>
+        public static HashSet<TSource> ToHashSet<TEnumerable, TEnumerator, TSource>(ref this TEnumerable @this)
+            where TEnumerable :
+#if !STRICT_ENUMERABLE
+            struct,
+#else
+            unmanaged,
+#endif
+            IRefEnumerable<TEnumerator, TSource>
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TSource : unmanaged
         {
-            var answer = new System.Collections.Generic.HashSet<TSource>();
+            var answer = new HashSet<TSource>();
             var enumerator = @this.GetEnumerator();
             while (enumerator.MoveNext())
                 answer.Add(enumerator.Current);
@@ -2009,43 +2558,50 @@ namespace pcysl5edgo.Collections.LINQ
             return answer;
         }
 
-        public static System.Collections.Generic.HashSet<TSource> ToHashSet<TSource>(this NativeArray<TSource> @this, System.Collections.Generic.IEqualityComparer<TSource> comparer)
+        public static HashSet<TSource> ToHashSet<TSource>(this NativeArray<TSource> @this, IEqualityComparer<TSource> comparer)
             where TSource : unmanaged
         {
-            var answer = new System.Collections.Generic.HashSet<TSource>(comparer);
-            for (int i = 0; i < @this.Length; i++)
+            var answer = new HashSet<TSource>(comparer);
+            for (var i = 0; i < @this.Length; i++)
                 answer.Add(@this[i]);
             return answer;
         }
 
-        public static System.Collections.Generic.HashSet<TSource> ToHashSet<TSource>(this NativeArray<TSource> @this)
+        public static HashSet<TSource> ToHashSet<TSource>(this NativeArray<TSource> @this)
             where TSource : unmanaged
         {
-            var answer = new System.Collections.Generic.HashSet<TSource>();
-            for (int i = 0; i < @this.Length; i++)
+            var answer = new HashSet<TSource>();
+            for (var i = 0; i < @this.Length; i++)
                 answer.Add(@this[i]);
             return answer;
         }
         #endregion
 
         #region ToList
-        public static System.Collections.Generic.List<TSource> ToList<TEnumerable, TEnumerator, TSource>(ref this TEnumerable @this)
-            where TEnumerable : struct, IRefEnumerable<TEnumerator, TSource>
+        public static List<TSource> ToList<TEnumerable, TEnumerator, TSource>(ref this TEnumerable @this)
+            where TEnumerable :
+#if !STRICT_ENUMERABLE
+            struct,
+#else
+            unmanaged,
+#endif
+            IRefEnumerable<TEnumerator, TSource>
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TSource : unmanaged
         {
-            var answer = new System.Collections.Generic.List<TSource>();
+            var answer = new List<TSource>();
             var enumerator = @this.GetEnumerator();
             while (enumerator.MoveNext())
                 answer.Add(enumerator.Current);
             enumerator.Dispose();
             return answer;
         }
-        public static System.Collections.Generic.List<TSource> ToList<TSource>(this NativeArray<TSource> @this)
+
+        public static List<TSource> ToList<TSource>(this NativeArray<TSource> @this)
             where TSource : unmanaged
         {
-            var answer = new System.Collections.Generic.List<TSource>(@this.Length);
-            for (int i = 0; i < @this.Length; i++)
+            var answer = new List<TSource>(@this.Length);
+            for (var i = 0; i < @this.Length; i++)
                 answer.Add(@this[i]);
             return answer;
         }
