@@ -174,9 +174,7 @@ namespace pcysl5edgo.Collections.LINQ
 
         long ILinq<T>.LongCount(Func<T, bool> predicate) => Count(predicate);
 
-        long ILinq<T>.LongCount<TPredicate>(TPredicate predicate) 
-            where TPredicate : unmanaged, IRefFunc<T, bool>
-            => Count(predicate);
+        long ILinq<T>.LongCount<TPredicate>(TPredicate predicate) => Count(predicate);
 
         T[] ILinq<T>.ToArray()
         {
