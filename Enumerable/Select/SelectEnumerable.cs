@@ -8,13 +8,13 @@ namespace pcysl5edgo.Collections.LINQ
     public struct SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction> : IRefEnumerable<SelectEnumerator<TPrevEnumerator, TSource, TResult, TAction>, TResult>, ILinq<TResult>
         where TSource : unmanaged
 #if STRICT_EQUALITY
-        , IEquatable<TSource> 
+        , IEquatable<TSource>
 #endif
         where TPrevEnumerable : struct, IRefEnumerable<TPrevEnumerator, TSource>
         where TPrevEnumerator : struct, IRefEnumerator<TSource>
         where TResult : unmanaged
 #if STRICT_EQUALITY
-        , IEquatable<TResult> 
+        , IEquatable<TResult>
 #endif
         where TAction : struct, IRefAction<TSource, TResult>
     {
@@ -41,9 +41,13 @@ namespace pcysl5edgo.Collections.LINQ
             where TNextAction : struct, IRefAction<TResult, TNextResult>
             where TNextResult : unmanaged
 #if STRICT_EQUALITY
-            , IEquatable<TNextResult> 
+            , IEquatable<TNextResult>
 #endif
             => new SelectEnumerable<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, SelectEnumerator<TPrevEnumerator, TSource, TResult, TAction>, TResult, TNextResult, TNextAction>(this, nextAction, alloc);
+
+        public WhereEnumerable<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, SelectEnumerator<TPrevEnumerator, TSource, TResult, TAction>, TResult, TPredicate> Where<TPredicate>(TPredicate predicate)
+            where TPredicate : unmanaged, IRefFunc<TResult, bool>
+            => new WhereEnumerable<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, SelectEnumerator<TPrevEnumerator, TSource, TResult, TAction>, TResult, TPredicate>(this, predicate);
 
         public bool Any() => enumerable.Any<TPrevEnumerable, TPrevEnumerator, TSource>();
 
@@ -67,11 +71,9 @@ namespace pcysl5edgo.Collections.LINQ
             var enumerator = GetEnumerator();
             while (enumerator.MoveNext())
             {
-                if (predicate(enumerator.Current))
-                {
-                    enumerator.Dispose();
-                    return true;
-                }
+                if (!predicate(enumerator.Current)) continue;
+                enumerator.Dispose();
+                return true;
             }
 
             enumerator.Dispose();

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using NUnit.Framework.Internal;
 using Unity.Collections;
 
 namespace pcysl5edgo.Collections.LINQ
@@ -29,6 +30,20 @@ namespace pcysl5edgo.Collections.LINQ
         IEnumerator<TSource> IEnumerable<TSource>.GetEnumerator() => GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        public WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate> AsRefEnumerable() => this;
+
+        public WhereEnumerable<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource, TNextPredicate> Where<TNextPredicate>(TNextPredicate predicate)
+            where TNextPredicate : unmanaged, IRefFunc<TSource, bool>
+            => new WhereEnumerable<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource, TNextPredicate>(this, predicate);
+
+        public SelectEnumerable<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource, TResult, TAction> Select<TResult, TAction>(TAction action, Allocator allocator = Allocator.Temp)
+            where TResult : unmanaged
+#if STRICT_EQUALITY
+            , IEquatable<TResult>
+#endif
+            where TAction : unmanaged, IRefAction<TSource, TResult>
+            => new SelectEnumerable<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource, TResult, TAction>(this, action, allocator);
 
         public bool Any()
             => this.Any<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource>();
