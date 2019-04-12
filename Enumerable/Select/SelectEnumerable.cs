@@ -59,7 +59,7 @@ namespace pcysl5edgo.Collections.LINQ
         public bool Any() => enumerable.Any<TPrevEnumerable, TPrevEnumerator, TSource>();
 
         public bool Any<TPredicate>(TPredicate predicate)
-            where TPredicate : struct, IRefFunc<TResult, bool>
+            where TPredicate : unmanaged, IRefFunc<TResult, bool>
         {
             var enumerator = GetEnumerator();
             while (enumerator.MoveNext())
@@ -88,7 +88,7 @@ namespace pcysl5edgo.Collections.LINQ
         }
 
         public bool All<TPredicate>(TPredicate predicate)
-            where TPredicate : struct, IRefFunc<TResult, bool>
+            where TPredicate : unmanaged, IRefFunc<TResult, bool>
         {
             var enumerator = GetEnumerator();
             while (enumerator.MoveNext())
@@ -117,16 +117,16 @@ namespace pcysl5edgo.Collections.LINQ
         }
 
         public void Aggregate<TFunc>(ref TResult seed, TFunc func)
-            where TFunc : struct, IRefAction<TResult, TResult>
+            where TFunc : unmanaged, IRefAction<TResult, TResult>
             => this.Aggregate<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, SelectEnumerator<TPrevEnumerator, TSource, TResult, TAction>, TResult, TFunc>(ref seed, func);
 
         public void Aggregate<TAccumulate, TFunc>(ref TAccumulate seed, TFunc func)
-            where TFunc : struct, IRefAction<TAccumulate, TResult>
+            where TFunc : unmanaged, IRefAction<TAccumulate, TResult>
             => this.Aggregate<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, SelectEnumerator<TPrevEnumerator, TSource, TResult, TAction>, TResult, TAccumulate, TFunc>(ref seed, func);
 
         public TNextResult Aggregate<TAccumulate, TNextResult, TFunc, TNextResultFunc>(ref TAccumulate seed, TFunc func, TNextResultFunc resultFunc)
-            where TFunc : struct, IRefAction<TAccumulate, TResult>
-            where TNextResultFunc : struct, IRefFunc<TAccumulate, TNextResult>
+            where TFunc : unmanaged, IRefAction<TAccumulate, TResult>
+            where TNextResultFunc : unmanaged, IRefFunc<TAccumulate, TNextResult>
             => this.Aggregate<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, SelectEnumerator<TPrevEnumerator, TSource, TResult, TAction>, TResult, TAccumulate, TNextResult, TFunc, TNextResultFunc>(ref seed, func, resultFunc);
 
         public TResult Aggregate(TResult seed, Func<TResult, TResult, TResult> func)
@@ -145,7 +145,7 @@ namespace pcysl5edgo.Collections.LINQ
             => this.Contains<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, SelectEnumerator<TPrevEnumerator, TSource, TResult, TAction>, TResult>(value, comparer);
 
         public bool Contains<TComparer>(TResult value, TComparer comparer)
-            where TComparer : struct, IRefFunc<TResult, TResult, bool>
+            where TComparer : unmanaged, IRefFunc<TResult, TResult, bool>
             => this.Contains<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, SelectEnumerator<TPrevEnumerator, TSource, TResult, TAction>, TResult, TComparer>(value, comparer);
 
         public int Count()
@@ -155,7 +155,7 @@ namespace pcysl5edgo.Collections.LINQ
             => this.Count<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, SelectEnumerator<TPrevEnumerator, TSource, TResult, TAction>, TResult>(predicate);
 
         public int Count<TPredicate>(TPredicate predicate)
-            where TPredicate : struct, IRefFunc<TResult, bool>
+            where TPredicate : unmanaged, IRefFunc<TResult, bool>
             => this.Count<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, SelectEnumerator<TPrevEnumerator, TSource, TResult, TAction>, TResult, TPredicate>(predicate);
 
         public long LongCount()
@@ -165,7 +165,7 @@ namespace pcysl5edgo.Collections.LINQ
             => this.Count<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, SelectEnumerator<TPrevEnumerator, TSource, TResult, TAction>, TResult>(predicate);
 
         public long LongCount<TPredicate>(TPredicate predicate)
-            where TPredicate : struct, IRefFunc<TResult, bool>
+            where TPredicate : unmanaged, IRefFunc<TResult, bool>
             => this.Count<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, SelectEnumerator<TPrevEnumerator, TSource, TResult, TAction>, TResult, TPredicate>(predicate);
 
         public bool TryGetElementAt(int index, out TResult element)
@@ -181,7 +181,7 @@ namespace pcysl5edgo.Collections.LINQ
             => this.TryGetSingle<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, SelectEnumerator<TPrevEnumerator, TSource, TResult, TAction>, TResult>(out value);
 
         public bool TryGetSingle<TPredicate>(out TResult value, TPredicate predicate)
-            where TPredicate : struct, IRefFunc<TResult, bool>
+            where TPredicate : unmanaged, IRefFunc<TResult, bool>
             => this.TryGetSingle<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, SelectEnumerator<TPrevEnumerator, TSource, TResult, TAction>, TResult, TPredicate>(out value, predicate);
 
         public bool TryGetSingle(out TResult value, Func<TResult, bool> predicate)
@@ -197,8 +197,8 @@ namespace pcysl5edgo.Collections.LINQ
             => this.ToDictionary<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, SelectEnumerator<TPrevEnumerator, TSource, TResult, TAction>, TResult, TKey, TElement>(keySelector, elementSelector);
 
         public Dictionary<TKey, TElement> ToDictionary<TKey, TElement, TKeyFunc, TElementFunc>(TKeyFunc keySelector, TElementFunc elementSelector)
-            where TKeyFunc : struct, IRefFunc<TResult, TKey>
-            where TElementFunc : struct, IRefFunc<TResult, TElement>
+            where TKeyFunc : unmanaged, IRefFunc<TResult, TKey>
+            where TElementFunc : unmanaged, IRefFunc<TResult, TElement>
             => this.ToDictionary<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, SelectEnumerator<TPrevEnumerator, TSource, TResult, TAction>, TResult, TKey, TElement, TKeyFunc, TElementFunc>(keySelector, elementSelector);
 
         public HashSet<TResult> ToHashSet()

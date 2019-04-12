@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using NUnit.Framework.Internal;
 using Unity.Collections;
 
 namespace pcysl5edgo.Collections.LINQ
@@ -11,7 +10,7 @@ namespace pcysl5edgo.Collections.LINQ
 #if STRICT_EQUALITY
         , IEquatable<TSource>
 #endif
-        where TPredicate : struct, IRefFunc<TSource, bool>
+        where TPredicate : unmanaged, IRefFunc<TSource, bool>
         where TPrevEnumerator : struct, IRefEnumerator<TSource>
         where TPrevEnumerable : struct, IRefEnumerable<TPrevEnumerator, TSource>
     {
@@ -55,30 +54,30 @@ namespace pcysl5edgo.Collections.LINQ
             => this.Any<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource>();
 
         public bool Any<TAnotherPredicate>(TAnotherPredicate predicate)
-            where TAnotherPredicate : struct, IRefFunc<TSource, bool>
+            where TAnotherPredicate : unmanaged, IRefFunc<TSource, bool>
             => this.Any<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource, TAnotherPredicate>(predicate);
 
         public bool Any(Func<TSource, bool> predicate)
             => this.Any<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource>(predicate);
 
         public bool All<TAnotherPredicate>(TAnotherPredicate predicate)
-            where TAnotherPredicate : struct, IRefFunc<TSource, bool>
+            where TAnotherPredicate : unmanaged, IRefFunc<TSource, bool>
             => this.All<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource, TAnotherPredicate>(predicate);
 
         public bool All(Func<TSource, bool> predicate)
             => this.All<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource>(predicate);
 
         public void Aggregate<TFunc>(ref TSource seed, TFunc func)
-            where TFunc : struct, IRefAction<TSource, TSource>
+            where TFunc : unmanaged, IRefAction<TSource, TSource>
             => this.Aggregate<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource, TFunc>(ref seed, func);
 
         public void Aggregate<TAccumulate, TFunc>(ref TAccumulate seed, TFunc func)
-            where TFunc : struct, IRefAction<TAccumulate, TSource>
+            where TFunc : unmanaged, IRefAction<TAccumulate, TSource>
             => this.Aggregate<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource, TAccumulate, TFunc>(ref seed, func);
 
         public TResult Aggregate<TAccumulate, TResult, TFunc, TResultFunc>(ref TAccumulate seed, TFunc func, TResultFunc resultFunc)
-            where TFunc : struct, IRefAction<TAccumulate, TSource>
-            where TResultFunc : struct, IRefFunc<TAccumulate, TResult>
+            where TFunc : unmanaged, IRefAction<TAccumulate, TSource>
+            where TResultFunc : unmanaged, IRefFunc<TAccumulate, TResult>
             => this.Aggregate<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource, TAccumulate, TResult, TFunc, TResultFunc>(ref seed, func, resultFunc);
 
         public TSource Aggregate(TSource seed, Func<TSource, TSource, TSource> func)
@@ -97,7 +96,7 @@ namespace pcysl5edgo.Collections.LINQ
             => this.Contains<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource>(value, comparer);
 
         public bool Contains<TComparer>(TSource value, TComparer comparer)
-            where TComparer : struct, IRefFunc<TSource, TSource, bool>
+            where TComparer : unmanaged, IRefFunc<TSource, TSource, bool>
             => this.Contains<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource, TComparer>(value, comparer);
 
         public int Count()
@@ -107,7 +106,7 @@ namespace pcysl5edgo.Collections.LINQ
             => this.Count<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource>(predicate);
 
         public int Count<TAnotherPredicate>(TAnotherPredicate predicate)
-            where TAnotherPredicate : struct, IRefFunc<TSource, bool>
+            where TAnotherPredicate : unmanaged, IRefFunc<TSource, bool>
             => this.Count<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource, TAnotherPredicate>(predicate);
 
         public long LongCount()
@@ -117,7 +116,7 @@ namespace pcysl5edgo.Collections.LINQ
             => this.Count<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource>(predicate);
 
         public long LongCount<TAnotherPredicate>(TAnotherPredicate predicate)
-            where TAnotherPredicate : struct, IRefFunc<TSource, bool>
+            where TAnotherPredicate : unmanaged, IRefFunc<TSource, bool>
             => this.Count<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource, TAnotherPredicate>(predicate);
 
         public bool TryGetElementAt(int index, out TSource element)
@@ -133,7 +132,7 @@ namespace pcysl5edgo.Collections.LINQ
             => this.TryGetSingle<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource>(out value);
 
         public bool TryGetSingle<TAnotherPredicate>(out TSource value, TAnotherPredicate predicate)
-            where TAnotherPredicate : struct, IRefFunc<TSource, bool>
+            where TAnotherPredicate : unmanaged, IRefFunc<TSource, bool>
             => this.TryGetSingle<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource, TAnotherPredicate>(out value, predicate);
 
         public bool TryGetSingle(out TSource value, Func<TSource, bool> predicate)
@@ -149,8 +148,8 @@ namespace pcysl5edgo.Collections.LINQ
             => this.ToDictionary<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource, TKey, TElement>(keySelector, elementSelector);
 
         public Dictionary<TKey, TElement> ToDictionary<TKey, TElement, TKeyFunc, TElementFunc>(TKeyFunc keySelector, TElementFunc elementSelector)
-            where TKeyFunc : struct, IRefFunc<TSource, TKey>
-            where TElementFunc : struct, IRefFunc<TSource, TElement>
+            where TKeyFunc : unmanaged, IRefFunc<TSource, TKey>
+            where TElementFunc : unmanaged, IRefFunc<TSource, TElement>
             => this.ToDictionary<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource, TKey, TElement, TKeyFunc, TElementFunc>(keySelector, elementSelector);
 
         public HashSet<TSource> ToHashSet()
