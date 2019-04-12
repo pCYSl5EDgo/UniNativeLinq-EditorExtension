@@ -48,77 +48,177 @@ namespace pcysl5edgo.Collections.LINQ
         #endregion
 
         #region function
-        void ILinq<T>.Aggregate<TFunc>(ref T seed, TFunc func) => this.Aggregate<NativeEnumerable<T>, Enumerator, T, TFunc>(ref seed, func);
+        void ILinq<T>.Aggregate<TFunc>(ref T seed, TFunc func)
+        {
+            for (var i = 0; i < length; i++)
+                func.Execute(ref seed, ref ptr[i]);
+        }
 
-        void ILinq<T>.Aggregate<TAccumulate, TFunc>(ref TAccumulate seed, TFunc func) => this.Aggregate<NativeEnumerable<T>, Enumerator, T, TAccumulate, TFunc>(ref seed, func);
+        void ILinq<T>.Aggregate<TAccumulate, TFunc>(ref TAccumulate seed, TFunc func)
+        {
+            for (var i = 0; i < length; i++)
+                func.Execute(ref seed, ref ptr[i]);
+        }
 
         TResult ILinq<T>.Aggregate<TAccumulate, TResult, TFunc, TResultFunc>(ref TAccumulate seed, TFunc func, TResultFunc resultFunc)
-            => this.Aggregate<NativeEnumerable<T>, Enumerator, T, TAccumulate, TResult, TFunc, TResultFunc>(ref seed, func, resultFunc);
+        {
+            for (var i = 0; i < length; i++)
+                func.Execute(ref seed, ref ptr[i]);
+            return resultFunc.Calc(ref seed);
+        }
 
-        T ILinq<T>.Aggregate(T seed, Func<T, T, T> func) => this.Aggregate<NativeEnumerable<T>, Enumerator, T>(seed, func);
+        T ILinq<T>.Aggregate(T seed, Func<T, T, T> func)
+        {
+            for (var i = 0; i < length; i++)
+                seed = func(seed, ptr[i]);
+            return seed;
+        }
 
-        TAccumulate ILinq<T>.Aggregate<TAccumulate>(TAccumulate seed, Func<TAccumulate, T, TAccumulate> func) => this.Aggregate<NativeEnumerable<T>, Enumerator, T, TAccumulate>(seed, func);
+        TAccumulate ILinq<T>.Aggregate<TAccumulate>(TAccumulate seed, Func<TAccumulate, T, TAccumulate> func)
+        {
+            for (var i = 0; i < length; i++)
+                seed = func(seed, ptr[i]);
+            return seed;
+        }
 
         TResult ILinq<T>.Aggregate<TAccumulate, TResult>(TAccumulate seed, Func<TAccumulate, T, TAccumulate> func, Func<TAccumulate, TResult> resultFunc)
-            => this.Aggregate<NativeEnumerable<T>, Enumerator, T, TAccumulate, TResult>(seed, func, resultFunc);
+        {
+            for (var i = 0; i < length; i++)
+                seed = func(seed, ptr[i]);
+            return resultFunc(seed);
+        }
 
         bool ILinq<T>.All<TPredicate>(TPredicate predicate)
-            => this.All<NativeEnumerable<T>, Enumerator, T, TPredicate>(predicate);
+        {
+            for (var i = 0; i < length; i++)
+                if (!predicate.Calc(ref ptr[i]))
+                    return false;
+            return true;
+        }
 
         bool ILinq<T>.All(Func<T, bool> predicate)
-            => this.All<NativeEnumerable<T>, Enumerator, T>(predicate);
+        {
+            for (var i = 0; i < length; i++)
+                if (!predicate(ptr[i]))
+                    return false;
+            return true;
+        }
 
-        bool ILinq<T>.Any()
-            => this.Any<NativeEnumerable<T>, Enumerator, T>();
+        bool ILinq<T>.Any() => length != 0;
 
         bool ILinq<T>.Any<TPredicate>(TPredicate predicate)
-            => this.Any<NativeEnumerable<T>, Enumerator, T, TPredicate>(predicate);
+        {
+            for (var i = 0; i < length; i++)
+                if (predicate.Calc(ref ptr[i]))
+                    return true;
+            return false;
+        }
 
-        bool ILinq<T>.Any(Func<T, bool> predicate) =>
-            this.Any<NativeEnumerable<T>, Enumerator, T>(predicate);
+        bool ILinq<T>.Any(Func<T, bool> predicate)
+        {
+            for (var i = 0; i < length; i++)
+                if (predicate(ptr[i]))
+                    return true;
+            return false;
+        }
 
         bool ILinq<T>.Contains(T value)
-            => this.Contains<NativeEnumerable<T>, Enumerator, T>(value);
+        {
+            for (var i = 0; i < length; i++)
+                if (ptr[i].Equals(value))
+                    return true;
+            return false;
+        }
 
         bool ILinq<T>.Contains(T value, IEqualityComparer<T> comparer)
-            => this.Contains<NativeEnumerable<T>, Enumerator, T>(value, comparer);
+        {
+            for (var i = 0; i < length; i++)
+                if (comparer.Equals(value, ptr[i]))
+                    return true;
+            return false;
+        }
 
         bool ILinq<T>.Contains<TComparer>(T value, TComparer comparer)
-            => this.Contains<NativeEnumerable<T>, Enumerator, T, TComparer>(value, comparer);
+        {
+            for (var i = 0; i < length; i++)
+                if (comparer.Calc(ref ptr[i], ref value))
+                    return true;
+            return false;
+        }
 
-        int ILinq<T>.Count() => this.length;
+        public int Count() => this.length;
 
-        int ILinq<T>.Count(Func<T, bool> predicate)
-            => this.Count<NativeEnumerable<T>, Enumerator, T>(predicate);
+        public int Count(Func<T, bool> predicate)
+        {
+            var count = 0;
+            for (var i = 0; i < length; i++)
+                if (predicate(ptr[i]))
+                    ++count;
+            return count;
+        }
 
-        int ILinq<T>.Count<TPredicate>(TPredicate predicate)
-            => this.Count<NativeEnumerable<T>, Enumerator, T, TPredicate>(predicate);
+        public int Count<TPredicate>(TPredicate predicate)
+            where TPredicate : unmanaged, IRefFunc<T, bool>
+        {
+            var count = 0;
+            for (var i = 0; i < length; i++)
+                if (predicate.Calc(ref ptr[i]))
+                    ++count;
+            return count;
+        }
 
         IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         long ILinq<T>.LongCount() => this.length;
 
-        long ILinq<T>.LongCount(Func<T, bool> predicate)
-            => this.Count<NativeEnumerable<T>, Enumerator, T>(predicate);
+        long ILinq<T>.LongCount(Func<T, bool> predicate) => Count(predicate);
 
-        long ILinq<T>.LongCount<TPredicate>(TPredicate predicate)
-            => this.Count<NativeEnumerable<T>, Enumerator, T, TPredicate>(predicate);
+        long ILinq<T>.LongCount<TPredicate>(TPredicate predicate) => Count(predicate);
 
         T[] ILinq<T>.ToArray()
-            => this.ToArray<NativeEnumerable<T>, Enumerator, T>();
+        {
+            if (length <= 0)return Array.Empty<T>();
+            var answer = new T[length];
+            fixed(T* p = &answer[0])
+                UnsafeUtility.MemCpy(p, ptr,sizeof(T) * length);
+            return answer;
+        }
 
         Dictionary<TKey, TElement> ILinq<T>.ToDictionary<TKey, TElement>(Func<T, TKey> keySelector, Func<T, TElement> elementSelector)
-            => this.ToDictionary<NativeEnumerable<T>, Enumerator, T, TKey, TElement>(keySelector, elementSelector);
+        {
+            var answer = new Dictionary<TKey, TElement>(length);
+            for (var i = 0; i < length; i++)
+                answer.Add(keySelector(ptr[i]), elementSelector(ptr[i]));
+            return answer;
+        }
 
         Dictionary<TKey, TElement> ILinq<T>.ToDictionary<TKey, TElement, TKeyFunc, TElementFunc>(TKeyFunc keySelector, TElementFunc elementSelector)
-            => this.ToDictionary<NativeEnumerable<T>, Enumerator, T, TKey, TElement, TKeyFunc, TElementFunc>(keySelector, elementSelector);
+        {
+            var answer = new Dictionary<TKey, TElement>(length);
+            for (var i = 0; i < length; i++)
+            {
+                ref var item = ref ptr[i];
+                answer.Add(keySelector.Calc(ref item), elementSelector.Calc(ref item));
+            }
+            return answer;
+        }
 
         HashSet<T> ILinq<T>.ToHashSet()
-            => this.ToHashSet<NativeEnumerable<T>, Enumerator, T>();
+        { 
+            var answer = new HashSet<T>();
+            for (var i = 0; i < length; i++)
+                answer.Add(ptr[i]);
+            return answer;
+        }
 
         HashSet<T> ILinq<T>.ToHashSet(IEqualityComparer<T> comparer)
-            => this.ToHashSet<NativeEnumerable<T>, Enumerator, T>(comparer);
+        {
+            var answer = new HashSet<T>(comparer);
+            for (var i = 0; i < length; i++)
+                answer.Add(ptr[i]);
+            return answer;
+        }
 
         List<T> ILinq<T>.ToList()
         {
@@ -137,7 +237,15 @@ namespace pcysl5edgo.Collections.LINQ
         }
 
         bool ILinq<T>.TryGetElementAt(int index, out T element)
-            => this.TryGetElementAt<NativeEnumerable<T>, Enumerator, T>(index, out element);
+        {
+            if (index < 0 || index >= length)
+            {
+                element = default;
+                return false;
+            }
+            element = ptr[i];
+            return true;
+        }
 
         bool ILinq<T>.TryGetFirst(out T first)
         {
@@ -179,7 +287,7 @@ namespace pcysl5edgo.Collections.LINQ
             => this.TryGetSingle<NativeEnumerable<T>, Enumerator, T>(out value, predicate);
         #endregion
 
-        public unsafe struct Enumerator : IRefEnumerator<T>
+        public struct Enumerator : IRefEnumerator<T>
         {
             private readonly T* ptr;
             private readonly int length;
