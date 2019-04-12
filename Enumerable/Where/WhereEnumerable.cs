@@ -45,6 +45,12 @@ namespace pcysl5edgo.Collections.LINQ
             where TAction : unmanaged, IRefAction<TSource, TResult>
             => new SelectEnumerable<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource, TResult, TAction>(this, action, allocator);
 
+        public AppendEnumerable<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource> Append(TSource value, Allocator allocator = Allocator.Temp)
+            => new AppendEnumerable<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource>(this, value, allocator);
+
+        public unsafe AppendPointerEnumerable<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource> Append(TSource* value)
+            => new AppendPointerEnumerable<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource>(this, value);
+
         public bool Any()
             => this.Any<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource>();
 

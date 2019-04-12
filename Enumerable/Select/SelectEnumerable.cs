@@ -20,16 +20,16 @@ namespace pcysl5edgo.Collections.LINQ
     {
         private TPrevEnumerable enumerable;
         private readonly TAction action;
-        private readonly Allocator allocator;
+        private readonly Allocator alloc;
 
         public SelectEnumerator<TPrevEnumerator, TSource, TResult, TAction> GetEnumerator()
-            => new SelectEnumerator<TPrevEnumerator, TSource, TResult, TAction>(enumerable.GetEnumerator(), action, allocator);
+            => new SelectEnumerator<TPrevEnumerator, TSource, TResult, TAction>(enumerable.GetEnumerator(), action, alloc);
 
         internal SelectEnumerable(in TPrevEnumerable enumerable, TAction action, Allocator alloc)
         {
             this.enumerable = enumerable;
             this.action = action;
-            this.allocator = alloc;
+            this.alloc = alloc;
         }
 
         IEnumerator<TResult> IEnumerable<TResult>.GetEnumerator() => GetEnumerator();
@@ -37,17 +37,24 @@ namespace pcysl5edgo.Collections.LINQ
 
         public SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction> AsRefEnumerable() => this;
 
-        public SelectEnumerable<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, SelectEnumerator<TPrevEnumerator, TSource, TResult, TAction>, TResult, TNextResult, TNextAction> Select<TNextResult, TNextAction>(TNextAction nextAction, Allocator alloc = Allocator.Temp)
+        public SelectEnumerable<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, SelectEnumerator<TPrevEnumerator, TSource, TResult, TAction>, TResult, TNextResult, TNextAction> Select<TNextResult, TNextAction>(TNextAction nextAction, Allocator allocator = Allocator.Temp)
             where TNextAction : struct, IRefAction<TResult, TNextResult>
             where TNextResult : unmanaged
 #if STRICT_EQUALITY
             , IEquatable<TNextResult>
 #endif
-            => new SelectEnumerable<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, SelectEnumerator<TPrevEnumerator, TSource, TResult, TAction>, TResult, TNextResult, TNextAction>(this, nextAction, alloc);
+            => new SelectEnumerable<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, SelectEnumerator<TPrevEnumerator, TSource, TResult, TAction>, TResult, TNextResult, TNextAction>(this, nextAction, allocator);
 
         public WhereEnumerable<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, SelectEnumerator<TPrevEnumerator, TSource, TResult, TAction>, TResult, TPredicate> Where<TPredicate>(TPredicate predicate)
             where TPredicate : unmanaged, IRefFunc<TResult, bool>
             => new WhereEnumerable<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, SelectEnumerator<TPrevEnumerator, TSource, TResult, TAction>, TResult, TPredicate>(this, predicate);
+
+        public AppendEnumerable<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, SelectEnumerator<TPrevEnumerator, TSource, TResult, TAction>, TResult> Append(TResult value, Allocator allocator = Allocator.Temp)
+            => new AppendEnumerable<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, SelectEnumerator<TPrevEnumerator, TSource, TResult, TAction>, TResult>(this, value, allocator);
+        
+        public unsafe AppendPointerEnumerable<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, SelectEnumerator<TPrevEnumerator, TSource, TResult, TAction>, TResult> Append(TResult* value)
+            => new AppendPointerEnumerable<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, SelectEnumerator<TPrevEnumerator, TSource, TResult, TAction>, TResult>(this, value);
+            
 
         public bool Any() => enumerable.Any<TPrevEnumerable, TPrevEnumerator, TSource>();
 
@@ -183,8 +190,8 @@ namespace pcysl5edgo.Collections.LINQ
         public TResult[] ToArray()
             => this.ToArray<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, SelectEnumerator<TPrevEnumerator, TSource, TResult, TAction>, TResult>();
 
-        public NativeArray<TResult> ToNativeArray(Allocator alloc)
-            => this.ToNativeArray<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, SelectEnumerator<TPrevEnumerator, TSource, TResult, TAction>, TResult>(alloc);
+        public NativeArray<TResult> ToNativeArray(Allocator allocator)
+            => this.ToNativeArray<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, SelectEnumerator<TPrevEnumerator, TSource, TResult, TAction>, TResult>(allocator);
 
         public Dictionary<TKey, TElement> ToDictionary<TKey, TElement>(Func<TResult, TKey> keySelector, Func<TResult, TElement> elementSelector)
             => this.ToDictionary<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, SelectEnumerator<TPrevEnumerator, TSource, TResult, TAction>, TResult, TKey, TElement>(keySelector, elementSelector);

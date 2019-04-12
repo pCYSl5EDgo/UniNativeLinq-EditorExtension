@@ -45,6 +45,12 @@ namespace pcysl5edgo.Collections.LINQ
 #endif
             where TAction : unmanaged, IRefAction<T, TResult>
             => new SelectEnumerable<NativeEnumerable<T>, Enumerator, T, TResult, TAction>(this, action, allocator);
+
+        public AppendEnumerable<NativeEnumerable<T>, Enumerator, T> Append(T value, Allocator allocator = Allocator.Temp)
+            => new AppendEnumerable<NativeEnumerable<T>, Enumerator, T>(this, value, allocator);
+
+        public AppendPointerEnumerable<NativeEnumerable<T>, Enumerator, T> Append(T* value)
+            => new AppendPointerEnumerable<NativeEnumerable<T>, Enumerator, T>(this, value);
         #endregion
 
         #region function
@@ -178,10 +184,10 @@ namespace pcysl5edgo.Collections.LINQ
 
         T[] ILinq<T>.ToArray()
         {
-            if (length <= 0)return Array.Empty<T>();
+            if (length <= 0) return Array.Empty<T>();
             var answer = new T[length];
-            fixed(T* p = &answer[0])
-                UnsafeUtility.MemCpy(p, ptr,sizeof(T) * length);
+            fixed (T* p = &answer[0])
+                UnsafeUtility.MemCpy(p, ptr, sizeof(T) * length);
             return answer;
         }
 
@@ -205,7 +211,7 @@ namespace pcysl5edgo.Collections.LINQ
         }
 
         HashSet<T> ILinq<T>.ToHashSet()
-        { 
+        {
             var answer = new HashSet<T>();
             for (var i = 0; i < length; i++)
                 answer.Add(ptr[i]);
