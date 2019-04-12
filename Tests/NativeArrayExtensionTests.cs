@@ -7,18 +7,18 @@ namespace pcysl5edgo.Collections.LINQ.Test
 {
     public class NativeArrayExtensionTests
     {
-        NativeArray<int> array, zero;
-        System.Func<int, bool> pEqualOrGreaterThan100 = x => x * x >= 100;
-        System.Func<int, bool> pLessThan10 = x => x < 10;
-        TestPredicate tp0 = new TestPredicate(0);
-        TestPredicate tp10 = new TestPredicate(10);
+        private NativeArray<int> array, zero;
+        private readonly System.Func<int, bool> pEqualOrGreaterThan100 = x => x * x >= 100;
+        private readonly System.Func<int, bool> pLessThan10 = x => x < 10;
+        private readonly TestPredicate tp0 = new TestPredicate(0);
+        private readonly TestPredicate tp10 = new TestPredicate(10);
 
         [SetUp]
         public void SetUp()
         {
             zero = default;
             array = new NativeArray<int>(10, Allocator.Temp);
-            for (int i = 0; i < array.Length; i++)
+            for (var i = 0; i < array.Length; i++)
             {
                 array[i] = i;
             }
@@ -102,7 +102,7 @@ namespace pcysl5edgo.Collections.LINQ.Test
 
         struct Cast0 : IRefAction<int, float>
         {
-            public void Execute(ref int arg0, ref float arg1) => arg1 = (float)arg0;
+            public void Execute(ref int arg0, ref float arg1) => arg1 = arg0;
         }
 
         [Test]
