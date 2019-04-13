@@ -95,12 +95,12 @@ namespace pcysl5edgo.Collections.LINQ.Test
         public void CastTest()
         {
             var floats = array.Cast<int, float, Cast0>(Allocator.Temp, new Cast0());
-            for (int i = 0; i < floats.Length; i++)
+            for (var i = 0; i < floats.Length; i++)
                 AreEqual((float)array[i], floats[i]);
             floats.Dispose();
         }
 
-        struct Cast0 : IRefAction<int, float>
+        private struct Cast0 : IRefAction<int, float>
         {
             public void Execute(ref int arg0, ref float arg1) => arg1 = arg0;
         }
@@ -108,7 +108,7 @@ namespace pcysl5edgo.Collections.LINQ.Test
         [Test]
         public void ContainsTest()
         {
-            for (int i = 0; i < array.Length; i++)
+            for (var i = 0; i < array.Length; i++)
             {
                 IsFalse(zero.Contains(i));
                 IsTrue(array.Contains(i));
@@ -117,7 +117,8 @@ namespace pcysl5edgo.Collections.LINQ.Test
             }
             IsFalse(array.Contains(-100));
         }
-        struct Contains0 : IRefFunc<int, int, bool>
+
+        private struct Contains0 : IRefFunc<int, int, bool>
         {
             public bool Calc(ref int arg0, ref int arg1) => arg0 == arg1;
         }
@@ -132,7 +133,8 @@ namespace pcysl5edgo.Collections.LINQ.Test
             AreEqual(5, array.Count(new Count0()));
             AreEqual(5, array.Count(x => x < 5));
         }
-        struct Count0 : IRefFunc<int, bool>
+
+        private struct Count0 : IRefFunc<int, bool>
         {
             public bool Calc(ref int arg0) => arg0 < 5;
         }
@@ -196,7 +198,7 @@ namespace pcysl5edgo.Collections.LINQ.Test
             using (var ulongs = Enumerable.Range(1ul, 5, Allocator.Temp))
             using (var doubles = Enumerable.Range(1.0, 5, Allocator.Temp))
             {
-                for (int i = 0; i < 5; i++)
+                for (var i = 0; i < 5; i++)
                 {
                     AreEqual(i + 1, ints[i]);
                     AreEqual(i + 1, uints[i]);
@@ -240,14 +242,14 @@ namespace pcysl5edgo.Collections.LINQ.Test
         public void DictionaryTest()
         {
             var dictionary = array.ToDictionary(x => x, x => x.ToString());
-            for (int i = 0; i < array.Length; i++)
+            for (var i = 0; i < array.Length; i++)
                 AreEqual(i.ToString(), dictionary[i]);
             dictionary = array.ToDictionary<int, int, string, Dictionary0, Dictionary0>(new Dictionary0(), new Dictionary0());
-            for (int i = 0; i < array.Length; i++)
+            for (var i = 0; i < array.Length; i++)
                 AreEqual((i << 1).ToString(), dictionary[i]);
         }
 
-        struct Dictionary0 : IRefFunc<int, int>, IRefFunc<int, string>
+        private struct Dictionary0 : IRefFunc<int, int>, IRefFunc<int, string>
         {
             public int Calc(ref int arg0) => arg0;
 
@@ -258,7 +260,7 @@ namespace pcysl5edgo.Collections.LINQ.Test
         public void ListTest()
         {
             var list = array.ToList();
-            for (int i = 0; i < array.Length; i++)
+            for (var i = 0; i < array.Length; i++)
                 AreEqual(i, list[i]);
         }
     }
