@@ -17,42 +17,42 @@ namespace pcysl5edgo.Collections.LINQ
             where TPrevEnumerable : unmanaged, IRefEnumerable<TPrevEnumerator, Single>
             where TPrevEnumerator : unmanaged, IRefEnumerator<Single>
             where TPredicate : unmanaged, IRefFunc<Single, bool>
-            => @this.AverageSingle<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, Single, TPredicate>, WhereEnumerator<TPrevEnumerator, Single, TPredicate>>();
+            => @this.AverageSingle<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, Single, TPredicate>, WhereEnumerable<TPrevEnumerable, TPrevEnumerator, Single, TPredicate>.Enumerator>();
 
         public static Double Average<TPrevEnumerable, TPrevEnumerator, TPredicate>(ref this WhereEnumerable<TPrevEnumerable, TPrevEnumerator, Double, TPredicate> @this)
             where TPrevEnumerable : unmanaged, IRefEnumerable<TPrevEnumerator, Double>
             where TPrevEnumerator : unmanaged, IRefEnumerator<Double>
             where TPredicate : unmanaged, IRefFunc<Double, bool>
-            => @this.AverageDouble<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, Double, TPredicate>, WhereEnumerator<TPrevEnumerator, Double, TPredicate>>();
+            => @this.AverageDouble<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, Double, TPredicate>, WhereEnumerable<TPrevEnumerable, TPrevEnumerator, Double, TPredicate>.Enumerator>();
 
         public static Decimal Average<TPrevEnumerable, TPrevEnumerator, TPredicate>(ref this WhereEnumerable<TPrevEnumerable, TPrevEnumerator, Decimal, TPredicate> @this)
             where TPrevEnumerable : unmanaged, IRefEnumerable<TPrevEnumerator, Decimal>
             where TPrevEnumerator : unmanaged, IRefEnumerator<Decimal>
             where TPredicate : unmanaged, IRefFunc<Decimal, bool>
-            => @this.AverageDecimal<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, Decimal, TPredicate>, WhereEnumerator<TPrevEnumerator, Decimal, TPredicate>>();
+            => @this.AverageDecimal<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, Decimal, TPredicate>, WhereEnumerable<TPrevEnumerable, TPrevEnumerator, Decimal, TPredicate>.Enumerator>();
 
         public static Int32 Average<TPrevEnumerable, TPrevEnumerator, TPredicate>(ref this WhereEnumerable<TPrevEnumerable, TPrevEnumerator, Int32, TPredicate> @this)
             where TPrevEnumerable : unmanaged, IRefEnumerable<TPrevEnumerator, Int32>
             where TPrevEnumerator : unmanaged, IRefEnumerator<Int32>
             where TPredicate : unmanaged, IRefFunc<Int32, bool>
-            => @this.AverageInt32<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, Int32, TPredicate>, WhereEnumerator<TPrevEnumerator, Int32, TPredicate>>();
+            => @this.AverageInt32<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, Int32, TPredicate>, WhereEnumerable<TPrevEnumerable, TPrevEnumerator, Int32, TPredicate>.Enumerator>();
 
         public static UInt32 Average<TPrevEnumerable, TPrevEnumerator, TPredicate>(ref this WhereEnumerable<TPrevEnumerable, TPrevEnumerator, UInt32, TPredicate> @this)
             where TPrevEnumerable : unmanaged, IRefEnumerable<TPrevEnumerator, UInt32>
             where TPrevEnumerator : unmanaged, IRefEnumerator<UInt32>
             where TPredicate : unmanaged, IRefFunc<UInt32, bool>
-            => @this.AverageUInt32<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, UInt32, TPredicate>, WhereEnumerator<TPrevEnumerator, UInt32, TPredicate>>();
+            => @this.AverageUInt32<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, UInt32, TPredicate>, WhereEnumerable<TPrevEnumerable, TPrevEnumerator, UInt32, TPredicate>.Enumerator>();
 
         public static Int64 Average<TPrevEnumerable, TPrevEnumerator, TPredicate>(ref this WhereEnumerable<TPrevEnumerable, TPrevEnumerator, Int64, TPredicate> @this)
             where TPrevEnumerable : unmanaged, IRefEnumerable<TPrevEnumerator, Int64>
             where TPrevEnumerator : unmanaged, IRefEnumerator<Int64>
             where TPredicate : unmanaged, IRefFunc<Int64, bool>
-            => @this.AverageInt64<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, Int64, TPredicate>, WhereEnumerator<TPrevEnumerator, Int64, TPredicate>>();
+            => @this.AverageInt64<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, Int64, TPredicate>, WhereEnumerable<TPrevEnumerable, TPrevEnumerator, Int64, TPredicate>.Enumerator>();
 
         public static UInt64 Average<TPrevEnumerable, TPrevEnumerator, TPredicate>(ref this WhereEnumerable<TPrevEnumerable, TPrevEnumerator, UInt64, TPredicate> @this)
             where TPrevEnumerable : unmanaged, IRefEnumerable<TPrevEnumerator, UInt64>
             where TPrevEnumerator : unmanaged, IRefEnumerator<UInt64>
             where TPredicate : unmanaged, IRefFunc<UInt64, bool>
-            => @this.AverageUInt64<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, UInt64, TPredicate>, WhereEnumerator<TPrevEnumerator, UInt64, TPredicate>>();
+            => @this.AverageUInt64<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, UInt64, TPredicate>, WhereEnumerable<TPrevEnumerable, TPrevEnumerator, UInt64, TPredicate>.Enumerator>();
     }
 }

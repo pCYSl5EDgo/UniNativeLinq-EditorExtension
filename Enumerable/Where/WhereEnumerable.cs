@@ -5,7 +5,7 @@ using Unity.Collections;
 
 namespace pcysl5edgo.Collections.LINQ
 {
-    public struct WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate> : IRefEnumerable<WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource>, ILinq<TSource>
+    public struct WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate> : IRefEnumerable<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>.Enumerator, TSource>, ILinq<TSource>
         where TSource : unmanaged
 #if STRICT_EQUALITY
         , IEquatable<TSource>
@@ -23,8 +23,8 @@ namespace pcysl5edgo.Collections.LINQ
             this.predicts = predicts;
         }
 
-        public WhereEnumerator<TPrevEnumerator, TSource, TPredicate> GetEnumerator()
-            => new WhereEnumerator<TPrevEnumerator, TSource, TPredicate>(enumerable.GetEnumerator(), predicts);
+        public Enumerator GetEnumerator()
+            => new Enumerator(enumerable.GetEnumerator(), predicts);
 
         IEnumerator<TSource> IEnumerable<TSource>.GetEnumerator() => GetEnumerator();
 
@@ -32,133 +32,163 @@ namespace pcysl5edgo.Collections.LINQ
 
         public WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate> AsRefEnumerable() => this;
 
-        public WhereEnumerable<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource, TNextPredicate> Where<TNextPredicate>(TNextPredicate predicate)
+        public WhereEnumerable<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource, TNextPredicate> Where<TNextPredicate>(TNextPredicate predicate)
             where TNextPredicate : unmanaged, IRefFunc<TSource, bool>
-            => new WhereEnumerable<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource, TNextPredicate>(this, predicate);
+            => new WhereEnumerable<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource, TNextPredicate>(this, predicate);
 
-        public SelectEnumerable<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource, TResult, TAction> Select<TResult, TAction>(TAction action, Allocator allocator = Allocator.Temp)
+        public SelectEnumerable<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource, TResult, TAction> Select<TResult, TAction>(TAction action, Allocator allocator = Allocator.Temp)
             where TResult : unmanaged
 #if STRICT_EQUALITY
             , IEquatable<TResult>
 #endif
             where TAction : unmanaged, IRefAction<TSource, TResult>
-            => new SelectEnumerable<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource, TResult, TAction>(this, action, allocator);
+            => new SelectEnumerable<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource, TResult, TAction>(this, action, allocator);
 
-        public AppendEnumerable<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource> Append(TSource value, Allocator allocator = Allocator.Temp)
-            => new AppendEnumerable<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource>(this, value, allocator);
+        public AppendEnumerable<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource> Append(TSource value, Allocator allocator = Allocator.Temp)
+            => new AppendEnumerable<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource>(this, value, allocator);
 
-        public unsafe AppendPointerEnumerable<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource> Append(TSource* value)
-            => new AppendPointerEnumerable<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource>(this, value);
+        public unsafe AppendPointerEnumerable<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource> Append(TSource* value)
+            => new AppendPointerEnumerable<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource>(this, value);
 
         public bool Any()
-            => this.Any<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource>();
+            => this.Any<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource>();
 
         public bool Any<TAnotherPredicate>(TAnotherPredicate predicate)
             where TAnotherPredicate : unmanaged, IRefFunc<TSource, bool>
-            => this.Any<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource, TAnotherPredicate>(predicate);
+            => this.Any<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource, TAnotherPredicate>(predicate);
 
         public bool Any(Func<TSource, bool> predicate)
-            => this.Any<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource>(predicate);
+            => this.Any<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource>(predicate);
 
         public bool All<TAnotherPredicate>(TAnotherPredicate predicate)
             where TAnotherPredicate : unmanaged, IRefFunc<TSource, bool>
-            => this.All<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource, TAnotherPredicate>(predicate);
+            => this.All<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource, TAnotherPredicate>(predicate);
 
         public bool All(Func<TSource, bool> predicate)
-            => this.All<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource>(predicate);
+            => this.All<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource>(predicate);
 
         public void Aggregate<TFunc>(ref TSource seed, TFunc func)
             where TFunc : unmanaged, IRefAction<TSource, TSource>
-            => this.Aggregate<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource, TFunc>(ref seed, func);
+            => this.Aggregate<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource, TFunc>(ref seed, func);
 
         public void Aggregate<TAccumulate, TFunc>(ref TAccumulate seed, TFunc func)
             where TFunc : unmanaged, IRefAction<TAccumulate, TSource>
-            => this.Aggregate<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource, TAccumulate, TFunc>(ref seed, func);
+            => this.Aggregate<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource, TAccumulate, TFunc>(ref seed, func);
 
         public TResult Aggregate<TAccumulate, TResult, TFunc, TResultFunc>(ref TAccumulate seed, TFunc func, TResultFunc resultFunc)
             where TFunc : unmanaged, IRefAction<TAccumulate, TSource>
             where TResultFunc : unmanaged, IRefFunc<TAccumulate, TResult>
-            => this.Aggregate<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource, TAccumulate, TResult, TFunc, TResultFunc>(ref seed, func, resultFunc);
+            => this.Aggregate<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource, TAccumulate, TResult, TFunc, TResultFunc>(ref seed, func, resultFunc);
 
         public TSource Aggregate(TSource seed, Func<TSource, TSource, TSource> func)
-            => this.Aggregate<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource>(seed, func);
+            => this.Aggregate<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource>(seed, func);
 
         public TAccumulate Aggregate<TAccumulate>(TAccumulate seed, Func<TAccumulate, TSource, TAccumulate> func)
-            => this.Aggregate<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource, TAccumulate>(seed, func);
+            => this.Aggregate<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource, TAccumulate>(seed, func);
 
         public TResult Aggregate<TAccumulate, TResult>(TAccumulate seed, Func<TAccumulate, TSource, TAccumulate> func, Func<TAccumulate, TResult> resultFunc)
-            => this.Aggregate<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource, TAccumulate, TResult>(seed, func, resultFunc);
+            => this.Aggregate<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource, TAccumulate, TResult>(seed, func, resultFunc);
 
         public bool Contains(TSource value)
-            => this.Contains<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource>(value);
+            => this.Contains<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource>(value);
 
         public bool Contains(TSource value, IEqualityComparer<TSource> comparer)
-            => this.Contains<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource>(value, comparer);
+            => this.Contains<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource>(value, comparer);
 
         public bool Contains<TComparer>(TSource value, TComparer comparer)
             where TComparer : unmanaged, IRefFunc<TSource, TSource, bool>
-            => this.Contains<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource, TComparer>(value, comparer);
+            => this.Contains<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource, TComparer>(value, comparer);
 
         public int Count()
-            => this.Count<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource>();
+            => this.Count<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource>();
 
         public int Count(Func<TSource, bool> predicate)
-            => this.Count<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource>(predicate);
+            => this.Count<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource>(predicate);
 
         public int Count<TAnotherPredicate>(TAnotherPredicate predicate)
             where TAnotherPredicate : unmanaged, IRefFunc<TSource, bool>
-            => this.Count<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource, TAnotherPredicate>(predicate);
+            => this.Count<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource, TAnotherPredicate>(predicate);
 
         public long LongCount()
-            => this.Count<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource>();
+            => this.Count<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource>();
 
         public long LongCount(Func<TSource, bool> predicate)
-            => this.Count<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource>(predicate);
+            => this.Count<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource>(predicate);
 
         public long LongCount<TAnotherPredicate>(TAnotherPredicate predicate)
             where TAnotherPredicate : unmanaged, IRefFunc<TSource, bool>
-            => this.Count<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource, TAnotherPredicate>(predicate);
+            => this.Count<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource, TAnotherPredicate>(predicate);
 
         public bool TryGetElementAt(int index, out TSource element)
-            => this.TryGetElementAt<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource>(index, out element);
+            => this.TryGetElementAt<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource>(index, out element);
 
         public bool TryGetFirst(out TSource first)
-            => this.TryGetFirst<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource>(out first);
+            => this.TryGetFirst<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource>(out first);
 
         public bool TryGetLast(out TSource last)
-            => this.TryGetLast<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource>(out last);
+            => this.TryGetLast<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource>(out last);
 
         public bool TryGetSingle(out TSource value)
-            => this.TryGetSingle<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource>(out value);
+            => this.TryGetSingle<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource>(out value);
 
         public bool TryGetSingle<TAnotherPredicate>(out TSource value, TAnotherPredicate predicate)
             where TAnotherPredicate : unmanaged, IRefFunc<TSource, bool>
-            => this.TryGetSingle<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource, TAnotherPredicate>(out value, predicate);
+            => this.TryGetSingle<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource, TAnotherPredicate>(out value, predicate);
 
         public bool TryGetSingle(out TSource value, Func<TSource, bool> predicate)
-            => this.TryGetSingle<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource>(out value, predicate);
+            => this.TryGetSingle<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource>(out value, predicate);
 
         public TSource[] ToArray()
-            => this.ToArray<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource>();
+            => this.ToArray<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource>();
 
         public NativeArray<TSource> ToNativeArray(Allocator alloc)
-            => this.ToNativeArray<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource>(alloc);
+            => this.ToNativeArray<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource>(alloc);
 
         public Dictionary<TKey, TElement> ToDictionary<TKey, TElement>(Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector)
-            => this.ToDictionary<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource, TKey, TElement>(keySelector, elementSelector);
+            => this.ToDictionary<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource, TKey, TElement>(keySelector, elementSelector);
 
         public Dictionary<TKey, TElement> ToDictionary<TKey, TElement, TKeyFunc, TElementFunc>(TKeyFunc keySelector, TElementFunc elementSelector)
             where TKeyFunc : unmanaged, IRefFunc<TSource, TKey>
             where TElementFunc : unmanaged, IRefFunc<TSource, TElement>
-            => this.ToDictionary<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource, TKey, TElement, TKeyFunc, TElementFunc>(keySelector, elementSelector);
+            => this.ToDictionary<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource, TKey, TElement, TKeyFunc, TElementFunc>(keySelector, elementSelector);
 
         public HashSet<TSource> ToHashSet()
-            => this.ToHashSet<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource>();
+            => this.ToHashSet<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource>();
 
         public HashSet<TSource> ToHashSet(IEqualityComparer<TSource> comparer)
-            => this.ToHashSet<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource>(comparer);
+            => this.ToHashSet<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource>(comparer);
 
         public List<TSource> ToList()
-            => this.ToList<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, WhereEnumerator<TPrevEnumerator, TSource, TPredicate>, TSource>();
+            => this.ToList<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource>();
+        
+        public struct Enumerator: IRefEnumerator<TSource>
+        {
+            private TPrevEnumerator enumerator;
+            private TPredicate predicts;
+
+            internal Enumerator(in TPrevEnumerator enumerator, TPredicate predicts)
+            {
+                this.enumerator = enumerator;
+                this.predicts = predicts;
+            }
+        
+            public bool MoveNext()
+            {
+                while (enumerator.MoveNext())
+                    if (predicts.Calc(ref enumerator.Current))
+                        return true;
+                return false;
+            }
+
+            public void Reset() => throw new InvalidOperationException();
+
+            public ref TSource Current => ref enumerator.Current;
+
+            TSource IEnumerator<TSource>.Current => Current;
+
+            object IEnumerator.Current => Current;
+
+            public void Dispose() => enumerator.Dispose();
+        }
     }
 }
