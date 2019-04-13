@@ -127,7 +127,7 @@ namespace pcysl5edgo.Collections.LINQ
                 ConcatEnumerable<TEnumerable0, TEnumerator0, TEnumerable1, TEnumerator1, TSource>,
                 ConcatEnumerable<TEnumerable0, TEnumerator0, TEnumerable1, TEnumerator1, TSource>.Enumerator,
                 SelectEnumerable<TEnumerable2, TEnumerator2, TPrevSource, TSource, TAction>,
-                SelectEnumerator<TEnumerator2, TPrevSource, TSource, TAction>,
+                SelectEnumerable<TEnumerable2, TEnumerator2, TPrevSource, TSource, TAction>.Enumerator,
                 TSource
             >
             Concat<TEnumerable0, TEnumerator0, TEnumerable1, TEnumerator1, TEnumerable2, TEnumerator2, TSource, TPrevSource, TAction>(
@@ -148,7 +148,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TEnumerator2 : struct, IRefEnumerator<TPrevSource>
             where TEnumerable2 : struct, IRefEnumerable<TEnumerator2, TPrevSource>
             where TAction : unmanaged, IRefAction<TPrevSource, TSource>
-            => new ConcatEnumerable<ConcatEnumerable<TEnumerable0, TEnumerator0, TEnumerable1, TEnumerator1, TSource>, ConcatEnumerable<TEnumerable0, TEnumerator0, TEnumerable1, TEnumerator1, TSource>.Enumerator, SelectEnumerable<TEnumerable2, TEnumerator2, TPrevSource, TSource, TAction>, SelectEnumerator<TEnumerator2, TPrevSource, TSource, TAction>, TSource>(first, second);
+            => new ConcatEnumerable<ConcatEnumerable<TEnumerable0, TEnumerator0, TEnumerable1, TEnumerator1, TSource>, ConcatEnumerable<TEnumerable0, TEnumerator0, TEnumerable1, TEnumerator1, TSource>.Enumerator, SelectEnumerable<TEnumerable2, TEnumerator2, TPrevSource, TSource, TAction>, SelectEnumerable<TEnumerable2, TEnumerator2, TPrevSource, TSource, TAction>.Enumerator, TSource>(first, second);
         #endregion
 
         #region NativeArray
@@ -233,7 +233,7 @@ namespace pcysl5edgo.Collections.LINQ
                 NativeEnumerable<TSource>,
                 NativeEnumerable<TSource>.Enumerator,
                 SelectEnumerable<TEnumerable0, TEnumerator0, TPrevSource, TSource, TAction>,
-                SelectEnumerator<TEnumerator0, TPrevSource, TSource, TAction>,
+                SelectEnumerable<TEnumerable0, TEnumerator0, TPrevSource, TSource, TAction>.Enumerator,
                 TSource
             >
             Concat<TEnumerable0, TEnumerator0, TSource, TPrevSource, TAction>(
@@ -250,7 +250,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TEnumerator0 : struct, IRefEnumerator<TPrevSource>
             where TEnumerable0 : struct, IRefEnumerable<TEnumerator0, TPrevSource>
             where TAction : unmanaged, IRefAction<TPrevSource, TSource>
-            => new ConcatEnumerable<NativeEnumerable<TSource>, NativeEnumerable<TSource>.Enumerator, SelectEnumerable<TEnumerable0, TEnumerator0, TPrevSource, TSource, TAction>, SelectEnumerator<TEnumerator0, TPrevSource, TSource, TAction>, TSource>(first.AsRefEnumerable(), second);
+            => new ConcatEnumerable<NativeEnumerable<TSource>, NativeEnumerable<TSource>.Enumerator, SelectEnumerable<TEnumerable0, TEnumerator0, TPrevSource, TSource, TAction>, SelectEnumerable<TEnumerable0, TEnumerator0, TPrevSource, TSource, TAction>.Enumerator, TSource>(first.AsRefEnumerable(), second);
 
         public static
             ConcatEnumerable<
@@ -382,7 +382,7 @@ namespace pcysl5edgo.Collections.LINQ
                 AppendEnumerable<TEnumerable0, TEnumerator0, TSource>,
                 AppendEnumerator<TEnumerator0, TSource>,
                 SelectEnumerable<TEnumerable1, TEnumerator1, TPrevSource, TSource, TAction>,
-                SelectEnumerator<TEnumerator1, TPrevSource, TSource, TAction>,
+                SelectEnumerable<TEnumerable1, TEnumerator1, TPrevSource, TSource, TAction>.Enumerator,
                 TSource
             >
             Concat<TEnumerable0, TEnumerator0, TEnumerable1, TEnumerator1, TSource, TPrevSource, TAction>(
@@ -401,7 +401,7 @@ namespace pcysl5edgo.Collections.LINQ
             , IEquatable<TPrevSource>
 #endif
             where TAction : unmanaged, IRefAction<TPrevSource, TSource>
-            => new ConcatEnumerable<AppendEnumerable<TEnumerable0, TEnumerator0, TSource>, AppendEnumerator<TEnumerator0, TSource>, SelectEnumerable<TEnumerable1, TEnumerator1, TPrevSource, TSource, TAction>, SelectEnumerator<TEnumerator1, TPrevSource, TSource, TAction>, TSource>(first, second);
+            => new ConcatEnumerable<AppendEnumerable<TEnumerable0, TEnumerator0, TSource>, AppendEnumerator<TEnumerator0, TSource>, SelectEnumerable<TEnumerable1, TEnumerator1, TPrevSource, TSource, TAction>, SelectEnumerable<TEnumerable1, TEnumerator1, TPrevSource, TSource, TAction>.Enumerator, TSource>(first, second);
 
         public static
             ConcatEnumerable<
@@ -533,7 +533,7 @@ namespace pcysl5edgo.Collections.LINQ
                 AppendPointerEnumerable<TEnumerable0, TEnumerator0, TSource>,
                 AppendEnumerator<TEnumerator0, TSource>,
                 SelectEnumerable<TEnumerable1, TEnumerator1, TPrevSource, TSource, TAction>,
-                SelectEnumerator<TEnumerator1, TPrevSource, TSource, TAction>,
+                SelectEnumerable<TEnumerable1, TEnumerator1, TPrevSource, TSource, TAction>.Enumerator,
                 TSource
             >
             Concat<TEnumerable0, TEnumerator0, TEnumerable1, TEnumerator1, TSource, TPrevSource, TAction>(
@@ -552,7 +552,7 @@ namespace pcysl5edgo.Collections.LINQ
             , IEquatable<TPrevSource>
 #endif
             where TAction : unmanaged, IRefAction<TPrevSource, TSource>
-            => new ConcatEnumerable<AppendPointerEnumerable<TEnumerable0, TEnumerator0, TSource>, AppendEnumerator<TEnumerator0, TSource>, SelectEnumerable<TEnumerable1, TEnumerator1, TPrevSource, TSource, TAction>, SelectEnumerator<TEnumerator1, TPrevSource, TSource, TAction>, TSource>(first, second);
+            => new ConcatEnumerable<AppendPointerEnumerable<TEnumerable0, TEnumerator0, TSource>, AppendEnumerator<TEnumerator0, TSource>, SelectEnumerable<TEnumerable1, TEnumerator1, TPrevSource, TSource, TAction>, SelectEnumerable<TEnumerable1, TEnumerator1, TPrevSource, TSource, TAction>.Enumerator, TSource>(first, second);
 
         public static
             ConcatEnumerable<
@@ -673,7 +673,7 @@ namespace pcysl5edgo.Collections.LINQ
                 NativeEnumerable<TSource>,
                 NativeEnumerable<TSource>.Enumerator,
                 SelectEnumerable<TEnumerable0, TEnumerator0, TPrevSource, TSource, TAction>,
-                SelectEnumerator<TEnumerator0, TPrevSource, TSource, TAction>,
+                SelectEnumerable<TEnumerable0, TEnumerator0, TPrevSource, TSource, TAction>.Enumerator,
                 TSource
             >
             Concat<TEnumerable0, TEnumerator0, TSource, TPrevSource, TAction>(
@@ -690,7 +690,7 @@ namespace pcysl5edgo.Collections.LINQ
             , IEquatable<TPrevSource>
 #endif
             where TAction : unmanaged, IRefAction<TPrevSource, TSource>
-            => new ConcatEnumerable<NativeEnumerable<TSource>, NativeEnumerable<TSource>.Enumerator, SelectEnumerable<TEnumerable0, TEnumerator0, TPrevSource, TSource, TAction>, SelectEnumerator<TEnumerator0, TPrevSource, TSource, TAction>, TSource>(first, second);
+            => new ConcatEnumerable<NativeEnumerable<TSource>, NativeEnumerable<TSource>.Enumerator, SelectEnumerable<TEnumerable0, TEnumerator0, TPrevSource, TSource, TAction>, SelectEnumerable<TEnumerable0, TEnumerator0, TPrevSource, TSource, TAction>.Enumerator, TSource>(first, second);
 
         public static
             ConcatEnumerable<
@@ -717,9 +717,9 @@ namespace pcysl5edgo.Collections.LINQ
         public static
             ConcatEnumerable<
                 SelectEnumerable<TEnumerable0, TEnumerator0, TPrevSource0, TSource, TAction0>,
-                SelectEnumerator<TEnumerator0, TPrevSource0, TSource, TAction0>,
+                SelectEnumerable<TEnumerable0, TEnumerator0, TPrevSource0, TSource, TAction0>.Enumerator,
                 SelectEnumerable<TEnumerable1, TEnumerator1, TPrevSource1, TSource, TAction1>,
-                SelectEnumerator<TEnumerator1, TPrevSource1, TSource, TAction1>,
+                SelectEnumerable<TEnumerable1, TEnumerator1, TPrevSource1, TSource, TAction1>.Enumerator,
                 TSource
             >
             Concat<TEnumerable0, TEnumerator0, TEnumerable1, TEnumerator1, TSource, TPrevSource0, TPrevSource1, TAction0, TAction1>(
@@ -743,12 +743,12 @@ namespace pcysl5edgo.Collections.LINQ
 #if STRICT_EQUALITY
             , IEquatable<TPrevSource1>
 #endif
-            => new ConcatEnumerable<SelectEnumerable<TEnumerable0, TEnumerator0, TPrevSource0, TSource, TAction0>, SelectEnumerator<TEnumerator0, TPrevSource0, TSource, TAction0>, SelectEnumerable<TEnumerable1, TEnumerator1, TPrevSource1, TSource, TAction1>, SelectEnumerator<TEnumerator1, TPrevSource1, TSource, TAction1>, TSource>(first, second);
+            => new ConcatEnumerable<SelectEnumerable<TEnumerable0, TEnumerator0, TPrevSource0, TSource, TAction0>, SelectEnumerable<TEnumerable0, TEnumerator0, TPrevSource0, TSource, TAction0>.Enumerator, SelectEnumerable<TEnumerable1, TEnumerator1, TPrevSource1, TSource, TAction1>, SelectEnumerable<TEnumerable1, TEnumerator1, TPrevSource1, TSource, TAction1>.Enumerator, TSource>(first, second);
 
         public static
             ConcatEnumerable<
                 SelectEnumerable<TEnumerable0, TEnumerator0, TPrevSource0, TSource, TAction0>,
-                SelectEnumerator<TEnumerator0, TPrevSource0, TSource, TAction0>,
+                SelectEnumerable<TEnumerable0, TEnumerator0, TPrevSource0, TSource, TAction0>.Enumerator,
                 ConcatEnumerable<TEnumerable1, TEnumerator1, TEnumerable2, TEnumerator2, TSource>,
                 ConcatEnumerable<TEnumerable1, TEnumerator1, TEnumerable2, TEnumerator2, TSource>.Enumerator,
                 TSource
@@ -771,12 +771,12 @@ namespace pcysl5edgo.Collections.LINQ
             where TEnumerator1 : struct, IRefEnumerator<TSource>
             where TEnumerable2 : struct, IRefEnumerable<TEnumerator2, TSource>
             where TEnumerator2 : struct, IRefEnumerator<TSource>
-            => new ConcatEnumerable<SelectEnumerable<TEnumerable0, TEnumerator0, TPrevSource0, TSource, TAction0>, SelectEnumerator<TEnumerator0, TPrevSource0, TSource, TAction0>, ConcatEnumerable<TEnumerable1, TEnumerator1, TEnumerable2, TEnumerator2, TSource>, ConcatEnumerable<TEnumerable1, TEnumerator1, TEnumerable2, TEnumerator2, TSource>.Enumerator, TSource>(first, second);
+            => new ConcatEnumerable<SelectEnumerable<TEnumerable0, TEnumerator0, TPrevSource0, TSource, TAction0>, SelectEnumerable<TEnumerable0, TEnumerator0, TPrevSource0, TSource, TAction0>.Enumerator, ConcatEnumerable<TEnumerable1, TEnumerator1, TEnumerable2, TEnumerator2, TSource>, ConcatEnumerable<TEnumerable1, TEnumerator1, TEnumerable2, TEnumerator2, TSource>.Enumerator, TSource>(first, second);
 
         public static
             ConcatEnumerable<
                 SelectEnumerable<TEnumerable0, TEnumerator0, TPrevSource0, TSource, TAction0>,
-                SelectEnumerator<TEnumerator0, TPrevSource0, TSource, TAction0>,
+                SelectEnumerable<TEnumerable0, TEnumerator0, TPrevSource0, TSource, TAction0>.Enumerator,
                 NativeEnumerable<TSource>,
                 NativeEnumerable<TSource>.Enumerator,
                 TSource
@@ -795,12 +795,12 @@ namespace pcysl5edgo.Collections.LINQ
             where TEnumerator0 : struct, IRefEnumerator<TPrevSource0>
             where TEnumerable0 : struct, IRefEnumerable<TEnumerator0, TPrevSource0>
             where TAction0 : unmanaged, IRefAction<TPrevSource0, TSource>
-            => new ConcatEnumerable<SelectEnumerable<TEnumerable0, TEnumerator0, TPrevSource0, TSource, TAction0>, SelectEnumerator<TEnumerator0, TPrevSource0, TSource, TAction0>, NativeEnumerable<TSource>, NativeEnumerable<TSource>.Enumerator, TSource>(first, second.AsRefEnumerable());
+            => new ConcatEnumerable<SelectEnumerable<TEnumerable0, TEnumerator0, TPrevSource0, TSource, TAction0>, SelectEnumerable<TEnumerable0, TEnumerator0, TPrevSource0, TSource, TAction0>.Enumerator, NativeEnumerable<TSource>, NativeEnumerable<TSource>.Enumerator, TSource>(first, second.AsRefEnumerable());
 
         public static
             ConcatEnumerable<
                 SelectEnumerable<TEnumerable0, TEnumerator0, TPrevSource0, TSource, TAction0>,
-                SelectEnumerator<TEnumerator0, TPrevSource0, TSource, TAction0>,
+                SelectEnumerable<TEnumerable0, TEnumerator0, TPrevSource0, TSource, TAction0>.Enumerator,
                 NativeEnumerable<TSource>,
                 NativeEnumerable<TSource>.Enumerator,
                 TSource
@@ -819,12 +819,12 @@ namespace pcysl5edgo.Collections.LINQ
             where TEnumerator0 : struct, IRefEnumerator<TPrevSource0>
             where TEnumerable0 : struct, IRefEnumerable<TEnumerator0, TPrevSource0>
             where TAction0 : unmanaged, IRefAction<TPrevSource0, TSource>
-            => new ConcatEnumerable<SelectEnumerable<TEnumerable0, TEnumerator0, TPrevSource0, TSource, TAction0>, SelectEnumerator<TEnumerator0, TPrevSource0, TSource, TAction0>, NativeEnumerable<TSource>, NativeEnumerable<TSource>.Enumerator, TSource>(first, second);
+            => new ConcatEnumerable<SelectEnumerable<TEnumerable0, TEnumerator0, TPrevSource0, TSource, TAction0>, SelectEnumerable<TEnumerable0, TEnumerator0, TPrevSource0, TSource, TAction0>.Enumerator, NativeEnumerable<TSource>, NativeEnumerable<TSource>.Enumerator, TSource>(first, second);
 
         public static
             ConcatEnumerable<
                 SelectEnumerable<TEnumerable0, TEnumerator0, TPrevSource0, TSource, TAction0>,
-                SelectEnumerator<TEnumerator0, TPrevSource0, TSource, TAction0>,
+                SelectEnumerable<TEnumerable0, TEnumerator0, TPrevSource0, TSource, TAction0>.Enumerator,
                 AppendPointerEnumerable<TEnumerable1, TEnumerator1, TSource>,
                 AppendEnumerator<TEnumerator1, TSource>,
                 TSource
@@ -845,12 +845,12 @@ namespace pcysl5edgo.Collections.LINQ
             where TAction0 : unmanaged, IRefAction<TPrevSource0, TSource>
             where TEnumerable1 : struct, IRefEnumerable<TEnumerator1, TSource>
             where TEnumerator1 : struct, IRefEnumerator<TSource>
-            => new ConcatEnumerable<SelectEnumerable<TEnumerable0, TEnumerator0, TPrevSource0, TSource, TAction0>, SelectEnumerator<TEnumerator0, TPrevSource0, TSource, TAction0>, AppendPointerEnumerable<TEnumerable1, TEnumerator1, TSource>, AppendEnumerator<TEnumerator1, TSource>, TSource>(first, second);
+            => new ConcatEnumerable<SelectEnumerable<TEnumerable0, TEnumerator0, TPrevSource0, TSource, TAction0>, SelectEnumerable<TEnumerable0, TEnumerator0, TPrevSource0, TSource, TAction0>.Enumerator, AppendPointerEnumerable<TEnumerable1, TEnumerator1, TSource>, AppendEnumerator<TEnumerator1, TSource>, TSource>(first, second);
 
         public static
             ConcatEnumerable<
                 SelectEnumerable<TEnumerable0, TEnumerator0, TPrevSource0, TSource, TAction0>,
-                SelectEnumerator<TEnumerator0, TPrevSource0, TSource, TAction0>,
+                SelectEnumerable<TEnumerable0, TEnumerator0, TPrevSource0, TSource, TAction0>.Enumerator,
                 AppendEnumerable<TEnumerable1, TEnumerator1, TSource>,
                 AppendEnumerator<TEnumerator1, TSource>,
                 TSource
@@ -871,12 +871,12 @@ namespace pcysl5edgo.Collections.LINQ
             where TAction0 : unmanaged, IRefAction<TPrevSource0, TSource>
             where TEnumerable1 : struct, IRefEnumerable<TEnumerator1, TSource>
             where TEnumerator1 : struct, IRefEnumerator<TSource>
-            => new ConcatEnumerable<SelectEnumerable<TEnumerable0, TEnumerator0, TPrevSource0, TSource, TAction0>, SelectEnumerator<TEnumerator0, TPrevSource0, TSource, TAction0>, AppendEnumerable<TEnumerable1, TEnumerator1, TSource>, AppendEnumerator<TEnumerator1, TSource>, TSource>(first, second);
+            => new ConcatEnumerable<SelectEnumerable<TEnumerable0, TEnumerator0, TPrevSource0, TSource, TAction0>, SelectEnumerable<TEnumerable0, TEnumerator0, TPrevSource0, TSource, TAction0>.Enumerator, AppendEnumerable<TEnumerable1, TEnumerator1, TSource>, AppendEnumerator<TEnumerator1, TSource>, TSource>(first, second);
 
         public static
             ConcatEnumerable<
                 SelectEnumerable<TEnumerable0, TEnumerator0, TPrevSource0, TSource, TAction0>,
-                SelectEnumerator<TEnumerator0, TPrevSource0, TSource, TAction0>,
+                SelectEnumerable<TEnumerable0, TEnumerator0, TPrevSource0, TSource, TAction0>.Enumerator,
                 WhereEnumerable<TEnumerable1, TEnumerator1, TSource, TPredicate>,
                 WhereEnumerator<TEnumerator1, TSource, TPredicate>,
                 TSource
@@ -898,7 +898,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TEnumerable1 : struct, IRefEnumerable<TEnumerator1, TSource>
             where TEnumerator1 : struct, IRefEnumerator<TSource>
             where TPredicate : unmanaged, IRefFunc<TSource, bool>
-            => new ConcatEnumerable<SelectEnumerable<TEnumerable0, TEnumerator0, TPrevSource0, TSource, TAction0>, SelectEnumerator<TEnumerator0, TPrevSource0, TSource, TAction0>, WhereEnumerable<TEnumerable1, TEnumerator1, TSource, TPredicate>, WhereEnumerator<TEnumerator1, TSource, TPredicate>, TSource>(first, second);
+            => new ConcatEnumerable<SelectEnumerable<TEnumerable0, TEnumerator0, TPrevSource0, TSource, TAction0>, SelectEnumerable<TEnumerable0, TEnumerator0, TPrevSource0, TSource, TAction0>.Enumerator, WhereEnumerable<TEnumerable1, TEnumerator1, TSource, TPredicate>, WhereEnumerator<TEnumerator1, TSource, TPredicate>, TSource>(first, second);
         #endregion
 
         #region Where
@@ -1038,7 +1038,7 @@ namespace pcysl5edgo.Collections.LINQ
                 WhereEnumerable<TEnumerable0, TEnumerator0, TSource, TPredicate0>,
                 WhereEnumerator<TEnumerator0, TSource, TPredicate0>,
                 SelectEnumerable<TEnumerable1, TEnumerator1, TPrevSource, TSource, TAction>,
-                SelectEnumerator<TEnumerator1, TPrevSource, TSource, TAction>,
+                SelectEnumerable<TEnumerable1, TEnumerator1, TPrevSource, TSource, TAction>.Enumerator,
                 TSource
             >
             Concat<TEnumerable0, TEnumerator0, TSource, TPredicate0, TEnumerable1, TEnumerator1, TPrevSource, TAction>(
@@ -1058,7 +1058,7 @@ namespace pcysl5edgo.Collections.LINQ
             , IEquatable<TPrevSource>
 #endif
             where TAction : unmanaged, IRefAction<TPrevSource, TSource>
-            => new ConcatEnumerable<WhereEnumerable<TEnumerable0, TEnumerator0, TSource, TPredicate0>, WhereEnumerator<TEnumerator0, TSource, TPredicate0>, SelectEnumerable<TEnumerable1, TEnumerator1, TPrevSource, TSource, TAction>, SelectEnumerator<TEnumerator1, TPrevSource, TSource, TAction>, TSource>(first, second);
+            => new ConcatEnumerable<WhereEnumerable<TEnumerable0, TEnumerator0, TSource, TPredicate0>, WhereEnumerator<TEnumerator0, TSource, TPredicate0>, SelectEnumerable<TEnumerable1, TEnumerator1, TPrevSource, TSource, TAction>, SelectEnumerable<TEnumerable1, TEnumerator1, TPrevSource, TSource, TAction>.Enumerator, TSource>(first, second);
         #endregion
     }
 }
