@@ -113,6 +113,15 @@ namespace pcysl5edgo.Collections.LINQ
 #endif
             where TAction : unmanaged, IRefAction<TSource, TNextSource>
             => new SelectEnumerable<DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, TSource>, Enumerator, TSource, TNextSource, TAction>(this, action, allocator);
+        
+        public SelectIndexEnumerable<DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, TSource>, Enumerator, TSource, TNextSource, TAction>
+            SelectIndex<TNextSource, TAction>(TAction action, Allocator allocator = Allocator.Temp)
+            where TNextSource : unmanaged
+#if STRICT_EQUALITY
+            , IEquatable<TNextSource>
+#endif
+            where TAction : unmanaged, ISelectIndex<TSource, TNextSource>
+            => new SelectIndexEnumerable<DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, TSource>, Enumerator, TSource, TNextSource, TAction>(this, action, allocator);
 
         public WhereEnumerable<DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, TSource>, Enumerator, TSource, TPredicate>
             Where<TPredicate>(TPredicate predicate)

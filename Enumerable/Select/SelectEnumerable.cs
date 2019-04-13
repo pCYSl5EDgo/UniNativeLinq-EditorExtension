@@ -39,12 +39,27 @@ namespace pcysl5edgo.Collections.LINQ
         public SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction> AsRefEnumerable() => this;
 
         public SelectEnumerable<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, Enumerator, TResult, TNextResult, TNextAction> Select<TNextResult, TNextAction>(TNextAction nextAction, Allocator allocator = Allocator.Temp)
-            where TNextAction : struct, IRefAction<TResult, TNextResult>
+            where TNextAction : unmanaged, IRefAction<TResult, TNextResult>
             where TNextResult : unmanaged
 #if STRICT_EQUALITY
             , IEquatable<TNextResult>
 #endif
             => new SelectEnumerable<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, Enumerator, TResult, TNextResult, TNextAction>(this, nextAction, allocator);
+
+        public SelectIndexEnumerable<
+                SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>,
+                Enumerator,
+                TResult,
+                TNextResult,
+                TNextAction
+            >
+            SelectIndex<TNextResult, TNextAction>(TNextAction nextAction, Allocator allocator = Allocator.Temp)
+            where TNextResult : unmanaged
+#if STRICT_EQUALITY
+            , IEquatable<TNextResult>
+#endif
+            where TNextAction : unmanaged, ISelectIndex<TResult, TNextResult>
+            => new SelectIndexEnumerable<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, Enumerator, TResult, TNextResult, TNextAction>(this, nextAction, allocator);
 
         public WhereEnumerable<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, Enumerator, TResult, TPredicate> Where<TPredicate>(TPredicate predicate)
             where TPredicate : unmanaged, IRefFunc<TResult, bool>
@@ -52,10 +67,10 @@ namespace pcysl5edgo.Collections.LINQ
 
         public AppendEnumerable<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, Enumerator, TResult> Append(TResult value, Allocator allocator = Allocator.Temp)
             => new AppendEnumerable<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, Enumerator, TResult>(this, value, allocator);
-        
+
         public unsafe AppendPointerEnumerable<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, Enumerator, TResult> Append(TResult* value)
             => new AppendPointerEnumerable<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, Enumerator, TResult>(this, value);
-            
+
 
         public bool Any() => enumerable.Any<TPrevEnumerable, TPrevEnumerator, TSource>();
 
@@ -210,8 +225,8 @@ namespace pcysl5edgo.Collections.LINQ
 
         public List<TResult> ToList()
             => this.ToList<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, Enumerator, TResult>();
-        
-        public unsafe struct Enumerator: IRefEnumerator<TResult>
+
+        public unsafe struct Enumerator : IRefEnumerator<TResult>
         {
             private TPrevEnumerator enumerator;
             private TResult* current;

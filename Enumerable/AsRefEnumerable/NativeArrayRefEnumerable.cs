@@ -45,6 +45,14 @@ namespace pcysl5edgo.Collections.LINQ
 #endif
             where TAction : unmanaged, IRefAction<T, TResult>
             => new SelectEnumerable<NativeEnumerable<T>, Enumerator, T, TResult, TAction>(this, action, allocator);
+        
+        public SelectIndexEnumerable<NativeEnumerable<T>, Enumerator, T, TResult, TAction> SelectIndex<TResult, TAction>(TAction action, Allocator allocator = Allocator.Temp)
+            where TResult : unmanaged
+#if STRICT_EQUALITY
+            , IEquatable<TResult>
+#endif
+            where TAction : unmanaged, ISelectIndex<T, TResult>
+            => new SelectIndexEnumerable<NativeEnumerable<T>, Enumerator, T, TResult, TAction>(this, action, allocator);
 
         public AppendEnumerable<NativeEnumerable<T>, Enumerator, T> Append(T value, Allocator allocator = Allocator.Temp)
             => new AppendEnumerable<NativeEnumerable<T>, Enumerator, T>(this, value, allocator);
