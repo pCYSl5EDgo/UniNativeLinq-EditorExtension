@@ -45,7 +45,7 @@ namespace pcysl5edgo.Collections.LINQ
 #endif
             where TAction : unmanaged, IRefAction<T, TResult>
             => new SelectEnumerable<NativeEnumerable<T>, Enumerator, T, TResult, TAction>(this, action, allocator);
-        
+
         public SelectIndexEnumerable<NativeEnumerable<T>, Enumerator, T, TResult, TAction> SelectIndex<TResult, TAction>(TAction action, Allocator allocator = Allocator.Temp)
             where TResult : unmanaged
 #if STRICT_EQUALITY
@@ -59,6 +59,9 @@ namespace pcysl5edgo.Collections.LINQ
 
         public AppendPointerEnumerable<NativeEnumerable<T>, Enumerator, T> Append(T* value)
             => new AppendPointerEnumerable<NativeEnumerable<T>, Enumerator, T>(this, value);
+
+        public DefaultIfEmptyEnumerable<NativeEnumerable<T>, Enumerator, T> DefaultIfEmpty(T defaultValue, Allocator allocator = Allocator.Temp)
+            => new DefaultIfEmptyEnumerable<NativeEnumerable<T>, Enumerator, T>(this, defaultValue, allocator);
         #endregion
 
         #region function

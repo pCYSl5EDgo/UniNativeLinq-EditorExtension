@@ -5,7 +5,8 @@ using Unity.Collections;
 
 namespace pcysl5edgo.Collections.LINQ
 {
-    public struct WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate> : IRefEnumerable<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>.Enumerator, TSource>, ILinq<TSource>
+    public struct WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>
+        : IRefEnumerable<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>.Enumerator, TSource>, ILinq<TSource>
         where TSource : unmanaged
 #if STRICT_EQUALITY
         , IEquatable<TSource>
@@ -51,13 +52,19 @@ namespace pcysl5edgo.Collections.LINQ
 #endif
             where TAction : unmanaged, ISelectIndex<TSource, TResult>
             => new SelectIndexEnumerable<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource, TResult, TAction>(this, action, allocator);
-        
+
         public AppendEnumerable<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource> Append(TSource value, Allocator allocator = Allocator.Temp)
             => new AppendEnumerable<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource>(this, value, allocator);
 
         public unsafe AppendPointerEnumerable<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource> Append(TSource* value)
             => new AppendPointerEnumerable<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource>(this, value);
 
+        public DefaultIfEmptyEnumerable<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource>
+            DefaultIfEmpty(TSource defaultValue, Allocator allocator = Allocator.Temp)
+            => new DefaultIfEmptyEnumerable<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource>(this, defaultValue, allocator);
+
+        #region Function
+        
         public bool Any()
             => this.Any<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource>();
 
@@ -168,8 +175,9 @@ namespace pcysl5edgo.Collections.LINQ
 
         public List<TSource> ToList()
             => this.ToList<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource>();
-        
-        public struct Enumerator: IRefEnumerator<TSource>
+        #endregion
+
+        public struct Enumerator : IRefEnumerator<TSource>
         {
             private TPrevEnumerator enumerator;
             private TPredicate predicts;
@@ -179,7 +187,7 @@ namespace pcysl5edgo.Collections.LINQ
                 this.enumerator = enumerator;
                 this.predicts = predicts;
             }
-        
+
             public bool MoveNext()
             {
                 while (enumerator.MoveNext())
