@@ -86,7 +86,7 @@ namespace pcysl5edgo.Collections.LINQ
                 return true;
             }
 
-            public void Reset() => throw new System.InvalidOperationException();
+            public void Reset() => throw new InvalidOperationException();
         }
 
         public DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, TSource>

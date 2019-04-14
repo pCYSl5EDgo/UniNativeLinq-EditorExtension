@@ -28,9 +28,9 @@ namespace pcysl5edgo.Collections.LINQ
             => new Enumerator(enumerable.GetEnumerator(), predicts);
 
         IEnumerator<TSource> IEnumerable<TSource>.GetEnumerator() => GetEnumerator();
-
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
+        #region Enumerable
         public WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate> AsRefEnumerable() => this;
 
         public WhereEnumerable<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource, TNextPredicate> Where<TNextPredicate>(TNextPredicate predicate)
@@ -62,9 +62,155 @@ namespace pcysl5edgo.Collections.LINQ
         public DefaultIfEmptyEnumerable<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource>
             DefaultIfEmpty(TSource defaultValue, Allocator allocator = Allocator.Temp)
             => new DefaultIfEmptyEnumerable<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource>(this, defaultValue, allocator);
+        #endregion
+
+        #region Where
+        public ConcatEnumerable<
+                WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>,
+                Enumerator,
+                WhereEnumerable<TEnumerable1, TEnumerator1, TSource, TPredicate1>,
+                WhereEnumerable<TEnumerable1, TEnumerator1, TSource, TPredicate1>.Enumerator,
+                TSource
+            >
+            Concat<TEnumerable1, TEnumerator1, TPredicate1>
+            (in WhereEnumerable<TEnumerable1, TEnumerator1, TSource, TPredicate1> second)
+            where TEnumerable1 : struct, IRefEnumerable<TEnumerator1, TSource>
+            where TEnumerator1 : struct, IRefEnumerator<TSource>
+            where TPredicate1 : unmanaged, IRefFunc<TSource, bool>
+            => new ConcatEnumerable<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, WhereEnumerable<TEnumerable1, TEnumerator1, TSource, TPredicate1>, WhereEnumerable<TEnumerable1, TEnumerator1, TSource, TPredicate1>.Enumerator, TSource>(this, second);
+
+        public ConcatEnumerable<
+                WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>,
+                Enumerator,
+                NativeEnumerable<TSource>,
+                NativeEnumerable<TSource>.Enumerator,
+                TSource
+            >
+            Concat(NativeArray<TSource> second)
+            => new ConcatEnumerable<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, NativeEnumerable<TSource>, NativeEnumerable<TSource>.Enumerator, TSource>(this, second.AsRefEnumerable());
+
+        public ConcatEnumerable<
+                WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>,
+                Enumerator,
+                NativeEnumerable<TSource>,
+                NativeEnumerable<TSource>.Enumerator,
+                TSource
+            >
+            Concat(in NativeEnumerable<TSource> second)
+            => new ConcatEnumerable<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, NativeEnumerable<TSource>, NativeEnumerable<TSource>.Enumerator, TSource>(this, second);
+
+        public ConcatEnumerable<
+                WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>,
+                Enumerator,
+                ConcatEnumerable<TEnumerable1, TEnumerator1, TEnumerable2, TEnumerator2, TSource>,
+                ConcatEnumerable<TEnumerable1, TEnumerator1, TEnumerable2, TEnumerator2, TSource>.Enumerator,
+                TSource
+            >
+            Concat<TEnumerable1, TEnumerator1, TEnumerable2, TEnumerator2>
+            (in ConcatEnumerable<TEnumerable1, TEnumerator1, TEnumerable2, TEnumerator2, TSource> second)
+            where TEnumerable1 : struct, IRefEnumerable<TEnumerator1, TSource>
+            where TEnumerator1 : struct, IRefEnumerator<TSource>
+            where TEnumerable2 : struct, IRefEnumerable<TEnumerator2, TSource>
+            where TEnumerator2 : struct, IRefEnumerator<TSource>
+            => new ConcatEnumerable<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, ConcatEnumerable<TEnumerable1, TEnumerator1, TEnumerable2, TEnumerator2, TSource>, ConcatEnumerable<TEnumerable1, TEnumerator1, TEnumerable2, TEnumerator2, TSource>.Enumerator, TSource>(this, second);
+
+        public ConcatEnumerable<
+                WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>,
+                Enumerator,
+                AppendPointerEnumerable<TEnumerable1, TEnumerator1, TSource>,
+                AppendEnumerator<TEnumerator1, TSource>,
+                TSource
+            >
+            Concat<TEnumerable1, TEnumerator1>
+            (in AppendPointerEnumerable<TEnumerable1, TEnumerator1, TSource> second)
+            where TEnumerable1 : struct, IRefEnumerable<TEnumerator1, TSource>
+            where TEnumerator1 : struct, IRefEnumerator<TSource>
+            => new ConcatEnumerable<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, AppendPointerEnumerable<TEnumerable1, TEnumerator1, TSource>, AppendEnumerator<TEnumerator1, TSource>, TSource>(this, second);
+
+        public ConcatEnumerable<
+                WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>,
+                Enumerator,
+                AppendEnumerable<TEnumerable1, TEnumerator1, TSource>,
+                AppendEnumerator<TEnumerator1, TSource>,
+                TSource
+            >
+            Concat<TEnumerable1, TEnumerator1>
+            (in AppendEnumerable<TEnumerable1, TEnumerator1, TSource> second)
+            where TEnumerable1 : struct, IRefEnumerable<TEnumerator1, TSource>
+            where TEnumerator1 : struct, IRefEnumerator<TSource>
+            => new ConcatEnumerable<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, AppendEnumerable<TEnumerable1, TEnumerator1, TSource>, AppendEnumerator<TEnumerator1, TSource>, TSource>(this, second);
+
+        public ConcatEnumerable<
+                WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>,
+                Enumerator,
+                DefaultIfEmptyEnumerable<TEnumerable1, TEnumerator1, TSource>,
+                DefaultIfEmptyEnumerable<TEnumerable1, TEnumerator1, TSource>.Enumerator,
+                TSource
+            >
+            Concat<TEnumerable1, TEnumerator1>
+            (in DefaultIfEmptyEnumerable<TEnumerable1, TEnumerator1, TSource> second)
+            where TEnumerable1 : struct, IRefEnumerable<TEnumerator1, TSource>
+            where TEnumerator1 : struct, IRefEnumerator<TSource>
+            => new ConcatEnumerable<
+                    WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>,
+                    Enumerator,
+                    DefaultIfEmptyEnumerable<TEnumerable1, TEnumerator1, TSource>,
+                    DefaultIfEmptyEnumerable<TEnumerable1, TEnumerator1, TSource>.Enumerator,
+                    TSource>
+                (this, second);
+
+
+        public ConcatEnumerable<
+                WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>,
+                Enumerator,
+                SelectEnumerable<TEnumerable1, TEnumerator1, TPrevSource, TSource, TAction>,
+                SelectEnumerable<TEnumerable1, TEnumerator1, TPrevSource, TSource, TAction>.Enumerator,
+                TSource
+            >
+            Concat<TEnumerable1, TEnumerator1, TPrevSource, TAction>
+            (in SelectEnumerable<TEnumerable1, TEnumerator1, TPrevSource, TSource, TAction> second)
+            where TEnumerable1 : struct, IRefEnumerable<TEnumerator1, TPrevSource>
+            where TEnumerator1 : struct, IRefEnumerator<TPrevSource>
+            where TPrevSource : unmanaged
+#if STRICT_EQUALITY
+            , IEquatable<TPrevSource>
+#endif
+            where TAction : unmanaged, IRefAction<TPrevSource, TSource>
+            => new ConcatEnumerable<
+                    WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>,
+                    Enumerator,
+                    SelectEnumerable<TEnumerable1, TEnumerator1, TPrevSource, TSource, TAction>,
+                    SelectEnumerable<TEnumerable1, TEnumerator1, TPrevSource, TSource, TAction>.Enumerator,
+                    TSource>
+                (this, second);
+
+        public ConcatEnumerable<
+                WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>,
+                Enumerator,
+                SelectIndexEnumerable<TEnumerable1, TEnumerator1, TPrevSource, TSource, TAction>,
+                SelectIndexEnumerable<TEnumerable1, TEnumerator1, TPrevSource, TSource, TAction>.Enumerator,
+                TSource
+            >
+            Concat<TEnumerable1, TEnumerator1, TPrevSource, TAction>
+            (in SelectIndexEnumerable<TEnumerable1, TEnumerator1, TPrevSource, TSource, TAction> second)
+            where TEnumerable1 : struct, IRefEnumerable<TEnumerator1, TPrevSource>
+            where TEnumerator1 : struct, IRefEnumerator<TPrevSource>
+            where TPrevSource : unmanaged
+#if STRICT_EQUALITY
+            , IEquatable<TPrevSource>
+#endif
+            where TAction : unmanaged, ISelectIndex<TPrevSource, TSource>
+            => new ConcatEnumerable<
+                    WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>,
+                    Enumerator,
+                    SelectIndexEnumerable<TEnumerable1, TEnumerator1, TPrevSource, TSource, TAction>,
+                    SelectIndexEnumerable<TEnumerable1, TEnumerator1, TPrevSource, TSource, TAction>.Enumerator,
+                    TSource>
+                (this, second);
+        #endregion
+
 
         #region Function
-        
         public bool Any()
             => this.Any<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource>();
 
