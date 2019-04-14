@@ -29,7 +29,7 @@ namespace pcysl5edgo.Collections.LINQ
         IEnumerator<TSource> IEnumerable<TSource>.GetEnumerator() => GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        public unsafe struct Enumerator : IRefEnumerator<TSource>
+        public struct Enumerator : IRefEnumerator<TSource>
         {
             private TEnumerator enumerator;
             private readonly TSource* ptr;
@@ -194,7 +194,7 @@ namespace pcysl5edgo.Collections.LINQ
 
         public long LongCount<TPredicate>(TPredicate predicate)
             where TPredicate : unmanaged, IRefFunc<TSource, bool>
-            => this.Count<TPredicate>(predicate);
+            => this.Count(predicate);
 
         public bool TryGetElementAt(int index, out TSource element)
             => this.TryGetElementAt<DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, TSource>, Enumerator, TSource>(index, out element);
@@ -244,7 +244,7 @@ namespace pcysl5edgo.Collections.LINQ
         {
             var length = enumerable.Count<TEnumerable, TEnumerator, TSource>();
             if (length == 0)
-                return new TSource[1] {val};
+                return new[] {val};
             var answer = new TSource[length];
             var enumerator = enumerable.GetEnumerator();
             var index = 0;
@@ -260,8 +260,7 @@ namespace pcysl5edgo.Collections.LINQ
             NativeArray<TSource> answer;
             if (length == 0)
             {
-                answer = new NativeArray<TSource>(1, allocator);
-                answer[0] = val;
+                answer = new NativeArray<TSource>(1, allocator) {[0] = val};
                 return answer;
             }
             answer = new NativeArray<TSource>(length, allocator);
