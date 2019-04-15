@@ -366,10 +366,6 @@ namespace pcysl5edgo.Collections.LINQ
             return true;
         }
 
-        public void Aggregate<TFunc>(ref TResult seed, TFunc func)
-            where TFunc : unmanaged, IRefAction<TResult, TResult>
-            => this.Aggregate<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, Enumerator, TResult, TFunc>(ref seed, func);
-
         public void Aggregate<TAccumulate, TFunc>(ref TAccumulate seed, TFunc func)
             where TFunc : unmanaged, IRefAction<TAccumulate, TResult>
             => this.Aggregate<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, Enumerator, TResult, TAccumulate, TFunc>(ref seed, func);
@@ -379,8 +375,8 @@ namespace pcysl5edgo.Collections.LINQ
             where TNextResultFunc : unmanaged, IRefFunc<TAccumulate, TNextResult>
             => this.Aggregate<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, Enumerator, TResult, TAccumulate, TNextResult, TFunc, TNextResultFunc>(ref seed, func, resultFunc);
 
-        public TResult Aggregate(TResult seed, Func<TResult, TResult, TResult> func)
-            => this.Aggregate<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, Enumerator, TResult>(seed, func);
+        public TResult Aggregate(Func<TResult, TResult, TResult> func)
+            => this.Aggregate<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, Enumerator, TResult>(func);
 
         public TAccumulate Aggregate<TAccumulate>(TAccumulate seed, Func<TAccumulate, TResult, TAccumulate> func)
             => this.Aggregate<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, Enumerator, TResult, TAccumulate>(seed, func);

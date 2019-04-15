@@ -13,15 +13,13 @@ namespace pcysl5edgo.Collections.LINQ
         where TPredicate : unmanaged, IRefFunc<TSource, bool>;
         bool All(Func<TSource, bool> predicate);
 
-        void Aggregate<TFunc>(ref TSource seed, TFunc func)
-        where TFunc : unmanaged, IRefAction<TSource, TSource>;
         void Aggregate<TAccumulate, TFunc>(ref TAccumulate seed, TFunc func)
         where TFunc : unmanaged, IRefAction<TAccumulate, TSource>;
         TResult Aggregate<TAccumulate, TResult, TFunc, TResultFunc>(ref TAccumulate seed, TFunc func, TResultFunc resultFunc)
         where TFunc : unmanaged, IRefAction<TAccumulate, TSource>
         where TResultFunc : unmanaged, IRefFunc<TAccumulate, TResult>;
 
-        TSource Aggregate(TSource seed, Func<TSource, TSource, TSource> func);
+        TSource Aggregate(Func<TSource, TSource, TSource> func);
         TAccumulate Aggregate<TAccumulate>(TAccumulate seed, Func<TAccumulate, TSource, TAccumulate> func);
         TResult Aggregate<TAccumulate, TResult>(TAccumulate seed, Func<TAccumulate, TSource, TAccumulate> func, Func<TAccumulate, TResult> resultFunc);
 

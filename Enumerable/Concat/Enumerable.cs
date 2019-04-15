@@ -171,7 +171,7 @@ namespace pcysl5edgo.Collections.LINQ
             >
             Concat(in ArrayEnumerable<TSource> second)
             => new ConcatEnumerable<ConcatEnumerable<TFirstEnumerable, TFirstEnumerator, TSecondEnumerable, TSecondEnumerator, TSource>, Enumerator, ArrayEnumerable<TSource>, ArrayEnumerable<TSource>.Enumerator, TSource>(this, second);
-        
+
         public ConcatEnumerable<
                 ConcatEnumerable<TFirstEnumerable, TFirstEnumerator, TSecondEnumerable, TSecondEnumerator, TSource>,
                 Enumerator,
@@ -265,13 +265,6 @@ namespace pcysl5edgo.Collections.LINQ
         public bool All(Func<TSource, bool> predicate)
             => FirstEnumerable.All<TFirstEnumerable, TFirstEnumerator, TSource>(predicate) || SecondEnumerable.All<TSecondEnumerable, TSecondEnumerator, TSource>(predicate);
 
-        public void Aggregate<TFunc>(ref TSource seed, TFunc func)
-            where TFunc : unmanaged, IRefAction<TSource, TSource>
-        {
-            FirstEnumerable.Aggregate<TFirstEnumerable, TFirstEnumerator, TSource, TFunc>(ref seed, func);
-            SecondEnumerable.Aggregate<TSecondEnumerable, TSecondEnumerator, TSource, TFunc>(ref seed, func);
-        }
-
         public void Aggregate<TAccumulate, TFunc>(ref TAccumulate seed, TFunc func)
             where TFunc : unmanaged, IRefAction<TAccumulate, TSource>
         {
@@ -287,8 +280,11 @@ namespace pcysl5edgo.Collections.LINQ
             return SecondEnumerable.Aggregate<TSecondEnumerable, TSecondEnumerator, TSource, TAccumulate, TResult, TFunc, TResultFunc>(ref seed, func, resultFunc);
         }
 
-        public TSource Aggregate(TSource seed, Func<TSource, TSource, TSource> func)
-            => SecondEnumerable.Aggregate<TSecondEnumerable, TSecondEnumerator, TSource>(FirstEnumerable.Aggregate<TFirstEnumerable, TFirstEnumerator, TSource>(seed, func), func);
+        public TSource Aggregate(Func<TSource, TSource, TSource> func)
+            => SecondEnumerable.Aggregate<TSecondEnumerable, TSecondEnumerator, TSource, TSource>(
+                FirstEnumerable.Aggregate<TFirstEnumerable, TFirstEnumerator, TSource>(func),
+                func
+            );
 
         public TAccumulate Aggregate<TAccumulate>(TAccumulate seed, Func<TAccumulate, TSource, TAccumulate> func)
             => SecondEnumerable.Aggregate<TSecondEnumerable, TSecondEnumerator, TSource, TAccumulate>(FirstEnumerable.Aggregate<TFirstEnumerable, TFirstEnumerator, TSource, TAccumulate>(seed, func), func);

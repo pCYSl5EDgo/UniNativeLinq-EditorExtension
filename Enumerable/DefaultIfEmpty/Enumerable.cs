@@ -322,10 +322,6 @@ namespace pcysl5edgo.Collections.LINQ
         public bool All(Func<TSource, bool> predicate)
             => this.All<DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, TSource>, Enumerator, TSource>(predicate);
 
-        public void Aggregate<TFunc>(ref TSource seed, TFunc func)
-            where TFunc : unmanaged, IRefAction<TSource, TSource>
-            => this.Aggregate<DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, TSource>, Enumerator, TSource, TFunc>(ref seed, func);
-
         public void Aggregate<TAccumulate, TFunc>(ref TAccumulate seed, TFunc func)
             where TFunc : unmanaged, IRefAction<TAccumulate, TSource>
             => this.Aggregate<DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, TSource>, Enumerator, TSource, TAccumulate, TFunc>(ref seed, func);
@@ -335,8 +331,8 @@ namespace pcysl5edgo.Collections.LINQ
             where TResultFunc : unmanaged, IRefFunc<TAccumulate, TResult>
             => this.Aggregate<DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, TSource>, Enumerator, TSource, TAccumulate, TResult, TFunc, TResultFunc>(ref seed, func, resultFunc);
 
-        public TSource Aggregate(TSource seed, Func<TSource, TSource, TSource> func)
-            => this.Aggregate<DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, TSource>, Enumerator, TSource>(seed, func);
+        public TSource Aggregate(Func<TSource, TSource, TSource> func)
+            => this.Aggregate<DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, TSource>, Enumerator, TSource>(func);
 
         public TAccumulate Aggregate<TAccumulate>(TAccumulate seed, Func<TAccumulate, TSource, TAccumulate> func)
             => this.Aggregate<DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, TSource>, Enumerator, TSource, TAccumulate>(seed, func);

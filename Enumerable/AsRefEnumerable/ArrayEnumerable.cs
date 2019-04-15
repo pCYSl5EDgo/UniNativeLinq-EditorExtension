@@ -307,7 +307,7 @@ namespace pcysl5edgo.Collections.LINQ
         public bool Any<TPredicate>(TPredicate predicate)
             where TPredicate : unmanaged, IRefFunc<T, bool>
         {
-            var ptr = (T*) Unsafe.AsPointer(ref Array[Offset]);
+            var ptr = GetPointer();
             for (var i = 0L; i < Length; i++, ptr++)
                 if (predicate.Calc(ref *ptr))
                     return true;
@@ -316,7 +316,7 @@ namespace pcysl5edgo.Collections.LINQ
 
         public bool Any(Func<T, bool> predicate)
         {
-            var ptr = (T*) Unsafe.AsPointer(ref Array[Offset]);
+            var ptr = GetPointer();
             for (var i = 0L; i < Length; i++, ptr++)
                 if (predicate(*ptr))
                     return true;
@@ -326,7 +326,7 @@ namespace pcysl5edgo.Collections.LINQ
         public bool All<TPredicate>(TPredicate predicate)
             where TPredicate : unmanaged, IRefFunc<T, bool>
         {
-            var ptr = (T*) Unsafe.AsPointer(ref Array[Offset]);
+            var ptr = GetPointer();
             for (var i = 0L; i < Length; i++, ptr++)
                 if (!predicate.Calc(ref *ptr))
                     return false;
@@ -335,7 +335,7 @@ namespace pcysl5edgo.Collections.LINQ
 
         public bool All(Func<T, bool> predicate)
         {
-            var ptr = (T*) Unsafe.AsPointer(ref Array[Offset]);
+            var ptr = GetPointer();
             for (var i = 0L; i < Length; i++, ptr++)
                 if (!predicate(*ptr))
                     return false;
@@ -345,7 +345,7 @@ namespace pcysl5edgo.Collections.LINQ
         public void Aggregate<TFunc>(ref T seed, TFunc func)
             where TFunc : unmanaged, IRefAction<T, T>
         {
-            var ptr = (T*) Unsafe.AsPointer(ref Array[Offset]);
+            var ptr = GetPointer();
             for (var i = 0L; i < Length; i++, ptr++)
                 func.Execute(ref seed, ref *ptr);
         }
@@ -353,7 +353,7 @@ namespace pcysl5edgo.Collections.LINQ
         public void Aggregate<TAccumulate, TFunc>(ref TAccumulate seed, TFunc func)
             where TFunc : unmanaged, IRefAction<TAccumulate, T>
         {
-            var ptr = (T*) Unsafe.AsPointer(ref Array[Offset]);
+            var ptr = GetPointer();
             for (var i = 0L; i < Length; i++, ptr++)
                 func.Execute(ref seed, ref *ptr);
         }
@@ -362,15 +362,25 @@ namespace pcysl5edgo.Collections.LINQ
             where TFunc : unmanaged, IRefAction<TAccumulate, T>
             where TResultFunc : unmanaged, IRefFunc<TAccumulate, TResult>
         {
-            var ptr = (T*) Unsafe.AsPointer(ref Array[Offset]);
+            var ptr = GetPointer();
             for (var i = 0L; i < Length; i++, ptr++)
                 func.Execute(ref seed, ref *ptr);
             return resultFunc.Calc(ref seed);
         }
 
+        public T Aggregate(Func<T, T, T> func)
+        {
+            if (Length == 0) throw new InvalidOperationException();
+            var ptr = GetPointer();
+            var seed = *ptr++;
+            for (var i = 1L; i < Length; i++, ptr++)
+                seed = func(seed, *ptr);
+            return seed;
+        }
+
         public T Aggregate(T seed, Func<T, T, T> func)
         {
-            var ptr = (T*) Unsafe.AsPointer(ref Array[Offset]);
+            var ptr = GetPointer();
             for (var i = 0L; i < Length; i++, ptr++)
                 seed = func(seed, *ptr);
             return seed;
@@ -378,7 +388,7 @@ namespace pcysl5edgo.Collections.LINQ
 
         public TAccumulate Aggregate<TAccumulate>(TAccumulate seed, Func<TAccumulate, T, TAccumulate> func)
         {
-            var ptr = (T*) Unsafe.AsPointer(ref Array[Offset]);
+            var ptr = GetPointer();
             for (var i = 0L; i < Length; i++, ptr++)
                 seed = func(seed, *ptr);
             return seed;
@@ -386,7 +396,7 @@ namespace pcysl5edgo.Collections.LINQ
 
         public TResult Aggregate<TAccumulate, TResult>(TAccumulate seed, Func<TAccumulate, T, TAccumulate> func, Func<TAccumulate, TResult> resultFunc)
         {
-            var ptr = (T*) Unsafe.AsPointer(ref Array[Offset]);
+            var ptr = GetPointer();
             for (var i = 0L; i < Length; i++, ptr++)
                 seed = func(seed, *ptr);
             return resultFunc(seed);
@@ -394,7 +404,7 @@ namespace pcysl5edgo.Collections.LINQ
 
         public bool Contains(T value)
         {
-            var ptr = (T*) Unsafe.AsPointer(ref Array[Offset]);
+            var ptr = GetPointer();
             for (var i = 0L; i < Length; i++, ptr++)
                 if (value.Equals(*ptr))
                     return true;
@@ -403,7 +413,7 @@ namespace pcysl5edgo.Collections.LINQ
 
         public bool Contains(T value, IEqualityComparer<T> comparer)
         {
-            var ptr = (T*) Unsafe.AsPointer(ref Array[Offset]);
+            var ptr = GetPointer();
             for (var i = 0L; i < Length; i++, ptr++)
                 if (comparer.Equals(value, *ptr))
                     return true;
@@ -413,7 +423,7 @@ namespace pcysl5edgo.Collections.LINQ
         public bool Contains<TComparer>(T value, TComparer comparer)
             where TComparer : unmanaged, IRefFunc<T, T, bool>
         {
-            var ptr = (T*) Unsafe.AsPointer(ref Array[Offset]);
+            var ptr = GetPointer();
             for (var i = 0L; i < Length; i++, ptr++)
                 if (comparer.Calc(ref value, ref *ptr))
                     return true;
@@ -425,7 +435,7 @@ namespace pcysl5edgo.Collections.LINQ
         public int Count(Func<T, bool> predicate)
         {
             var count = 0;
-            var ptr = (T*) Unsafe.AsPointer(ref Array[Offset]);
+            var ptr = GetPointer();
             for (var i = 0L; i < Length; i++, ptr++)
                 if (predicate(*ptr))
                     ++count;
@@ -436,7 +446,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TPredicate : unmanaged, IRefFunc<T, bool>
         {
             var count = 0;
-            var ptr = (T*) Unsafe.AsPointer(ref Array[Offset]);
+            var ptr = GetPointer();
             for (var i = 0L; i < Length; i++, ptr++)
                 if (predicate.Calc(ref *ptr))
                     ++count;
@@ -448,7 +458,7 @@ namespace pcysl5edgo.Collections.LINQ
         public long LongCount(Func<T, bool> predicate)
         {
             var count = 0L;
-            var ptr = (T*) Unsafe.AsPointer(ref Array[Offset]);
+            var ptr = GetPointer();
             for (var i = 0L; i < Length; i++, ptr++)
                 if (predicate(*ptr))
                     ++count;
@@ -459,7 +469,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TPredicate : unmanaged, IRefFunc<T, bool>
         {
             var count = 0L;
-            var ptr = (T*) Unsafe.AsPointer(ref Array[Offset]);
+            var ptr = GetPointer();
             for (var i = 0L; i < Length; i++, ptr++)
                 if (predicate.Calc(ref *ptr))
                     ++count;
@@ -541,7 +551,7 @@ namespace pcysl5edgo.Collections.LINQ
         public Dictionary<TKey, TElement> ToDictionary<TKey, TElement>(Func<T, TKey> keySelector, Func<T, TElement> elementSelector)
         {
             var answer = new Dictionary<TKey, TElement>((int) Length);
-            var ptr = (T*) Unsafe.AsPointer(ref Array[Offset]);
+            var ptr = GetPointer();
             for (var i = 0L; i < Length; i++, ptr++)
                 answer.Add(keySelector(*ptr), elementSelector(*ptr));
             return answer;
@@ -552,7 +562,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TElementFunc : unmanaged, IRefFunc<T, TElement>
         {
             var answer = new Dictionary<TKey, TElement>((int) Length);
-            var ptr = (T*) Unsafe.AsPointer(ref Array[Offset]);
+            var ptr = GetPointer();
             for (var i = 0L; i < Length; i++, ptr++)
             {
                 ref var item = ref *ptr;
@@ -564,7 +574,7 @@ namespace pcysl5edgo.Collections.LINQ
         public HashSet<T> ToHashSet()
         {
             var answer = new HashSet<T>();
-            var ptr = (T*) Unsafe.AsPointer(ref Array[Offset]);
+            var ptr = GetPointer();
             for (var i = 0L; i < Length; i++, ptr++)
                 answer.Add(*ptr);
             return answer;
@@ -573,7 +583,7 @@ namespace pcysl5edgo.Collections.LINQ
         public HashSet<T> ToHashSet(IEqualityComparer<T> comparer)
         {
             var answer = new HashSet<T>(comparer);
-            var ptr = (T*) Unsafe.AsPointer(ref Array[Offset]);
+            var ptr = GetPointer();
             for (var i = 0L; i < Length; i++, ptr++)
                 answer.Add(*ptr);
             return answer;
@@ -582,7 +592,7 @@ namespace pcysl5edgo.Collections.LINQ
         public List<T> ToList()
         {
             var answer = new List<T>();
-            var ptr = (T*) Unsafe.AsPointer(ref Array[Offset]);
+            var ptr = GetPointer();
             for (var i = 0L; i < Length; i++, ptr++)
                 answer.Add(*ptr);
             return answer;

@@ -257,8 +257,8 @@ namespace pcysl5edgo.Collections.LINQ
             where TResultFunc : unmanaged, IRefFunc<TAccumulate, TResult>
             => this.Aggregate<AppendPointerEnumerable<TPrevEnumerable, TPrevEnumerator, TSource>, AppendEnumerator<TPrevEnumerator, TSource>, TSource, TAccumulate, TResult, TFunc, TResultFunc>(ref seed, func, resultFunc);
 
-        public TSource Aggregate(TSource seed, Func<TSource, TSource, TSource> func)
-            => this.Aggregate<AppendPointerEnumerable<TPrevEnumerable, TPrevEnumerator, TSource>, AppendEnumerator<TPrevEnumerator, TSource>, TSource>(seed, func);
+        public TSource Aggregate(Func<TSource, TSource, TSource> func)
+            => this.Aggregate<AppendPointerEnumerable<TPrevEnumerable, TPrevEnumerator, TSource>, AppendEnumerator<TPrevEnumerator, TSource>, TSource>(func);
 
         public TAccumulate Aggregate<TAccumulate>(TAccumulate seed, Func<TAccumulate, TSource, TAccumulate> func)
             => this.Aggregate<AppendPointerEnumerable<TPrevEnumerable, TPrevEnumerator, TSource>, AppendEnumerator<TPrevEnumerator, TSource>, TSource, TAccumulate>(seed, func);
@@ -282,10 +282,6 @@ namespace pcysl5edgo.Collections.LINQ
 
         TResult ILinq<TSource>.Aggregate<TAccumulate, TResult, TFunc, TResultFunc>(ref TAccumulate seed, TFunc func, TResultFunc resultFunc)
             => this.Aggregate<AppendPointerEnumerable<TPrevEnumerable, TPrevEnumerator, TSource>, AppendEnumerator<TPrevEnumerator, TSource>, TSource, TAccumulate, TResult, TFunc, TResultFunc>(ref seed, func, resultFunc);
-
-        public void Aggregate<TFunc>(ref TSource seed, TFunc func)
-            where TFunc : unmanaged, IRefAction<TSource, TSource>
-            => this.Aggregate<AppendPointerEnumerable<TPrevEnumerable, TPrevEnumerator, TSource>, AppendEnumerator<TPrevEnumerator, TSource>, TSource, TFunc>(ref seed, func);
 
         public bool Contains<TEqualityComparer>(in TSource value, TEqualityComparer comparer)
             where TEqualityComparer : unmanaged, IRefFunc<TSource, TSource, bool>

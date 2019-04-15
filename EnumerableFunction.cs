@@ -176,24 +176,6 @@ namespace pcysl5edgo.Collections.LINQ
         #endregion
 
         #region Aggregate
-        public static void Aggregate<TEnumerable, TEnumerator, TSource, TFunc>(ref this TEnumerable @this, ref TSource seed, TFunc func)
-            where TFunc : struct, IRefAction<TSource, TSource>
-            where TEnumerable :
-#if !STRICT_ENUMERABLE
-            struct,
-#else
-            unmanaged,
-#endif
-            IRefEnumerable<TEnumerator, TSource>
-            where TEnumerator : struct, IRefEnumerator<TSource>
-            where TSource : unmanaged
-        {
-            var enumerator = @this.GetEnumerator();
-            while (enumerator.MoveNext())
-                func.Execute(ref seed, ref enumerator.Current);
-            enumerator.Dispose();
-        }
-
         public static void Aggregate<TEnumerable, TEnumerator, TSource, TAccumulate, TFunc>(ref this TEnumerable @this, ref TAccumulate seed, TFunc func)
             where TSource : unmanaged
             where TFunc : struct, IRefAction<TAccumulate, TSource>
@@ -344,7 +326,7 @@ namespace pcysl5edgo.Collections.LINQ
             return seed;
         }
 
-        public static TSource Aggregate<TEnumerable, TEnumerator, TSource>(ref this TEnumerable @this, TSource seed, Func<TSource, TSource, TSource> func)
+        public static TSource Aggregate<TEnumerable, TEnumerator, TSource>(ref this TEnumerable @this, Func<TSource, TSource, TSource> func)
             where TSource : unmanaged
             where TEnumerable :
 #if !STRICT_ENUMERABLE
@@ -356,6 +338,12 @@ namespace pcysl5edgo.Collections.LINQ
             where TEnumerator : struct, IRefEnumerator<TSource>
         {
             var enumerator = @this.GetEnumerator();
+            if (!enumerator.MoveNext())
+            {
+                enumerator.Dispose();
+                throw new InvalidOperationException();
+            }
+            var seed = enumerator.Current;
             while (enumerator.MoveNext())
                 seed = func(seed, enumerator.Current);
             enumerator.Dispose();

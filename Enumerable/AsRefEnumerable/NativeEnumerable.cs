@@ -157,7 +157,7 @@ namespace pcysl5edgo.Collections.LINQ
                     T
                 >
                 (this, second);
-        
+
         public ConcatEnumerable<
                 NativeEnumerable<T>,
                 Enumerator,
@@ -241,12 +241,6 @@ namespace pcysl5edgo.Collections.LINQ
         #endregion
 
         #region function
-        void ILinq<T>.Aggregate<TFunc>(ref T seed, TFunc func)
-        {
-            for (var i = 0; i < Length; i++)
-                func.Execute(ref seed, ref Ptr[i]);
-        }
-
         void ILinq<T>.Aggregate<TAccumulate, TFunc>(ref TAccumulate seed, TFunc func)
         {
             for (var i = 0; i < Length; i++)
@@ -260,9 +254,11 @@ namespace pcysl5edgo.Collections.LINQ
             return resultFunc.Calc(ref seed);
         }
 
-        T ILinq<T>.Aggregate(T seed, Func<T, T, T> func)
+        public T Aggregate(Func<T, T, T> func)
         {
-            for (var i = 0; i < Length; i++)
+            if (Length == 0) throw new InvalidOperationException();
+            var seed = Ptr[0];
+            for (var i = 1L; i < Length; i++)
                 seed = func(seed, Ptr[i]);
             return seed;
         }
