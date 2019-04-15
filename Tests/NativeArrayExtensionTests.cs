@@ -1,6 +1,5 @@
 ﻿using Unity.Collections;
 using NUnit.Framework;
-
 using static NUnit.Framework.Assert;
 
 namespace pcysl5edgo.Collections.LINQ.Test
@@ -23,6 +22,7 @@ namespace pcysl5edgo.Collections.LINQ.Test
                 array[i] = i;
             }
         }
+
         [TearDown]
         public void TearDown()
         {
@@ -66,8 +66,8 @@ namespace pcysl5edgo.Collections.LINQ.Test
         [Test]
         public void AggregateTest()
         {
-            AreEqual("45", array.Aggregate(0UL, (accum, elem) => accum + (ulong)elem, accum => accum.ToString()));
-            AreEqual(45, array.Aggregate(0UL, (accum, elem) => accum + (ulong)elem));
+            AreEqual("45", array.Aggregate(0UL, (accum, elem) => accum + (ulong) elem, accum => accum.ToString()));
+            AreEqual(45, array.Aggregate(0UL, (accum, elem) => accum + (ulong) elem));
             AreEqual(45, array.Aggregate<int>(0, (accum, elem) => accum + elem));
             Aggregate0 agg = default;
             AreEqual("45", array.Aggregate<int, ulong, string, Aggregate0, Aggregate0>(0UL, agg, agg));
@@ -81,13 +81,15 @@ namespace pcysl5edgo.Collections.LINQ.Test
         struct Aggregate0 : IRefAction<int, int>, IRefAction<ulong, int>, IRefFunc<ulong, string>
         {
             public string Calc(ref ulong arg0) => arg0.ToString();
+
             public void Execute(ref int accum, ref int element)
             {
                 accum += element;
             }
+
             public void Execute(ref ulong accum, ref int element)
             {
-                accum += (ulong)element;
+                accum += (ulong) element;
             }
         }
 
@@ -96,7 +98,7 @@ namespace pcysl5edgo.Collections.LINQ.Test
         {
             var floats = array.Cast<int, float, Cast0>(Allocator.Temp, new Cast0());
             for (var i = 0; i < floats.Length; i++)
-                AreEqual((float)array[i], floats[i]);
+                AreEqual((float) array[i], floats[i]);
             floats.Dispose();
         }
 
@@ -129,7 +131,7 @@ namespace pcysl5edgo.Collections.LINQ.Test
             AreEqual(0, zero.Count());
             AreEqual(0L, zero.LongCount());
             AreEqual(array.Length, array.Count());
-            AreEqual((long)array.Length, array.LongCount());
+            AreEqual((long) array.Length, array.LongCount());
             AreEqual(5, array.Count(new Count0()));
             AreEqual(5, array.Count(x => x < 5));
         }
@@ -190,33 +192,11 @@ namespace pcysl5edgo.Collections.LINQ.Test
         }
 
         [Test]
-        public void RangeTest()
-        {
-            using (var ints = Enumerable.Range(1, 5, Allocator.Temp))
-            using (var floats = Enumerable.Range(1f, 5, Allocator.Temp))
-            using (var uints = Enumerable.Range(1u, 5, Allocator.Temp))
-            using (var ulongs = Enumerable.Range(1ul, 5, Allocator.Temp))
-            using (var doubles = Enumerable.Range(1.0, 5, Allocator.Temp))
-            {
-                for (var i = 0; i < 5; i++)
-                {
-                    AreEqual(i + 1, ints[i]);
-                    AreEqual(i + 1, uints[i]);
-                    AreEqual(i + 1, ulongs[i]);
-                    AreEqual(i + 1, floats[i]);
-                    AreEqual(i + 1, doubles[i]);
-                }
-            }
-        }
-
-        [Test]
         public void RepeatTest()
         {
-            TestPredicate source = new TestPredicate(342);
-            using (var array2 = Enumerable.Repeat(source, 114, Allocator.Temp))
+            foreach (var variable in Enumerable.Repeat(342, 114, Allocator.Temp))
             {
-                for (int i = 0; i < array2.Length; i++)
-                    AreEqual(source, array2[i]);
+                AreEqual(342, variable);                
             }
         }
 

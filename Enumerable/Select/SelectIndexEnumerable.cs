@@ -276,7 +276,7 @@ namespace pcysl5edgo.Collections.LINQ
             >
             Concat(in ArrayEnumerable<TResult> second)
             => new ConcatEnumerable<SelectIndexEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, Enumerator, ArrayEnumerable<TResult>, ArrayEnumerable<TResult>.Enumerator, TResult>(this, second);
-        
+
         public ConcatEnumerable<
                 SelectIndexEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>,
                 Enumerator,
@@ -306,6 +306,18 @@ namespace pcysl5edgo.Collections.LINQ
                     DefaultIfEmptyEnumerable<TEnumerable1, TEnumerator1, TResult>.Enumerator,
                     TResult>
                 (this, second);
+
+        public ConcatEnumerable<
+                SelectIndexEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>,
+                Enumerator,
+                RangeRepeatEnumerable<TResult, TAction1>,
+                RangeRepeatEnumerable<TResult, TAction1>.Enumerator,
+                TResult
+            >
+            Concat<TAction1>
+            (in RangeRepeatEnumerable<TResult, TAction1> second)
+            where TAction1 : struct, IRefAction<TResult>
+            => new ConcatEnumerable<SelectIndexEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, Enumerator, RangeRepeatEnumerable<TResult, TAction1>, RangeRepeatEnumerable<TResult, TAction1>.Enumerator, TResult>(this, second);
 
         public ConcatEnumerable<
                 SelectIndexEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>,

@@ -1067,6 +1067,8 @@ namespace pcysl5edgo.Collections.LINQ
         }
         #endregion
 
+
+        #region ElementAt
         public static bool TryGetElementAt<TEnumerable, TEnumerator, TSource>(ref this TEnumerable @this, int index, out TSource value)
             where TEnumerable :
 #if !STRICT_ENUMERABLE
@@ -1116,6 +1118,7 @@ namespace pcysl5edgo.Collections.LINQ
                 throw new ArgumentOutOfRangeException();
             return ref array.GetPointer()[index];
         }
+        #endregion
 
         public static NativeArray<T> Empty<T>()
             where T : unmanaged
@@ -1932,70 +1935,36 @@ namespace pcysl5edgo.Collections.LINQ
         #endregion
 
         #region Range
-        public static NativeArray<Int32> Range(Int32 start, int count, Allocator allocator)
-        {
-            var answer = new NativeArray<Int32>(count, allocator, NativeArrayOptions.UninitializedMemory);
-            for (var i = 0; i < count; i++)
-                answer[i] = start + i;
-            return answer;
-        }
+        public static RangeRepeatEnumerable<Int32, Int32Increment> Range(Int32 start, int count, Allocator allocator = Allocator.Temp)
+            => new RangeRepeatEnumerable<Int32, Int32Increment>(start, count, default, allocator);
 
-        public static NativeArray<Int64> Range(Int64 start, int count, Allocator allocator)
-        {
-            var answer = new NativeArray<Int64>(count, allocator, NativeArrayOptions.UninitializedMemory);
-            for (var i = 0; i < count; i++)
-                answer[i] = start + i;
-            return answer;
-        }
+        public static RangeRepeatEnumerable<UInt64, UInt64Increment> Range(UInt64 start, int count, Allocator allocator = Allocator.Temp)
+            => new RangeRepeatEnumerable<UInt64, UInt64Increment>(start, count, default, allocator);
 
-        public static NativeArray<Single> Range(Single start, int count, Allocator allocator)
-        {
-            var answer = new NativeArray<Single>(count, allocator, NativeArrayOptions.UninitializedMemory);
-            for (var i = 0; i < count; i++)
-                answer[i] = start + i;
-            return answer;
-        }
+        public static RangeRepeatEnumerable<UInt32, UInt32Increment> Range(UInt32 start, int count, Allocator allocator = Allocator.Temp)
+            => new RangeRepeatEnumerable<UInt32, UInt32Increment>(start, count, default, allocator);
 
-        public static NativeArray<Double> Range(Double start, int count, Allocator allocator)
-        {
-            var answer = new NativeArray<Double>(count, allocator, NativeArrayOptions.UninitializedMemory);
-            for (var i = 0; i < count; i++)
-                answer[i] = start + i;
-            return answer;
-        }
+        public static RangeRepeatEnumerable<Int64, Int64Increment> Range(Int64 start, int count, Allocator allocator = Allocator.Temp)
+            => new RangeRepeatEnumerable<Int64, Int64Increment>(start, count, default, allocator);
 
-        public static NativeArray<UInt32> Range(UInt32 start, int count, Allocator allocator)
-        {
-            var answer = new NativeArray<UInt32>(count, allocator, NativeArrayOptions.UninitializedMemory);
-            for (var i = 0; i < count; i++)
-                answer[i] = start + (uint) i;
-            return answer;
-        }
+        public static RangeRepeatEnumerable<Single, SingleIncrement> Range(Single start, int count, Allocator allocator = Allocator.Temp)
+            => new RangeRepeatEnumerable<Single, SingleIncrement>(start, count, default, allocator);
 
-        public static NativeArray<UInt64> Range(UInt64 start, int count, Allocator allocator)
-        {
-            var answer = new NativeArray<UInt64>(count, allocator, NativeArrayOptions.UninitializedMemory);
-            for (var i = 0; i < count; i++)
-                answer[i] = start + (ulong) i;
-            return answer;
-        }
+        public static RangeRepeatEnumerable<Double, DoubleIncrement> Range(Double start, int count, Allocator allocator = Allocator.Temp)
+            => new RangeRepeatEnumerable<Double, DoubleIncrement>(start, count, default, allocator);
 
-        public static NativeArray<Decimal> Range(Decimal start, int count, Allocator allocator)
-        {
-            var answer = new NativeArray<Decimal>(count, allocator, NativeArrayOptions.UninitializedMemory);
-            for (var i = 0; i < count; i++)
-                answer[i] = start + i;
-            return answer;
-        }
+        public static RangeRepeatEnumerable<Decimal, DecimalIncrement> Range(Decimal start, int count, Allocator allocator = Allocator.Temp)
+            => new RangeRepeatEnumerable<Decimal, DecimalIncrement>(start, count, default, allocator);
         #endregion
 
-        public static NativeArray<TResult> Repeat<TResult>(TResult value, int count, Allocator allocator)
+        #region Repeat
+        public static RangeRepeatEnumerable<TResult, NoAction<TResult>> Repeat<TResult>(TResult value, int count, Allocator allocator = Allocator.Temp)
             where TResult : unmanaged
-        {
-            var answer = new NativeArray<TResult>(count, allocator, NativeArrayOptions.UninitializedMemory);
-            UnsafeUtility.MemCpyReplicate(answer.GetPointer(), &value, sizeof(TResult), count);
-            return answer;
-        }
+#if STRICT_EQUALITY
+            , IEquatable<TResult>
+#endif
+            => new RangeRepeatEnumerable<TResult, NoAction<TResult>>(value, count, default, allocator);
+        #endregion
 
         #region Single
         public static bool TryGetSingle<TEnumerable, TEnumerator, TSource, TPredicate>(ref this TEnumerable @this, out TSource value, TPredicate predicate)

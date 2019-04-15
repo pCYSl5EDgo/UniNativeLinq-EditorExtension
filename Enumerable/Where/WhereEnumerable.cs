@@ -130,6 +130,19 @@ namespace pcysl5edgo.Collections.LINQ
         public ConcatEnumerable<
                 WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>,
                 Enumerator,
+                AppendEnumerable<TEnumerable1, TEnumerator1, TSource>,
+                AppendEnumerator<TEnumerator1, TSource>,
+                TSource
+            >
+            Concat<TEnumerable1, TEnumerator1>
+            (in AppendEnumerable<TEnumerable1, TEnumerator1, TSource> second)
+            where TEnumerable1 : struct, IRefEnumerable<TEnumerator1, TSource>
+            where TEnumerator1 : struct, IRefEnumerator<TSource>
+            => new ConcatEnumerable<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, AppendEnumerable<TEnumerable1, TEnumerator1, TSource>, AppendEnumerator<TEnumerator1, TSource>, TSource>(this, second);
+
+        public ConcatEnumerable<
+                WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>,
+                Enumerator,
                 AppendPointerEnumerable<TEnumerable1, TEnumerator1, TSource>,
                 AppendEnumerator<TEnumerator1, TSource>,
                 TSource
@@ -162,20 +175,6 @@ namespace pcysl5edgo.Collections.LINQ
             => new ConcatEnumerable<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, ArrayEnumerable<TSource>, ArrayEnumerable<TSource>.Enumerator, TSource>(this, second.AsRefEnumerable());
 #endif
 
-
-        public ConcatEnumerable<
-                WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>,
-                Enumerator,
-                AppendEnumerable<TEnumerable1, TEnumerator1, TSource>,
-                AppendEnumerator<TEnumerator1, TSource>,
-                TSource
-            >
-            Concat<TEnumerable1, TEnumerator1>
-            (in AppendEnumerable<TEnumerable1, TEnumerator1, TSource> second)
-            where TEnumerable1 : struct, IRefEnumerable<TEnumerator1, TSource>
-            where TEnumerator1 : struct, IRefEnumerator<TSource>
-            => new ConcatEnumerable<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, AppendEnumerable<TEnumerable1, TEnumerator1, TSource>, AppendEnumerator<TEnumerator1, TSource>, TSource>(this, second);
-
         public ConcatEnumerable<
                 WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>,
                 Enumerator,
@@ -195,6 +194,17 @@ namespace pcysl5edgo.Collections.LINQ
                     TSource>
                 (this, second);
 
+        public ConcatEnumerable<
+                WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>,
+                Enumerator,
+                RangeRepeatEnumerable<TSource, TAction>,
+                RangeRepeatEnumerable<TSource, TAction>.Enumerator,
+                TSource
+            >
+            Concat<TAction>
+            (in RangeRepeatEnumerable<TSource, TAction> second)
+            where TAction : struct, IRefAction<TSource>
+            => new ConcatEnumerable<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, RangeRepeatEnumerable<TSource, TAction>, RangeRepeatEnumerable<TSource, TAction>.Enumerator, TSource>(this, second);
 
         public ConcatEnumerable<
                 WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>,
@@ -244,7 +254,6 @@ namespace pcysl5edgo.Collections.LINQ
                     TSource>
                 (this, second);
         #endregion
-
 
         #region Function
         public bool Any()

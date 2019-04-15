@@ -288,6 +288,18 @@ namespace pcysl5edgo.Collections.LINQ
         public ConcatEnumerable<
                 SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>,
                 Enumerator,
+                RangeRepeatEnumerable<TResult, TAction1>,
+                RangeRepeatEnumerable<TResult, TAction1>.Enumerator,
+                TResult
+            >
+            Concat<TAction1>
+            (in RangeRepeatEnumerable<TResult, TAction1> second)
+            where TAction1 : struct, IRefAction<TResult>
+            => new ConcatEnumerable<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, Enumerator, RangeRepeatEnumerable<TResult, TAction1>, RangeRepeatEnumerable<TResult, TAction1>.Enumerator, TResult>(this, second);
+
+        public ConcatEnumerable<
+                SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>,
+                Enumerator,
                 WhereEnumerable<TEnumerable1, TEnumerator1, TResult, TPredicate>,
                 WhereEnumerable<TEnumerable1, TEnumerator1, TResult, TPredicate>.Enumerator,
                 TResult
@@ -318,7 +330,6 @@ namespace pcysl5edgo.Collections.LINQ
                 enumerator.Dispose();
                 return true;
             }
-
             enumerator.Dispose();
             return false;
         }
@@ -332,7 +343,6 @@ namespace pcysl5edgo.Collections.LINQ
                 enumerator.Dispose();
                 return true;
             }
-
             enumerator.Dispose();
             return false;
         }
@@ -347,7 +357,6 @@ namespace pcysl5edgo.Collections.LINQ
                 enumerator.Dispose();
                 return false;
             }
-
             enumerator.Dispose();
             return true;
         }
@@ -361,7 +370,6 @@ namespace pcysl5edgo.Collections.LINQ
                 enumerator.Dispose();
                 return false;
             }
-
             enumerator.Dispose();
             return true;
         }

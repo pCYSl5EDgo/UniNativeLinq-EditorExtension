@@ -257,6 +257,18 @@ namespace pcysl5edgo.Collections.LINQ
         public ConcatEnumerable<
                 DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, TSource>,
                 Enumerator,
+                RangeRepeatEnumerable<TSource, TAction>,
+                RangeRepeatEnumerable<TSource, TAction>.Enumerator,
+                TSource
+            >
+            Concat<TAction>
+            (in RangeRepeatEnumerable<TSource, TAction> second)
+            where TAction : struct, IRefAction<TSource>
+            => new ConcatEnumerable<DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, TSource>, Enumerator, RangeRepeatEnumerable<TSource, TAction>, RangeRepeatEnumerable<TSource, TAction>.Enumerator, TSource>(this, second);
+
+        public ConcatEnumerable<
+                DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, TSource>,
+                Enumerator,
                 SelectIndexEnumerable<TEnumerable1, TEnumerator1, TPrevSource, TSource, TAction>,
                 SelectIndexEnumerable<TEnumerable1, TEnumerator1, TPrevSource, TSource, TAction>.Enumerator,
                 TSource

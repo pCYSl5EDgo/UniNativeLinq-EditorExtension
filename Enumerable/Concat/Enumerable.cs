@@ -199,6 +199,18 @@ namespace pcysl5edgo.Collections.LINQ
         public ConcatEnumerable<
                 ConcatEnumerable<TFirstEnumerable, TFirstEnumerator, TSecondEnumerable, TSecondEnumerator, TSource>,
                 Enumerator,
+                RangeRepeatEnumerable<TSource, TAction>,
+                RangeRepeatEnumerable<TSource, TAction>.Enumerator,
+                TSource
+            >
+            Concat<TAction>
+            (in RangeRepeatEnumerable<TSource, TAction> second)
+            where TAction : struct, IRefAction<TSource>
+            => new ConcatEnumerable<ConcatEnumerable<TFirstEnumerable, TFirstEnumerator, TSecondEnumerable, TSecondEnumerator, TSource>, Enumerator, RangeRepeatEnumerable<TSource, TAction>, RangeRepeatEnumerable<TSource, TAction>.Enumerator, TSource>(this, second);
+
+        public ConcatEnumerable<
+                ConcatEnumerable<TFirstEnumerable, TFirstEnumerator, TSecondEnumerable, TSecondEnumerator, TSource>,
+                Enumerator,
                 WhereEnumerable<TEnumerable2, TEnumerator2, TSource, TPredicate>,
                 WhereEnumerable<TEnumerable2, TEnumerator2, TSource, TPredicate>.Enumerator,
                 TSource

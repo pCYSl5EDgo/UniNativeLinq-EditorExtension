@@ -74,7 +74,7 @@ namespace pcysl5edgo.Collections.LINQ
                 AppendPointerEnumerable<TPrevEnumerable, TPrevEnumerator, TSource>,
                 AppendEnumerator<TPrevEnumerator, TSource>,
                 TEnumerable, TEnumerator, TSource>(this, second);
-        
+
         public ConcatEnumerable<
                 AppendPointerEnumerable<TPrevEnumerable, TPrevEnumerator, TSource>,
                 AppendEnumerator<TPrevEnumerator, TSource>,
@@ -134,7 +134,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TEnumerator1 : struct, IRefEnumerator<TSource>
             where TEnumerable1 : struct, IRefEnumerable<TEnumerator1, TSource>
             => new ConcatEnumerable<AppendPointerEnumerable<TPrevEnumerable, TPrevEnumerator, TSource>, AppendEnumerator<TPrevEnumerator, TSource>, AppendPointerEnumerable<TEnumerable1, TEnumerator1, TSource>, AppendEnumerator<TEnumerator1, TSource>, TSource>(this, second);
-        
+
 #if UNSAFE_ARRAY_ENUMERABLE
         public ConcatEnumerable<
                 AppendPointerEnumerable<TPrevEnumerable, TPrevEnumerator, TSource>,
@@ -152,7 +152,7 @@ namespace pcysl5edgo.Collections.LINQ
                     TSource
                 >
                 (this, second);
-        
+
         public ConcatEnumerable<
                 AppendPointerEnumerable<TPrevEnumerable, TPrevEnumerator, TSource>,
                 AppendEnumerator<TPrevEnumerator, TSource>,
@@ -183,6 +183,18 @@ namespace pcysl5edgo.Collections.LINQ
             where TEnumerator1 : struct, IRefEnumerator<TSource>
             where TEnumerable1 : struct, IRefEnumerable<TEnumerator1, TSource>
             => new ConcatEnumerable<AppendPointerEnumerable<TPrevEnumerable, TPrevEnumerator, TSource>, AppendEnumerator<TPrevEnumerator, TSource>, DefaultIfEmptyEnumerable<TEnumerable1, TEnumerator1, TSource>, DefaultIfEmptyEnumerable<TEnumerable1, TEnumerator1, TSource>.Enumerator, TSource>(this, second);
+
+        public ConcatEnumerable<
+                AppendPointerEnumerable<TPrevEnumerable, TPrevEnumerator, TSource>,
+                AppendEnumerator<TPrevEnumerator, TSource>,
+                RangeRepeatEnumerable<TSource, TAction>,
+                RangeRepeatEnumerable<TSource, TAction>.Enumerator,
+                TSource
+            >
+            Concat<TAction>
+            (in RangeRepeatEnumerable<TSource, TAction> second)
+            where TAction : struct, IRefAction<TSource>
+            => new ConcatEnumerable<AppendPointerEnumerable<TPrevEnumerable, TPrevEnumerator, TSource>, AppendEnumerator<TPrevEnumerator, TSource>, RangeRepeatEnumerable<TSource, TAction>, RangeRepeatEnumerable<TSource, TAction>.Enumerator, TSource>(this, second);
 
         public ConcatEnumerable<
                 AppendPointerEnumerable<TPrevEnumerable, TPrevEnumerator, TSource>,

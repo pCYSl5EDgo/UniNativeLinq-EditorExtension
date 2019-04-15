@@ -138,7 +138,7 @@ namespace pcysl5edgo.Collections.LINQ
                     TSource
                 >
                 (this, second);
-        
+
         public ConcatEnumerable<
                 AppendEnumerable<TPrevEnumerable, TPrevEnumerator, TSource>,
                 AppendEnumerator<TPrevEnumerator, TSource>,
@@ -182,6 +182,18 @@ namespace pcysl5edgo.Collections.LINQ
             where TEnumerator1 : struct, IRefEnumerator<TSource>
             where TEnumerable1 : struct, IRefEnumerable<TEnumerator1, TSource>
             => new ConcatEnumerable<AppendEnumerable<TPrevEnumerable, TPrevEnumerator, TSource>, AppendEnumerator<TPrevEnumerator, TSource>, DefaultIfEmptyEnumerable<TEnumerable1, TEnumerator1, TSource>, DefaultIfEmptyEnumerable<TEnumerable1, TEnumerator1, TSource>.Enumerator, TSource>(this, second);
+
+        public ConcatEnumerable<
+                AppendEnumerable<TPrevEnumerable, TPrevEnumerator, TSource>,
+                AppendEnumerator<TPrevEnumerator, TSource>,
+                RangeRepeatEnumerable<TSource, TAction>,
+                RangeRepeatEnumerable<TSource, TAction>.Enumerator,
+                TSource
+            >
+            Concat<TAction>
+            (in RangeRepeatEnumerable<TSource, TAction> second)
+            where TAction : struct, IRefAction<TSource>
+            => new ConcatEnumerable<AppendEnumerable<TPrevEnumerable, TPrevEnumerator, TSource>, AppendEnumerator<TPrevEnumerator, TSource>, RangeRepeatEnumerable<TSource, TAction>, RangeRepeatEnumerable<TSource, TAction>.Enumerator, TSource>(this, second);
 
         public ConcatEnumerable<
                 AppendEnumerable<TPrevEnumerable, TPrevEnumerator, TSource>,

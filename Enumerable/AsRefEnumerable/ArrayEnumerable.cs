@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using System.Security.Policy;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 
@@ -15,33 +14,33 @@ namespace pcysl5edgo.Collections.LINQ
         , IEquatable<T>
 #endif
     {
-        internal readonly T[] Array;
-        internal readonly long Offset;
+        private readonly T[] array;
+        private readonly long offset;
         internal readonly long Length;
 
-        internal T* GetPointer() => (T*) Unsafe.AsPointer(ref Array[Offset]);
-        private T* GetPinPointer(out ulong gcHandle) => (T*) UnsafeUtility.PinGCArrayAndGetDataAddress(Array, out gcHandle) + Offset;
+        internal T* GetPointer() => (T*) Unsafe.AsPointer(ref array[offset]);
+        private T* GetPinPointer(out ulong gcHandle) => (T*) UnsafeUtility.PinGCArrayAndGetDataAddress(array, out gcHandle) + offset;
 
 
         public ArrayEnumerable(T[] array)
         {
-            this.Array = array ?? throw new ArgumentNullException();
+            this.array = array ?? throw new ArgumentNullException();
             this.Length = array.LongLength;
-            this.Offset = 0;
+            this.offset = 0;
         }
 
         public ArrayEnumerable(ArraySegment<T> segment)
         {
-            this.Array = segment.Array ?? throw new ArgumentNullException();
+            this.array = segment.Array ?? throw new ArgumentNullException();
             this.Length = segment.Count;
-            this.Offset = segment.Offset;
+            this.offset = segment.Offset;
         }
 
         public ArrayEnumerable(T[] array, long offset, long count)
         {
-            this.Array = array ?? throw new ArgumentNullException();
+            this.array = array ?? throw new ArgumentNullException();
             this.Length = count;
-            this.Offset = offset;
+            this.offset = offset;
         }
 
         public struct Enumerator : IRefEnumerator<T>
@@ -74,7 +73,7 @@ namespace pcysl5edgo.Collections.LINQ
 
         public Enumerator GetEnumerator()
         {
-            if (Array is null || Array.Length == 0)
+            if (array is null || array.Length == 0)
                 return default;
             return new Enumerator(GetPinPointer(out var gcHandle), Length, gcHandle);
         }
@@ -243,6 +242,23 @@ namespace pcysl5edgo.Collections.LINQ
 
         public ConcatEnumerable<
                 ArrayEnumerable<T>, Enumerator,
+                RangeRepeatEnumerable<T, TAction>,
+                RangeRepeatEnumerable<T, TAction>.Enumerator,
+                T
+            >
+            Concat<TAction>
+            (in RangeRepeatEnumerable<T, TAction> second)
+            where TAction : struct, IRefAction<T>
+            => new ConcatEnumerable<
+                    ArrayEnumerable<T>, Enumerator,
+                    RangeRepeatEnumerable<T, TAction>,
+                    RangeRepeatEnumerable<T, TAction>.Enumerator,
+                    T
+                >
+                (this, second);
+
+        public ConcatEnumerable<
+                ArrayEnumerable<T>, Enumerator,
                 SelectEnumerable<TEnumerable0, TEnumerator0, TPrev, T, TAction>,
                 SelectEnumerable<TEnumerable0, TEnumerator0, TPrev, T, TAction>.Enumerator,
                 T
@@ -342,14 +358,6 @@ namespace pcysl5edgo.Collections.LINQ
             return true;
         }
 
-        public void Aggregate<TFunc>(ref T seed, TFunc func)
-            where TFunc : unmanaged, IRefAction<T, T>
-        {
-            var ptr = GetPointer();
-            for (var i = 0L; i < Length; i++, ptr++)
-                func.Execute(ref seed, ref *ptr);
-        }
-
         public void Aggregate<TAccumulate, TFunc>(ref TAccumulate seed, TFunc func)
             where TFunc : unmanaged, IRefAction<TAccumulate, T>
         {
@@ -374,14 +382,6 @@ namespace pcysl5edgo.Collections.LINQ
             var ptr = GetPointer();
             var seed = *ptr++;
             for (var i = 1L; i < Length; i++, ptr++)
-                seed = func(seed, *ptr);
-            return seed;
-        }
-
-        public T Aggregate(T seed, Func<T, T, T> func)
-        {
-            var ptr = GetPointer();
-            for (var i = 0L; i < Length; i++, ptr++)
                 seed = func(seed, *ptr);
             return seed;
         }
@@ -483,7 +483,7 @@ namespace pcysl5edgo.Collections.LINQ
                 element = default;
                 return false;
             }
-            element = Array[Offset + index];
+            element = array[offset + index];
             return true;
         }
 
@@ -494,7 +494,7 @@ namespace pcysl5edgo.Collections.LINQ
                 first = default;
                 return false;
             }
-            first = Array[Offset];
+            first = array[offset];
             return true;
         }
 
@@ -505,7 +505,7 @@ namespace pcysl5edgo.Collections.LINQ
                 last = default;
                 return false;
             }
-            last = Array[Offset + Length - 1];
+            last = array[offset + Length - 1];
             return true;
         }
 
@@ -513,7 +513,7 @@ namespace pcysl5edgo.Collections.LINQ
         {
             if (Length == 1)
             {
-                value = Array[Offset];
+                value = array[offset];
                 return true;
             }
             value = default;
@@ -530,9 +530,9 @@ namespace pcysl5edgo.Collections.LINQ
         public T[] ToArray()
         {
             if (Length == 0)
-                return System.Array.Empty<T>();
+                return Array.Empty<T>();
             var answer = new T[Length];
-            var src = Unsafe.AsPointer(ref Array[Offset]);
+            var src = Unsafe.AsPointer(ref array[offset]);
             var dest = Unsafe.AsPointer(ref answer[0]);
             UnsafeUtility.MemCpy(dest, src, sizeof(T) * Length);
             return answer;
@@ -542,7 +542,7 @@ namespace pcysl5edgo.Collections.LINQ
         {
             if (Length == 0) return default;
             var answer = new NativeArray<T>((int) Length, allocator);
-            var src = Unsafe.AsPointer(ref Array[Offset]);
+            var src = Unsafe.AsPointer(ref array[offset]);
             var dest = NativeArrayUnsafeUtility.GetUnsafeBufferPointerWithoutChecks(answer);
             UnsafeUtility.MemCpy(dest, src, sizeof(T) * Length);
             return answer;
