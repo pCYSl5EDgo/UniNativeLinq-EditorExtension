@@ -66,6 +66,17 @@ namespace pcysl5edgo.Collections.LINQ
         public ConcatEnumerable<
                 AppendEnumerable<TPrevEnumerable, TPrevEnumerator, TSource>,
                 AppendEnumerator<TPrevEnumerator, TSource>,
+                TEnumerable, TEnumerator,
+                TSource
+            >
+            Concat<TEnumerable, TEnumerator>(in TEnumerable second)
+            where TEnumerator : struct, IRefEnumerator<TSource>
+            where TEnumerable : struct, IRefEnumerable<TEnumerator, TSource>
+            => new ConcatEnumerable<AppendEnumerable<TPrevEnumerable, TPrevEnumerator, TSource>, AppendEnumerator<TPrevEnumerator, TSource>, TEnumerable, TEnumerator, TSource>(this, second);
+
+        public ConcatEnumerable<
+                AppendEnumerable<TPrevEnumerable, TPrevEnumerator, TSource>,
+                AppendEnumerator<TPrevEnumerator, TSource>,
                 ConcatEnumerable<TEnumerable1, TEnumerator1, TEnumerable2, TEnumerator2, TSource>,
                 ConcatEnumerable<TEnumerable1, TEnumerator1, TEnumerable2, TEnumerator2, TSource>.Enumerator,
                 TSource
@@ -109,6 +120,42 @@ namespace pcysl5edgo.Collections.LINQ
             where TEnumerator1 : struct, IRefEnumerator<TSource>
             where TEnumerable1 : struct, IRefEnumerable<TEnumerator1, TSource>
             => new ConcatEnumerable<AppendEnumerable<TPrevEnumerable, TPrevEnumerator, TSource>, AppendEnumerator<TPrevEnumerator, TSource>, AppendEnumerable<TEnumerable1, TEnumerator1, TSource>, AppendEnumerator<TEnumerator1, TSource>, TSource>(this, second);
+
+#if UNSAFE_ARRAY_ENUMERABLE
+        public ConcatEnumerable<
+                AppendEnumerable<TPrevEnumerable, TPrevEnumerator, TSource>,
+                AppendEnumerator<TPrevEnumerator, TSource>,
+                ArrayEnumerable<TSource>,
+                ArrayEnumerable<TSource>.Enumerator,
+                TSource
+            >
+            Concat(in ArrayEnumerable<TSource> second)
+            => new ConcatEnumerable<
+                    AppendEnumerable<TPrevEnumerable, TPrevEnumerator, TSource>,
+                    AppendEnumerator<TPrevEnumerator, TSource>,
+                    ArrayEnumerable<TSource>,
+                    ArrayEnumerable<TSource>.Enumerator,
+                    TSource
+                >
+                (this, second);
+        
+        public ConcatEnumerable<
+                AppendEnumerable<TPrevEnumerable, TPrevEnumerator, TSource>,
+                AppendEnumerator<TPrevEnumerator, TSource>,
+                ArrayEnumerable<TSource>,
+                ArrayEnumerable<TSource>.Enumerator,
+                TSource
+            >
+            Concat(TSource[] second)
+            => new ConcatEnumerable<
+                    AppendEnumerable<TPrevEnumerable, TPrevEnumerator, TSource>,
+                    AppendEnumerator<TPrevEnumerator, TSource>,
+                    ArrayEnumerable<TSource>,
+                    ArrayEnumerable<TSource>.Enumerator,
+                    TSource
+                >
+                (this, second.AsRefEnumerable());
+#endif
 
         public ConcatEnumerable<
                 AppendEnumerable<TPrevEnumerable, TPrevEnumerator, TSource>,

@@ -64,7 +64,20 @@ namespace pcysl5edgo.Collections.LINQ
             => new DefaultIfEmptyEnumerable<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource>(this, defaultValue, allocator);
         #endregion
 
-        #region Where
+        #region Concat
+        public ConcatEnumerable<
+                WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>,
+                Enumerator,
+                TEnumerable1,
+                TEnumerator1,
+                TSource
+            >
+            Concat<TEnumerable1, TEnumerator1>
+            (in TEnumerable1 second)
+            where TEnumerable1 : struct, IRefEnumerable<TEnumerator1, TSource>
+            where TEnumerator1 : struct, IRefEnumerator<TSource>
+            => new ConcatEnumerable<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TEnumerable1, TEnumerator1, TSource>(this, second);
+
         public ConcatEnumerable<
                 WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>,
                 Enumerator,
@@ -126,6 +139,29 @@ namespace pcysl5edgo.Collections.LINQ
             where TEnumerable1 : struct, IRefEnumerable<TEnumerator1, TSource>
             where TEnumerator1 : struct, IRefEnumerator<TSource>
             => new ConcatEnumerable<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, AppendPointerEnumerable<TEnumerable1, TEnumerator1, TSource>, AppendEnumerator<TEnumerator1, TSource>, TSource>(this, second);
+
+#if UNSAFE_ARRAY_ENUMERABLE
+        public ConcatEnumerable<
+                WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>,
+                Enumerator,
+                ArrayEnumerable<TSource>,
+                ArrayEnumerable<TSource>.Enumerator,
+                TSource
+            >
+            Concat(in ArrayEnumerable<TSource> second)
+            => new ConcatEnumerable<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, ArrayEnumerable<TSource>, ArrayEnumerable<TSource>.Enumerator, TSource>(this, second);
+
+        public ConcatEnumerable<
+                WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>,
+                Enumerator,
+                ArrayEnumerable<TSource>,
+                ArrayEnumerable<TSource>.Enumerator,
+                TSource
+            >
+            Concat(TSource[] second)
+            => new ConcatEnumerable<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, ArrayEnumerable<TSource>, ArrayEnumerable<TSource>.Enumerator, TSource>(this, second.AsRefEnumerable());
+#endif
+
 
         public ConcatEnumerable<
                 WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>,

@@ -68,6 +68,20 @@ namespace pcysl5edgo.Collections.LINQ
         public ConcatEnumerable<
                 NativeEnumerable<T>,
                 Enumerator,
+                TEnumerable, TEnumerator,
+                T
+            >
+            Concat<TEnumerable, TEnumerator>(in TEnumerable second)
+            where TEnumerator : struct, IRefEnumerator<T>
+            where TEnumerable : struct, IRefEnumerable<TEnumerator, T>
+            => new ConcatEnumerable<
+                NativeEnumerable<T>,
+                Enumerator,
+                TEnumerable, TEnumerator, T>(this, second);
+
+        public ConcatEnumerable<
+                NativeEnumerable<T>,
+                Enumerator,
                 NativeEnumerable<T>,
                 Enumerator,
                 T
@@ -125,6 +139,42 @@ namespace pcysl5edgo.Collections.LINQ
             where TEnumerator0 : struct, IRefEnumerator<T>
             where TEnumerable0 : struct, IRefEnumerable<TEnumerator0, T>
             => new ConcatEnumerable<NativeEnumerable<T>, Enumerator, AppendPointerEnumerable<TEnumerable0, TEnumerator0, T>, AppendEnumerator<TEnumerator0, T>, T>(this, second);
+
+#if UNSAFE_ARRAY_ENUMERABLE
+        public ConcatEnumerable<
+                NativeEnumerable<T>,
+                Enumerator,
+                ArrayEnumerable<T>,
+                ArrayEnumerable<T>.Enumerator,
+                T
+            >
+            Concat(in ArrayEnumerable<T> second)
+            => new ConcatEnumerable<
+                    NativeEnumerable<T>,
+                    Enumerator,
+                    ArrayEnumerable<T>,
+                    ArrayEnumerable<T>.Enumerator,
+                    T
+                >
+                (this, second);
+        
+        public ConcatEnumerable<
+                NativeEnumerable<T>,
+                Enumerator,
+                ArrayEnumerable<T>,
+                ArrayEnumerable<T>.Enumerator,
+                T
+            >
+            Concat(in T[] second)
+            => new ConcatEnumerable<
+                    NativeEnumerable<T>,
+                    Enumerator,
+                    ArrayEnumerable<T>,
+                    ArrayEnumerable<T>.Enumerator,
+                    T
+                >
+                (this, second.AsRefEnumerable());
+#endif
 
         public ConcatEnumerable<
                 NativeEnumerable<T>,

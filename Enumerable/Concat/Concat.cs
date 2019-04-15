@@ -10,6 +10,25 @@ namespace pcysl5edgo.Collections.LINQ
             ConcatEnumerable<
                 NativeEnumerable<TSource>,
                 NativeEnumerable<TSource>.Enumerator,
+                TEnumerable,
+                TEnumerator,
+                TSource
+            >
+            Concat<TEnumerable, TEnumerator, TSource>(
+                this NativeArray<TSource> first,
+                in TEnumerable second)
+            where TSource : unmanaged
+#if STRICT_EQUALITY
+            , IEquatable<TSource>
+#endif
+            where TEnumerator : struct, IRefEnumerator<TSource>
+            where TEnumerable : struct, IRefEnumerable<TEnumerator, TSource>
+            => new ConcatEnumerable<NativeEnumerable<TSource>, NativeEnumerable<TSource>.Enumerator, TEnumerable, TEnumerator, TSource>(first.AsRefEnumerable(), second);
+
+        public static
+            ConcatEnumerable<
+                NativeEnumerable<TSource>,
+                NativeEnumerable<TSource>.Enumerator,
                 NativeEnumerable<TSource>,
                 NativeEnumerable<TSource>.Enumerator,
                 TSource
@@ -81,6 +100,42 @@ namespace pcysl5edgo.Collections.LINQ
             where TEnumerator0 : struct, IRefEnumerator<TSource>
             where TEnumerable0 : struct, IRefEnumerable<TEnumerator0, TSource>
             => new ConcatEnumerable<NativeEnumerable<TSource>, NativeEnumerable<TSource>.Enumerator, AppendPointerEnumerable<TEnumerable0, TEnumerator0, TSource>, AppendEnumerator<TEnumerator0, TSource>, TSource>(first.AsRefEnumerable(), second);
+
+#if UNSAFE_ARRAY_ENUMERABLE
+        public static
+            ConcatEnumerable<
+                NativeEnumerable<TSource>,
+                NativeEnumerable<TSource>.Enumerator,
+                ArrayEnumerable<TSource>,
+                ArrayEnumerable<TSource>.Enumerator,
+                TSource
+            >
+            Concat<TSource>(
+                this NativeArray<TSource> first,
+                in ArrayEnumerable<TSource> second)
+            where TSource : unmanaged
+#if STRICT_EQUALITY
+            , IEquatable<TSource>
+#endif
+            => new ConcatEnumerable<NativeEnumerable<TSource>, NativeEnumerable<TSource>.Enumerator, ArrayEnumerable<TSource>, ArrayEnumerable<TSource>.Enumerator, TSource>(first.AsRefEnumerable(), second);
+
+        public static
+            ConcatEnumerable<
+                NativeEnumerable<TSource>,
+                NativeEnumerable<TSource>.Enumerator,
+                ArrayEnumerable<TSource>,
+                ArrayEnumerable<TSource>.Enumerator,
+                TSource
+            >
+            Concat<TSource>(
+                this NativeArray<TSource> first,
+                TSource[] second)
+            where TSource : unmanaged
+#if STRICT_EQUALITY
+            , IEquatable<TSource>
+#endif
+            => new ConcatEnumerable<NativeEnumerable<TSource>, NativeEnumerable<TSource>.Enumerator, ArrayEnumerable<TSource>, ArrayEnumerable<TSource>.Enumerator, TSource>(first.AsRefEnumerable(), second.AsRefEnumerable());
+#endif
 
         public static
             ConcatEnumerable<
@@ -224,7 +279,7 @@ namespace pcysl5edgo.Collections.LINQ
             => @this.FirstEnumerable.SumSingle<TPrevEnumerable0, TPrevEnumerator0>()
                +
                @this.SecondEnumerable.SumSingle<TPrevEnumerable1, TPrevEnumerator1>();
-        
+
         public static Double
             Sum<TPrevEnumerable0, TPrevEnumerator0, TPrevEnumerable1, TPrevEnumerator1>
             (ref this ConcatEnumerable<TPrevEnumerable0, TPrevEnumerator0, TPrevEnumerable1, TPrevEnumerator1, Double> @this)
@@ -235,7 +290,7 @@ namespace pcysl5edgo.Collections.LINQ
             => @this.FirstEnumerable.SumDouble<TPrevEnumerable0, TPrevEnumerator0>()
                +
                @this.SecondEnumerable.SumDouble<TPrevEnumerable1, TPrevEnumerator1>();
-        
+
         public static Decimal
             Sum<TPrevEnumerable0, TPrevEnumerator0, TPrevEnumerable1, TPrevEnumerator1>
             (ref this ConcatEnumerable<TPrevEnumerable0, TPrevEnumerator0, TPrevEnumerable1, TPrevEnumerator1, Decimal> @this)
@@ -246,7 +301,7 @@ namespace pcysl5edgo.Collections.LINQ
             => @this.FirstEnumerable.SumDecimal<TPrevEnumerable0, TPrevEnumerator0>()
                +
                @this.SecondEnumerable.SumDecimal<TPrevEnumerable1, TPrevEnumerator1>();
-        
+
         public static Int32
             Sum<TPrevEnumerable0, TPrevEnumerator0, TPrevEnumerable1, TPrevEnumerator1>
             (ref this ConcatEnumerable<TPrevEnumerable0, TPrevEnumerator0, TPrevEnumerable1, TPrevEnumerator1, Int32> @this)
@@ -257,7 +312,7 @@ namespace pcysl5edgo.Collections.LINQ
             => @this.FirstEnumerable.SumInt32<TPrevEnumerable0, TPrevEnumerator0>()
                +
                @this.SecondEnumerable.SumInt32<TPrevEnumerable1, TPrevEnumerator1>();
-        
+
         public static Int64
             Sum<TPrevEnumerable0, TPrevEnumerator0, TPrevEnumerable1, TPrevEnumerator1>
             (ref this ConcatEnumerable<TPrevEnumerable0, TPrevEnumerator0, TPrevEnumerable1, TPrevEnumerator1, Int64> @this)
@@ -268,7 +323,7 @@ namespace pcysl5edgo.Collections.LINQ
             => @this.FirstEnumerable.SumInt64<TPrevEnumerable0, TPrevEnumerator0>()
                +
                @this.SecondEnumerable.SumInt64<TPrevEnumerable1, TPrevEnumerator1>();
-        
+
         public static UInt64
             Sum<TPrevEnumerable0, TPrevEnumerator0, TPrevEnumerable1, TPrevEnumerator1>
             (ref this ConcatEnumerable<TPrevEnumerable0, TPrevEnumerator0, TPrevEnumerable1, TPrevEnumerator1, UInt64> @this)
@@ -279,7 +334,7 @@ namespace pcysl5edgo.Collections.LINQ
             => @this.FirstEnumerable.SumUInt64<TPrevEnumerable0, TPrevEnumerator0>()
                +
                @this.SecondEnumerable.SumUInt64<TPrevEnumerable1, TPrevEnumerator1>();
-        
+
         public static UInt32
             Sum<TPrevEnumerable0, TPrevEnumerator0, TPrevEnumerable1, TPrevEnumerator1>
             (ref this ConcatEnumerable<TPrevEnumerable0, TPrevEnumerator0, TPrevEnumerable1, TPrevEnumerator1, UInt32> @this)

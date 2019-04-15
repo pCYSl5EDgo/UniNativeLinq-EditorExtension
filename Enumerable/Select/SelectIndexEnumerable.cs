@@ -110,6 +110,26 @@ namespace pcysl5edgo.Collections.LINQ
         public ConcatEnumerable<
                 SelectIndexEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>,
                 Enumerator,
+                TEnumerable1,
+                TEnumerator1,
+                TResult
+            >
+            Concat<TEnumerable1, TEnumerator1>
+            (in TEnumerable1 second)
+            where TEnumerator1 : struct, IRefEnumerator<TResult>
+            where TEnumerable1 : struct, IRefEnumerable<TEnumerator1, TResult>
+            => new ConcatEnumerable<
+                    SelectIndexEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>,
+                    Enumerator,
+                    TEnumerable1, TEnumerator1,
+                    TResult
+                >
+                (this, second);
+
+
+        public ConcatEnumerable<
+                SelectIndexEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>,
+                Enumerator,
                 SelectEnumerable<TEnumerable1, TEnumerator1, TPrevSource1, TResult, TAction1>,
                 SelectEnumerable<TEnumerable1, TEnumerator1, TPrevSource1, TResult, TAction1>.Enumerator,
                 TResult
@@ -245,6 +265,28 @@ namespace pcysl5edgo.Collections.LINQ
                     AppendEnumerator<TEnumerator1, TResult>,
                     TResult>
                 (this, second);
+
+#if UNSAFE_ARRAY_ENUMERABLE
+        public ConcatEnumerable<
+                SelectIndexEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>,
+                Enumerator,
+                ArrayEnumerable<TResult>,
+                ArrayEnumerable<TResult>.Enumerator,
+                TResult
+            >
+            Concat(in ArrayEnumerable<TResult> second)
+            => new ConcatEnumerable<SelectIndexEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, Enumerator, ArrayEnumerable<TResult>, ArrayEnumerable<TResult>.Enumerator, TResult>(this, second);
+        
+        public ConcatEnumerable<
+                SelectIndexEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>,
+                Enumerator,
+                ArrayEnumerable<TResult>,
+                ArrayEnumerable<TResult>.Enumerator,
+                TResult
+            >
+            Concat(in TResult[] second)
+            => new ConcatEnumerable<SelectIndexEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, Enumerator, ArrayEnumerable<TResult>, ArrayEnumerable<TResult>.Enumerator, TResult>(this, second.AsRefEnumerable());
+#endif
 
         public ConcatEnumerable<
                 SelectIndexEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>,

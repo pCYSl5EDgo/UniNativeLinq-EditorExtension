@@ -100,6 +100,19 @@ namespace pcysl5edgo.Collections.LINQ
         public ConcatEnumerable<
                 ConcatEnumerable<TFirstEnumerable, TFirstEnumerator, TSecondEnumerable, TSecondEnumerator, TSource>,
                 Enumerator,
+                TEnumerable,
+                TEnumerator,
+                TSource
+            >
+            Concat<TEnumerable, TEnumerator>
+            (in TEnumerable second)
+            where TEnumerator : struct, IRefEnumerator<TSource>
+            where TEnumerable : struct, IRefEnumerable<TEnumerator, TSource>
+            => new ConcatEnumerable<ConcatEnumerable<TFirstEnumerable, TFirstEnumerator, TSecondEnumerable, TSecondEnumerator, TSource>, Enumerator, TEnumerable, TEnumerator, TSource>(this, second);
+
+        public ConcatEnumerable<
+                ConcatEnumerable<TFirstEnumerable, TFirstEnumerator, TSecondEnumerable, TSecondEnumerator, TSource>,
+                Enumerator,
                 ConcatEnumerable<TEnumerable2, TEnumerator2, TEnumerable3, TEnumerator3, TSource>,
                 ConcatEnumerable<TEnumerable2, TEnumerator2, TEnumerable3, TEnumerator3, TSource>.Enumerator,
                 TSource
@@ -148,6 +161,28 @@ namespace pcysl5edgo.Collections.LINQ
             where TEnumerable2 : struct, IRefEnumerable<TEnumerator2, TSource>
             => new ConcatEnumerable<ConcatEnumerable<TFirstEnumerable, TFirstEnumerator, TSecondEnumerable, TSecondEnumerator, TSource>, Enumerator, AppendPointerEnumerable<TEnumerable2, TEnumerator2, TSource>, AppendEnumerator<TEnumerator2, TSource>, TSource>(this, second);
 
+#if UNSAFE_ARRAY_ENUMERABLE
+        public ConcatEnumerable<
+                ConcatEnumerable<TFirstEnumerable, TFirstEnumerator, TSecondEnumerable, TSecondEnumerator, TSource>,
+                Enumerator,
+                ArrayEnumerable<TSource>,
+                ArrayEnumerable<TSource>.Enumerator,
+                TSource
+            >
+            Concat(in ArrayEnumerable<TSource> second)
+            => new ConcatEnumerable<ConcatEnumerable<TFirstEnumerable, TFirstEnumerator, TSecondEnumerable, TSecondEnumerator, TSource>, Enumerator, ArrayEnumerable<TSource>, ArrayEnumerable<TSource>.Enumerator, TSource>(this, second);
+        
+        public ConcatEnumerable<
+                ConcatEnumerable<TFirstEnumerable, TFirstEnumerator, TSecondEnumerable, TSecondEnumerator, TSource>,
+                Enumerator,
+                ArrayEnumerable<TSource>,
+                ArrayEnumerable<TSource>.Enumerator,
+                TSource
+            >
+            Concat(TSource[] second)
+            => new ConcatEnumerable<ConcatEnumerable<TFirstEnumerable, TFirstEnumerator, TSecondEnumerable, TSecondEnumerator, TSource>, Enumerator, ArrayEnumerable<TSource>, ArrayEnumerable<TSource>.Enumerator, TSource>(this, second.AsRefEnumerable());
+#endif
+
         public ConcatEnumerable<
                 ConcatEnumerable<TFirstEnumerable, TFirstEnumerator, TSecondEnumerable, TSecondEnumerator, TSource>,
                 Enumerator,
@@ -192,7 +227,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TEnumerable2 : struct, IRefEnumerable<TEnumerator2, TPrevSource>
             where TAction : unmanaged, ISelectIndex<TPrevSource, TSource>
             => new ConcatEnumerable<ConcatEnumerable<TFirstEnumerable, TFirstEnumerator, TSecondEnumerable, TSecondEnumerator, TSource>, Enumerator, SelectIndexEnumerable<TEnumerable2, TEnumerator2, TPrevSource, TSource, TAction>, SelectIndexEnumerable<TEnumerable2, TEnumerator2, TPrevSource, TSource, TAction>.Enumerator, TSource>(this, second);
-        
+
         public ConcatEnumerable<
                 ConcatEnumerable<TFirstEnumerable, TFirstEnumerator, TSecondEnumerable, TSecondEnumerator, TSource>,
                 Enumerator,

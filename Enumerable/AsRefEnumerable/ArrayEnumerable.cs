@@ -19,6 +19,9 @@ namespace pcysl5edgo.Collections.LINQ
         internal readonly long Offset;
         internal readonly long Length;
 
+        internal T* GetPointer() => (T*) Unsafe.AsPointer(ref Array[Offset]);
+        private T* GetPinPointer(out ulong gcHandle) => (T*) UnsafeUtility.PinGCArrayAndGetDataAddress(Array, out gcHandle) + Offset;
+
 
         public ArrayEnumerable(T[] array)
         {
@@ -48,10 +51,11 @@ namespace pcysl5edgo.Collections.LINQ
             private readonly ulong gcHandle;
             private long index;
 
-            internal Enumerator(T[] array, long offset, long length)
+            internal Enumerator(T* ptr, long length, ulong gcHandle)
             {
-                this.ptr = (T*) UnsafeUtility.PinGCArrayAndGetDataAddress(array, out this.gcHandle) + offset;
+                this.ptr = ptr;
                 this.length = length;
+                this.gcHandle = gcHandle;
                 this.index = -1;
             }
 
@@ -60,10 +64,21 @@ namespace pcysl5edgo.Collections.LINQ
             public ref T Current => ref ptr[index];
             T IEnumerator<T>.Current => Current;
             object IEnumerator.Current => Current;
-            public void Dispose() => UnsafeUtility.ReleaseGCObject(gcHandle);
+
+            public void Dispose()
+            {
+                if (ptr != null)
+                    UnsafeUtility.ReleaseGCObject(gcHandle);
+            }
         }
 
-        public Enumerator GetEnumerator() => new Enumerator(Array, Offset, Length);
+        public Enumerator GetEnumerator()
+        {
+            if (Array is null || Array.Length == 0)
+                return default;
+            return new Enumerator(GetPinPointer(out var gcHandle), Length, gcHandle);
+        }
+
         IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
