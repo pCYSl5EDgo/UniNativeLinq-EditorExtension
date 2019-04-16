@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 
@@ -318,7 +319,11 @@ namespace pcysl5edgo.Collections.LINQ
         #endregion
 
         #region Function
-        public bool Any() => enumerable.Any<TPrevEnumerable, TPrevEnumerator, TSource>();
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool CanFastCount() => enumerable.CanFastCount();
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool Any() => enumerable.Any();
 
         public bool Any<TPredicate>(TPredicate predicate)
             where TPredicate : unmanaged, IRefFunc<TResult, bool>
@@ -402,8 +407,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TComparer : unmanaged, IRefFunc<TResult, TResult, bool>
             => this.Contains<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, Enumerator, TResult, TComparer>(value, comparer);
 
-        public int Count()
-            => this.Count<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, Enumerator, TResult>();
+        public int Count() => enumerable.Count();
 
         public int Count(Func<TResult, bool> predicate)
             => this.Count<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, Enumerator, TResult>(predicate);
@@ -412,8 +416,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TPredicate : unmanaged, IRefFunc<TResult, bool>
             => this.Count<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, Enumerator, TResult, TPredicate>(predicate);
 
-        public long LongCount()
-            => this.Count<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, Enumerator, TResult>();
+        public long LongCount() => enumerable.LongCount();
 
         public long LongCount(Func<TResult, bool> predicate)
             => this.Count<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, Enumerator, TResult>(predicate);

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 
@@ -300,6 +301,9 @@ namespace pcysl5edgo.Collections.LINQ
         #endregion
 
         #region Function
+        public bool CanFastCount() => true;
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Any() => length > 0;
 
         public bool Any<TPredicate>(TPredicate predicate)
@@ -464,6 +468,7 @@ namespace pcysl5edgo.Collections.LINQ
             return false;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int Count() => (int) length;
 
         public int Count(Func<TSource, bool> predicate)

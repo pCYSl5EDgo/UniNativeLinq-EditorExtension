@@ -4,7 +4,6 @@ namespace pcysl5edgo.Collections.LINQ
 {
     internal interface ILinq<TSource> where TSource : unmanaged
     {
-        bool Any();
         bool Any<TPredicate>(TPredicate predicate)
         where TPredicate : unmanaged, IRefFunc<TSource, bool>;
         bool Any(Func<TSource, bool> predicate);
@@ -27,17 +26,12 @@ namespace pcysl5edgo.Collections.LINQ
         bool Contains(TSource value, System.Collections.Generic.IEqualityComparer<TSource> comparer);
         bool Contains<TComparer>(TSource value, TComparer comparer) where TComparer : unmanaged, IRefFunc<TSource, TSource, bool>;
 
-        int Count();
         int Count(Func<TSource, bool> predicate);
         int Count<TPredicate>(TPredicate predicate) where TPredicate : unmanaged, IRefFunc<TSource, bool>;
-        long LongCount();
         long LongCount(Func<TSource, bool> predicate);
         long LongCount<TPredicate>(TPredicate predicate) where TPredicate : unmanaged, IRefFunc<TSource, bool>;
 
         bool TryGetElementAt(int index, out TSource element);
-
-        bool TryGetFirst(out TSource first);
-        bool TryGetLast(out TSource last);
 
         bool TryGetSingle(out TSource value);
         bool TryGetSingle<TPredicate>(out TSource value, TPredicate predicate) where TPredicate : unmanaged, IRefFunc<TSource, bool>;

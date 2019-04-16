@@ -318,6 +318,9 @@ namespace pcysl5edgo.Collections.LINQ
         #endregion
 
         #region Function
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool CanFastCount() => true;
+        
         public bool Any() => Length != 0;
 
         public bool Any<TPredicate>(TPredicate predicate)

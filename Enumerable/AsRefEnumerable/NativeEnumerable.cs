@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 
@@ -257,7 +258,10 @@ namespace pcysl5edgo.Collections.LINQ
             => new ConcatEnumerable<NativeEnumerable<T>, Enumerator, WhereEnumerable<TEnumerable0, TEnumerator0, T, TPredicate>, WhereEnumerable<TEnumerable0, TEnumerator0, T, TPredicate>.Enumerator, T>(this, second);
         #endregion
 
-        #region function
+        #region Function
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool CanFastCount() => true;
+
         void ILinq<T>.Aggregate<TAccumulate, TFunc>(ref TAccumulate seed, TFunc func)
         {
             for (var i = 0; i < Length; i++)
@@ -310,7 +314,7 @@ namespace pcysl5edgo.Collections.LINQ
             return true;
         }
 
-        bool ILinq<T>.Any() => Length != 0;
+        public bool Any() => Length != 0;
 
         bool ILinq<T>.Any<TPredicate>(TPredicate predicate)
         {
@@ -376,7 +380,7 @@ namespace pcysl5edgo.Collections.LINQ
         IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        long ILinq<T>.LongCount() => this.Length;
+        public long LongCount() => this.Length;
 
         long ILinq<T>.LongCount(Func<T, bool> predicate) => Count(predicate);
 
@@ -452,8 +456,8 @@ namespace pcysl5edgo.Collections.LINQ
             element = Ptr[index];
             return true;
         }
-
-        bool ILinq<T>.TryGetFirst(out T first)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool TryGetFirst(out T first)
         {
             if (Length == 0)
             {
@@ -464,7 +468,7 @@ namespace pcysl5edgo.Collections.LINQ
             return true;
         }
 
-        bool ILinq<T>.TryGetLast(out T last)
+        public bool TryGetLast(out T last)
         {
             if (Length == 0)
             {

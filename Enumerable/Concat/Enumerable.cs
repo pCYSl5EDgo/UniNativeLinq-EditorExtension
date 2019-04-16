@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Unity.Collections;
 
 namespace pcysl5edgo.Collections.LINQ
@@ -260,8 +261,11 @@ namespace pcysl5edgo.Collections.LINQ
         #endregion
 
         #region Function
-        public bool Any()
-            => FirstEnumerable.Any<TFirstEnumerable, TFirstEnumerator, TSource>() || SecondEnumerable.Any<TSecondEnumerable, TSecondEnumerator, TSource>();
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool CanFastCount() => FirstEnumerable.CanFastCount() && SecondEnumerable.CanFastCount();
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool Any() => FirstEnumerable.Any() || SecondEnumerable.Any();
 
         public bool Any<TPredicate>(TPredicate predicate)
             where TPredicate : unmanaged, IRefFunc<TSource, bool>
@@ -314,8 +318,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TComparer : unmanaged, IRefFunc<TSource, TSource, bool>
             => FirstEnumerable.Contains<TFirstEnumerable, TFirstEnumerator, TSource, TComparer>(value, comparer) || SecondEnumerable.Contains<TSecondEnumerable, TSecondEnumerator, TSource, TComparer>(value, comparer);
 
-        public int Count()
-            => FirstEnumerable.Count<TFirstEnumerable, TFirstEnumerator, TSource>() + SecondEnumerable.Count<TSecondEnumerable, TSecondEnumerator, TSource>();
+        public int Count() => FirstEnumerable.Count() + SecondEnumerable.Count();
 
         public int Count(Func<TSource, bool> predicate)
             => FirstEnumerable.Count<TFirstEnumerable, TFirstEnumerator, TSource>(predicate) + SecondEnumerable.Count<TSecondEnumerable, TSecondEnumerator, TSource>(predicate);
@@ -324,8 +327,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TPredicate : unmanaged, IRefFunc<TSource, bool>
             => FirstEnumerable.Count<TFirstEnumerable, TFirstEnumerator, TSource, TPredicate>(predicate) + SecondEnumerable.Count<TSecondEnumerable, TSecondEnumerator, TSource, TPredicate>(predicate);
 
-        public long LongCount()
-            => Count();
+        public long LongCount() => FirstEnumerable.LongCount() + SecondEnumerable.LongCount();
 
         public long LongCount(Func<TSource, bool> predicate)
             => Count(predicate);
@@ -360,10 +362,10 @@ namespace pcysl5edgo.Collections.LINQ
 
         // ReSharper disable once ParameterHidesMember
         public bool TryGetFirst(out TSource first)
-            => this.FirstEnumerable.TryGetFirst<TFirstEnumerable, TFirstEnumerator, TSource>(out first) || SecondEnumerable.TryGetFirst<TSecondEnumerable, TSecondEnumerator, TSource>(out first);
+            => this.FirstEnumerable.TryGetFirst(out first) || SecondEnumerable.TryGetFirst(out first);
 
         public bool TryGetLast(out TSource last)
-            => SecondEnumerable.TryGetLast<TSecondEnumerable, TSecondEnumerator, TSource>(out last) || FirstEnumerable.TryGetLast<TFirstEnumerable, TFirstEnumerator, TSource>(out last);
+            => SecondEnumerable.TryGetLast(out last) || FirstEnumerable.TryGetLast(out last);
 
         public bool TryGetSingle(out TSource value)
         {

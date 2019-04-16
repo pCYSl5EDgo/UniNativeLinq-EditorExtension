@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Unity.Collections;
 
 namespace pcysl5edgo.Collections.LINQ
@@ -25,6 +26,7 @@ namespace pcysl5edgo.Collections.LINQ
         }
 
         public AppendEnumerator<TPrevEnumerator, TSource> GetEnumerator() => new AppendEnumerator<TPrevEnumerator, TSource>(enumerable.GetEnumerator(), append, alloc);
+
         IEnumerator<TSource> IEnumerable<TSource>.GetEnumerator() => GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
@@ -247,6 +249,9 @@ namespace pcysl5edgo.Collections.LINQ
         #endregion
 
         #region Function
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool CanFastCount() => enumerable.CanFastCount();
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Any() => true;
 
         public bool Any<TPredicate>(TPredicate predicate)
@@ -299,7 +304,7 @@ namespace pcysl5edgo.Collections.LINQ
             => this.Contains<AppendEnumerable<TPrevEnumerable, TPrevEnumerator, TSource>, AppendEnumerator<TPrevEnumerator, TSource>, TSource, TEqualityComparer>(value, comparer);
 
         public int Count()
-            => enumerable.Count<TPrevEnumerable, TPrevEnumerator, TSource>() + 1;
+            => enumerable.Count() + 1;
 
         public int Count(Func<TSource, bool> predicate)
             => enumerable.Count<TPrevEnumerable, TPrevEnumerator, TSource>(predicate) + 1;
@@ -309,7 +314,7 @@ namespace pcysl5edgo.Collections.LINQ
             => enumerable.Count<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>(predicate);
 
         public long LongCount()
-            => Count();
+            => enumerable.LongCount() + 1;
 
         public long LongCount(Func<TSource, bool> predicate)
             => Count(predicate);
@@ -323,7 +328,7 @@ namespace pcysl5edgo.Collections.LINQ
 
         public bool TryGetFirst(out TSource first)
         {
-            if (enumerable.TryGetFirst<TPrevEnumerable, TPrevEnumerator, TSource>(out first))
+            if (enumerable.TryGetFirst(out first))
                 return true;
             first = append;
             return true;

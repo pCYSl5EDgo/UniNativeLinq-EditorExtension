@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Unity.Collections;
 
 namespace pcysl5edgo.Collections.LINQ
@@ -256,6 +257,9 @@ namespace pcysl5edgo.Collections.LINQ
         #endregion
 
         #region Function
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool CanFastCount() => false;
+        
         public bool Any()
             => this.Any<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource>();
 
@@ -312,14 +316,14 @@ namespace pcysl5edgo.Collections.LINQ
             => this.Count<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource, TAnotherPredicate>(predicate);
 
         public long LongCount()
-            => this.Count<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource>();
+            => this.LongCount<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource>();
 
         public long LongCount(Func<TSource, bool> predicate)
-            => this.Count<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource>(predicate);
+            => this.LongCount<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource>(predicate);
 
         public long LongCount<TAnotherPredicate>(TAnotherPredicate predicate)
             where TAnotherPredicate : unmanaged, IRefFunc<TSource, bool>
-            => this.Count<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource, TAnotherPredicate>(predicate);
+            => this.LongCount<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource, TAnotherPredicate>(predicate);
 
         public bool TryGetElementAt(int index, out TSource element)
             => this.TryGetElementAt<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource>(index, out element);

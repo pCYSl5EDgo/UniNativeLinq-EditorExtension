@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.PerformanceData;
+using System.Runtime.CompilerServices;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 
@@ -318,6 +320,9 @@ namespace pcysl5edgo.Collections.LINQ
         #endregion
 
         #region Function
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool CanFastCount() => enumerable.CanFastCount();
+
         public bool Any() => true;
 
         public bool Any<TPredicate>(TPredicate predicate)
@@ -363,7 +368,25 @@ namespace pcysl5edgo.Collections.LINQ
             => this.Contains<DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, TSource>, Enumerator, TSource, TComparer>(value, comparer);
 
         public int Count()
-            => this.Count<DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, TSource>, Enumerator, TSource>();
+        {
+            int count;
+            if (enumerable.CanFastCount())
+            {
+                count = enumerable.Count();
+                return count == 0 ? 1 : count;
+            }
+            var enumerator = enumerable.GetEnumerator();
+            if (!enumerator.MoveNext())
+            {
+                enumerator.Dispose();
+                return 1;
+            }
+            count = 1;
+            while (enumerator.MoveNext())
+                ++count;
+            enumerator.Dispose();
+            return count;
+        }
 
         public int Count(Func<TSource, bool> predicate)
             => this.Count<DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, TSource>, Enumerator, TSource>(predicate);
@@ -373,7 +396,25 @@ namespace pcysl5edgo.Collections.LINQ
             => this.Count<DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, TSource>, Enumerator, TSource, TPredicate>(predicate);
 
         public long LongCount()
-            => this.Count();
+        {
+            long count;
+            if (enumerable.CanFastCount())
+            {
+                count = enumerable.LongCount();
+                return count == 0 ? 1 : count;
+            }
+            var enumerator = enumerable.GetEnumerator();
+            if (!enumerator.MoveNext())
+            {
+                enumerator.Dispose();
+                return 1;
+            }
+            count = 1;
+            while (enumerator.MoveNext())
+                ++count;
+            enumerator.Dispose();
+            return count;
+        }
 
         public long LongCount(Func<TSource, bool> predicate)
             => this.Count(predicate);
@@ -428,7 +469,7 @@ namespace pcysl5edgo.Collections.LINQ
 
         public TSource[] ToArray()
         {
-            var length = enumerable.Count<TEnumerable, TEnumerator, TSource>();
+            var length = enumerable.Count();
             if (length == 0)
                 return new[] {val};
             var answer = new TSource[length];
@@ -442,7 +483,7 @@ namespace pcysl5edgo.Collections.LINQ
 
         public NativeArray<TSource> ToNativeArray(Allocator allocator)
         {
-            var length = enumerable.Count<TEnumerable, TEnumerator, TSource>();
+            var length = enumerable.Count();
             NativeArray<TSource> answer;
             if (length == 0)
             {

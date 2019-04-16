@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Unity.Collections;
 
 namespace pcysl5edgo.Collections.LINQ
@@ -248,6 +249,9 @@ namespace pcysl5edgo.Collections.LINQ
         #endregion
 
         #region Function
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool CanFastCount() => enumerable.CanFastCount();
+
         public bool Any() => true;
 
         public bool Any<TPredicate>(TPredicate predicate)
@@ -299,8 +303,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TEqualityComparer : unmanaged, IRefFunc<TSource, TSource, bool>
             => this.Contains<AppendPointerEnumerable<TPrevEnumerable, TPrevEnumerator, TSource>, AppendEnumerator<TPrevEnumerator, TSource>, TSource, TEqualityComparer>(value, comparer);
 
-        public int Count()
-            => enumerable.Count<TPrevEnumerable, TPrevEnumerator, TSource>() + 1;
+        public int Count() => enumerable.Count() + 1;
 
         public int Count(Func<TSource, bool> predicate)
             => enumerable.Count<TPrevEnumerable, TPrevEnumerator, TSource>(predicate) + 1;
@@ -309,8 +312,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TPredicate : unmanaged, IRefFunc<TSource, bool>
             => enumerable.Count<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>(predicate);
 
-        public long LongCount()
-            => Count();
+        public long LongCount() => enumerable.LongCount();
 
         public long LongCount(Func<TSource, bool> predicate)
             => Count(predicate);
@@ -324,7 +326,7 @@ namespace pcysl5edgo.Collections.LINQ
 
         public bool TryGetFirst(out TSource first)
         {
-            if (enumerable.TryGetFirst<TPrevEnumerable, TPrevEnumerator, TSource>(out first))
+            if (enumerable.TryGetFirst(out first))
                 return true;
             first = *append;
             return true;

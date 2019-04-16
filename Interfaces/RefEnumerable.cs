@@ -7,5 +7,13 @@ namespace pcysl5edgo.Collections
         where TEnumerator : struct, IRefEnumerator<T>
     {
         new TEnumerator GetEnumerator();
+
+        bool CanFastCount();
+        bool Any();
+        int Count();
+        long LongCount();
+
+        bool TryGetFirst(out T first);
+        bool TryGetLast(out T last);
     }
 }
