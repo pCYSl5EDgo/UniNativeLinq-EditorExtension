@@ -82,8 +82,6 @@ namespace pcysl5edgo.Collections.LINQ
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         #region Enumerable
-        public ArrayEnumerable<T> AsRefEnumerable() => this;
-
         public AppendEnumerable<ArrayEnumerable<T>, Enumerator, T>
             Append(T value, Allocator allocator = Allocator.Temp)
             => new AppendEnumerable<ArrayEnumerable<T>, Enumerator, T>(this, value, allocator);
@@ -92,9 +90,22 @@ namespace pcysl5edgo.Collections.LINQ
             Append(T* value)
             => new AppendPointerEnumerable<ArrayEnumerable<T>, Enumerator, T>(this, value);
 
+        public ArrayEnumerable<T> AsRefEnumerable() => this;
+
         public DefaultIfEmptyEnumerable<ArrayEnumerable<T>, Enumerator, T>
             DefaultIfEmpty(T defaultValue, Allocator allocator = Allocator.Temp)
             => new DefaultIfEmptyEnumerable<ArrayEnumerable<T>, Enumerator, T>(this, defaultValue, allocator);
+
+        public DistinctEnumerable<ArrayEnumerable<T>, Enumerator, T, DefaultEqualityComparer<T>, DefaultGetHashCodeFunc<T>>
+            Distinct(Allocator allocator = Allocator.Temp)
+            => new DistinctEnumerable<ArrayEnumerable<T>, Enumerator, T, DefaultEqualityComparer<T>, DefaultGetHashCodeFunc<T>>(this, default, default, allocator);
+
+        public DistinctEnumerable<ArrayEnumerable<T>, Enumerator, T, TEqualityComparer, TGetHashCodeFunc>
+            Distinct<TEqualityComparer, TGetHashCodeFunc>
+            (TEqualityComparer comparer, TGetHashCodeFunc getHashCodeFunc, Allocator allocator = Allocator.Temp)
+            where TEqualityComparer : struct, IRefFunc<T, T, bool>
+            where TGetHashCodeFunc : struct, IRefFunc<T, int>
+            => new DistinctEnumerable<ArrayEnumerable<T>, Enumerator, T, TEqualityComparer, TGetHashCodeFunc>(this, comparer, getHashCodeFunc, allocator);
 
         public SelectEnumerable<ArrayEnumerable<T>, Enumerator, T, TResult, TAction>
             Select<TResult, TAction>
@@ -242,6 +253,20 @@ namespace pcysl5edgo.Collections.LINQ
 
         public ConcatEnumerable<
                 ArrayEnumerable<T>, Enumerator,
+                DistinctEnumerable<TEnumerable0, TEnumerator0, T, TEqualityComparer, TGetHashCodeFunc>,
+                DistinctEnumerable<TEnumerable0, TEnumerator0, T, TEqualityComparer, TGetHashCodeFunc>.Enumerator,
+                T
+            >
+            Concat<TEnumerable0, TEnumerator0, TEqualityComparer, TGetHashCodeFunc>
+            (in DistinctEnumerable<TEnumerable0, TEnumerator0, T, TEqualityComparer, TGetHashCodeFunc> second)
+            where TEnumerator0 : struct, IRefEnumerator<T>
+            where TEnumerable0 : struct, IRefEnumerable<TEnumerator0, T>
+            where TEqualityComparer : struct, IRefFunc<T, T, bool>
+            where TGetHashCodeFunc : struct, IRefFunc<T, int>
+            => new ConcatEnumerable<ArrayEnumerable<T>, Enumerator, DistinctEnumerable<TEnumerable0, TEnumerator0, T, TEqualityComparer, TGetHashCodeFunc>, DistinctEnumerable<TEnumerable0, TEnumerator0, T, TEqualityComparer, TGetHashCodeFunc>.Enumerator, T>(this, second);
+
+        public ConcatEnumerable<
+                ArrayEnumerable<T>, Enumerator,
                 RangeRepeatEnumerable<T, TAction>,
                 RangeRepeatEnumerable<T, TAction>.Enumerator,
                 T
@@ -320,7 +345,7 @@ namespace pcysl5edgo.Collections.LINQ
         #region Function
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool CanFastCount() => true;
-        
+
         public bool Any() => Length != 0;
 
         public bool Any<TPredicate>(TPredicate predicate)

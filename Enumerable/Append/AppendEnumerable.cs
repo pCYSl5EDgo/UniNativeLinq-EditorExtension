@@ -39,6 +39,32 @@ namespace pcysl5edgo.Collections.LINQ
         public AppendEnumerable<AppendEnumerable<TPrevEnumerable, TPrevEnumerator, TSource>, AppendEnumerator<TPrevEnumerator, TSource>, TSource> Append(in TSource item, Allocator allocator = Allocator.Temp)
             => new AppendEnumerable<AppendEnumerable<TPrevEnumerable, TPrevEnumerator, TSource>, AppendEnumerator<TPrevEnumerator, TSource>, TSource>(this, item, allocator);
 
+        public DefaultIfEmptyEnumerable<AppendEnumerable<TPrevEnumerable, TPrevEnumerator, TSource>, AppendEnumerator<TPrevEnumerator, TSource>, TSource>
+            DefaultIfEmpty(TSource defaultValue, Allocator allocator = Allocator.Temp)
+            => new DefaultIfEmptyEnumerable<AppendEnumerable<TPrevEnumerable, TPrevEnumerator, TSource>, AppendEnumerator<TPrevEnumerator, TSource>, TSource>(this, defaultValue, allocator);
+
+        public DistinctEnumerable<
+                AppendEnumerable<TPrevEnumerable, TPrevEnumerator, TSource>,
+                AppendEnumerator<TPrevEnumerator, TSource>,
+                TSource,
+                DefaultEqualityComparer<TSource>,
+                DefaultGetHashCodeFunc<TSource>
+            >
+            Distinct(Allocator allocator = Allocator.Temp)
+            => new DistinctEnumerable<AppendEnumerable<TPrevEnumerable, TPrevEnumerator, TSource>, AppendEnumerator<TPrevEnumerator, TSource>, TSource, DefaultEqualityComparer<TSource>, DefaultGetHashCodeFunc<TSource>>(this, default, default, allocator);
+
+        public DistinctEnumerable<
+                AppendEnumerable<TPrevEnumerable, TPrevEnumerator, TSource>,
+                AppendEnumerator<TPrevEnumerator, TSource>,
+                TSource,
+                TEqualityComparer,
+                TGetHashCodeFunc
+            >
+            Distinct<TEqualityComparer, TGetHashCodeFunc>(TEqualityComparer comparer, TGetHashCodeFunc getHashCodeFunc, Allocator allocator = Allocator.Temp)
+            where TEqualityComparer : struct, IRefFunc<TSource, TSource, bool>
+            where TGetHashCodeFunc : struct, IRefFunc<TSource, int>
+            => new DistinctEnumerable<AppendEnumerable<TPrevEnumerable, TPrevEnumerator, TSource>, AppendEnumerator<TPrevEnumerator, TSource>, TSource, TEqualityComparer, TGetHashCodeFunc>(this, comparer, getHashCodeFunc, allocator);
+
         public SelectEnumerable<AppendEnumerable<TPrevEnumerable, TPrevEnumerator, TSource>, AppendEnumerator<TPrevEnumerator, TSource>, TSource, TResult, TAction> Select<TResult, TAction>(TAction action, Allocator allocator)
             where TResult : unmanaged
 #if STRICT_EQUALITY
@@ -58,10 +84,6 @@ namespace pcysl5edgo.Collections.LINQ
         public WhereEnumerable<AppendEnumerable<TPrevEnumerable, TPrevEnumerator, TSource>, AppendEnumerator<TPrevEnumerator, TSource>, TSource, TPredicate> Where<TPredicate>(TPredicate predicate)
             where TPredicate : unmanaged, IRefFunc<TSource, bool>
             => new WhereEnumerable<AppendEnumerable<TPrevEnumerable, TPrevEnumerator, TSource>, AppendEnumerator<TPrevEnumerator, TSource>, TSource, TPredicate>(this, predicate);
-
-        public DefaultIfEmptyEnumerable<AppendEnumerable<TPrevEnumerable, TPrevEnumerator, TSource>, AppendEnumerator<TPrevEnumerator, TSource>, TSource>
-            DefaultIfEmpty(TSource defaultValue, Allocator allocator = Allocator.Temp)
-            => new DefaultIfEmptyEnumerable<AppendEnumerable<TPrevEnumerable, TPrevEnumerator, TSource>, AppendEnumerator<TPrevEnumerator, TSource>, TSource>(this, defaultValue, allocator);
         #endregion
 
         #region Concat
@@ -188,6 +210,21 @@ namespace pcysl5edgo.Collections.LINQ
         public ConcatEnumerable<
                 AppendEnumerable<TPrevEnumerable, TPrevEnumerator, TSource>,
                 AppendEnumerator<TPrevEnumerator, TSource>,
+                DistinctEnumerable<TEnumerable1, TEnumerator1, TSource, TEqualityComparer, TGetHashCodeFunc>,
+                DistinctEnumerable<TEnumerable1, TEnumerator1, TSource, TEqualityComparer, TGetHashCodeFunc>.Enumerator,
+                TSource
+            >
+            Concat<TEnumerable1, TEnumerator1, TEqualityComparer, TGetHashCodeFunc>
+            (in DistinctEnumerable<TEnumerable1, TEnumerator1, TSource, TEqualityComparer, TGetHashCodeFunc> second)
+            where TEnumerator1 : struct, IRefEnumerator<TSource>
+            where TEnumerable1 : struct, IRefEnumerable<TEnumerator1, TSource>
+            where TEqualityComparer : struct, IRefFunc<TSource, TSource, bool>
+            where TGetHashCodeFunc : struct, IRefFunc<TSource, int>
+            => new ConcatEnumerable<AppendEnumerable<TPrevEnumerable, TPrevEnumerator, TSource>, AppendEnumerator<TPrevEnumerator, TSource>, DistinctEnumerable<TEnumerable1, TEnumerator1, TSource, TEqualityComparer, TGetHashCodeFunc>, DistinctEnumerable<TEnumerable1, TEnumerator1, TSource, TEqualityComparer, TGetHashCodeFunc>.Enumerator, TSource>(this, second);
+
+        public ConcatEnumerable<
+                AppendEnumerable<TPrevEnumerable, TPrevEnumerator, TSource>,
+                AppendEnumerator<TPrevEnumerator, TSource>,
                 RangeRepeatEnumerable<TSource, TAction>,
                 RangeRepeatEnumerable<TSource, TAction>.Enumerator,
                 TSource
@@ -251,6 +288,7 @@ namespace pcysl5edgo.Collections.LINQ
         #region Function
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool CanFastCount() => enumerable.CanFastCount();
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Any() => true;
 

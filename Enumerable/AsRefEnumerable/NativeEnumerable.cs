@@ -33,11 +33,27 @@ namespace pcysl5edgo.Collections.LINQ
         public Enumerator GetEnumerator() => new Enumerator(this);
 
         #region Enumerable
+        public AppendEnumerable<NativeEnumerable<T>, Enumerator, T> Append(T value, Allocator allocator = Allocator.Temp)
+            => new AppendEnumerable<NativeEnumerable<T>, Enumerator, T>(this, value, allocator);
+
+        public AppendPointerEnumerable<NativeEnumerable<T>, Enumerator, T> Append(T* value)
+            => new AppendPointerEnumerable<NativeEnumerable<T>, Enumerator, T>(this, value);
+
         public NativeEnumerable<T> AsRefEnumerable() => this;
 
-        public WhereEnumerable<NativeEnumerable<T>, Enumerator, T, TPredicate> Where<TPredicate>(TPredicate predicate)
-            where TPredicate : unmanaged, IRefFunc<T, bool>
-            => new WhereEnumerable<NativeEnumerable<T>, Enumerator, T, TPredicate>(this, predicate);
+        public DefaultIfEmptyEnumerable<NativeEnumerable<T>, Enumerator, T> DefaultIfEmpty(T defaultValue, Allocator allocator = Allocator.Temp)
+            => new DefaultIfEmptyEnumerable<NativeEnumerable<T>, Enumerator, T>(this, defaultValue, allocator);
+
+        public DistinctEnumerable<NativeEnumerable<T>, Enumerator, T, DefaultEqualityComparer<T>, DefaultGetHashCodeFunc<T>>
+            Distinct(Allocator allocator = Allocator.Temp)
+            => new DistinctEnumerable<NativeEnumerable<T>, Enumerator, T, DefaultEqualityComparer<T>, DefaultGetHashCodeFunc<T>>(this, default, default, allocator);
+
+        public DistinctEnumerable<NativeEnumerable<T>, Enumerator, T, TEqualityComparer, TGetHashCodeFunc>
+            Distinct<TEqualityComparer, TGetHashCodeFunc>
+            (TEqualityComparer comparer, TGetHashCodeFunc getHashCodeFunc, Allocator allocator = Allocator.Temp)
+            where TEqualityComparer : struct, IRefFunc<T, T, bool>
+            where TGetHashCodeFunc : struct, IRefFunc<T, int>
+            => new DistinctEnumerable<NativeEnumerable<T>, Enumerator, T, TEqualityComparer, TGetHashCodeFunc>(this, comparer, getHashCodeFunc, allocator);
 
         public SelectEnumerable<NativeEnumerable<T>, Enumerator, T, TResult, TAction> Select<TResult, TAction>(TAction action, Allocator allocator = Allocator.Temp)
             where TResult : unmanaged
@@ -55,14 +71,9 @@ namespace pcysl5edgo.Collections.LINQ
             where TAction : unmanaged, ISelectIndex<T, TResult>
             => new SelectIndexEnumerable<NativeEnumerable<T>, Enumerator, T, TResult, TAction>(this, action, allocator);
 
-        public AppendEnumerable<NativeEnumerable<T>, Enumerator, T> Append(T value, Allocator allocator = Allocator.Temp)
-            => new AppendEnumerable<NativeEnumerable<T>, Enumerator, T>(this, value, allocator);
-
-        public AppendPointerEnumerable<NativeEnumerable<T>, Enumerator, T> Append(T* value)
-            => new AppendPointerEnumerable<NativeEnumerable<T>, Enumerator, T>(this, value);
-
-        public DefaultIfEmptyEnumerable<NativeEnumerable<T>, Enumerator, T> DefaultIfEmpty(T defaultValue, Allocator allocator = Allocator.Temp)
-            => new DefaultIfEmptyEnumerable<NativeEnumerable<T>, Enumerator, T>(this, defaultValue, allocator);
+        public WhereEnumerable<NativeEnumerable<T>, Enumerator, T, TPredicate> Where<TPredicate>(TPredicate predicate)
+            where TPredicate : unmanaged, IRefFunc<T, bool>
+            => new WhereEnumerable<NativeEnumerable<T>, Enumerator, T, TPredicate>(this, predicate);
         #endregion
 
         #region Concat
@@ -189,6 +200,20 @@ namespace pcysl5edgo.Collections.LINQ
             where TEnumerator0 : struct, IRefEnumerator<T>
             where TEnumerable0 : struct, IRefEnumerable<TEnumerator0, T>
             => new ConcatEnumerable<NativeEnumerable<T>, Enumerator, DefaultIfEmptyEnumerable<TEnumerable0, TEnumerator0, T>, DefaultIfEmptyEnumerable<TEnumerable0, TEnumerator0, T>.Enumerator, T>(this, second);
+
+        public ConcatEnumerable<
+                NativeEnumerable<T>, Enumerator,
+                DistinctEnumerable<TEnumerable0, TEnumerator0, T, TEqualityComparer, TGetHashCodeFunc>,
+                DistinctEnumerable<TEnumerable0, TEnumerator0, T, TEqualityComparer, TGetHashCodeFunc>.Enumerator,
+                T
+            >
+            Concat<TEnumerable0, TEnumerator0, TEqualityComparer, TGetHashCodeFunc>
+            (in DistinctEnumerable<TEnumerable0, TEnumerator0, T, TEqualityComparer, TGetHashCodeFunc> second)
+            where TEnumerator0 : struct, IRefEnumerator<T>
+            where TEnumerable0 : struct, IRefEnumerable<TEnumerator0, T>
+            where TEqualityComparer : struct, IRefFunc<T, T, bool>
+            where TGetHashCodeFunc : struct, IRefFunc<T, int>
+            => new ConcatEnumerable<NativeEnumerable<T>, Enumerator, DistinctEnumerable<TEnumerable0, TEnumerator0, T, TEqualityComparer, TGetHashCodeFunc>, DistinctEnumerable<TEnumerable0, TEnumerator0, T, TEqualityComparer, TGetHashCodeFunc>.Enumerator, T>(this, second);
 
         public ConcatEnumerable<
                 NativeEnumerable<T>, Enumerator,
@@ -456,6 +481,7 @@ namespace pcysl5edgo.Collections.LINQ
             element = Ptr[index];
             return true;
         }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool TryGetFirst(out T first)
         {

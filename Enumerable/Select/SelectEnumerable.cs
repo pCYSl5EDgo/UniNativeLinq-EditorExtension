@@ -41,7 +41,31 @@ namespace pcysl5edgo.Collections.LINQ
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         #region Enumerable
+        public AppendEnumerable<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, Enumerator, TResult> Append(TResult value, Allocator allocator = Allocator.Temp)
+            => new AppendEnumerable<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, Enumerator, TResult>(this, value, allocator);
+
+        public unsafe AppendPointerEnumerable<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, Enumerator, TResult> Append(TResult* value)
+            => new AppendPointerEnumerable<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, Enumerator, TResult>(this, value);
+
         public SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction> AsRefEnumerable() => this;
+
+        public DefaultIfEmptyEnumerable<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, Enumerator, TResult>
+            DefaultIfEmpty(TResult defaultValue, Allocator allocator = Allocator.Temp)
+            => new DefaultIfEmptyEnumerable<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, Enumerator, TResult>(this, defaultValue, allocator);
+
+        public DistinctEnumerable<
+                SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>,
+                Enumerator, TResult, DefaultEqualityComparer<TResult>, DefaultGetHashCodeFunc<TResult>>
+            Distinct(Allocator allocator = Allocator.Temp)
+            => new DistinctEnumerable<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, Enumerator, TResult, DefaultEqualityComparer<TResult>, DefaultGetHashCodeFunc<TResult>>(this, default, default, allocator);
+
+        public DistinctEnumerable<
+                SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>,
+                Enumerator, TResult, TEqualityComparer, TGetHashCodeFunc>
+            Distinct<TEqualityComparer, TGetHashCodeFunc>(TEqualityComparer comparer, TGetHashCodeFunc getHashCodeFunc, Allocator allocator = Allocator.Temp)
+            where TEqualityComparer : struct, IRefFunc<TResult, TResult, bool>
+            where TGetHashCodeFunc : struct, IRefFunc<TResult, int>
+            => new DistinctEnumerable<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, Enumerator, TResult, TEqualityComparer, TGetHashCodeFunc>(this, comparer, getHashCodeFunc, allocator);
 
         public SelectEnumerable<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, Enumerator, TResult, TNextResult, TNextAction> Select<TNextResult, TNextAction>(TNextAction nextAction, Allocator allocator = Allocator.Temp)
             where TNextAction : unmanaged, IRefAction<TResult, TNextResult>
@@ -69,16 +93,6 @@ namespace pcysl5edgo.Collections.LINQ
         public WhereEnumerable<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, Enumerator, TResult, TPredicate> Where<TPredicate>(TPredicate predicate)
             where TPredicate : unmanaged, IRefFunc<TResult, bool>
             => new WhereEnumerable<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, Enumerator, TResult, TPredicate>(this, predicate);
-
-        public AppendEnumerable<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, Enumerator, TResult> Append(TResult value, Allocator allocator = Allocator.Temp)
-            => new AppendEnumerable<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, Enumerator, TResult>(this, value, allocator);
-
-        public unsafe AppendPointerEnumerable<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, Enumerator, TResult> Append(TResult* value)
-            => new AppendPointerEnumerable<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, Enumerator, TResult>(this, value);
-
-        public DefaultIfEmptyEnumerable<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, Enumerator, TResult>
-            DefaultIfEmpty(TResult defaultValue, Allocator allocator = Allocator.Temp)
-            => new DefaultIfEmptyEnumerable<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, Enumerator, TResult>(this, defaultValue, allocator);
         #endregion
 
         #region Concat
@@ -96,54 +110,6 @@ namespace pcysl5edgo.Collections.LINQ
                     SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>,
                     Enumerator,
                     TEnumerable1, TEnumerator1,
-                    TResult>
-                (this, second);
-
-        public ConcatEnumerable<
-                SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>,
-                Enumerator,
-                SelectEnumerable<TEnumerable1, TEnumerator1, TPrevSource1, TResult, TAction1>,
-                SelectEnumerable<TEnumerable1, TEnumerator1, TPrevSource1, TResult, TAction1>.Enumerator,
-                TResult
-            >
-            Concat<TEnumerable1, TEnumerator1, TPrevSource1, TAction1>
-            (in SelectEnumerable<TEnumerable1, TEnumerator1, TPrevSource1, TResult, TAction1> second)
-            where TEnumerator1 : struct, IRefEnumerator<TPrevSource1>
-            where TEnumerable1 : struct, IRefEnumerable<TEnumerator1, TPrevSource1>
-            where TAction1 : unmanaged, IRefAction<TPrevSource1, TResult>
-            where TPrevSource1 : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TPrevSource1>
-#endif
-            => new ConcatEnumerable<
-                    SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>,
-                    Enumerator,
-                    SelectEnumerable<TEnumerable1, TEnumerator1, TPrevSource1, TResult, TAction1>,
-                    SelectEnumerable<TEnumerable1, TEnumerator1, TPrevSource1, TResult, TAction1>.Enumerator,
-                    TResult>
-                (this, second);
-
-        public ConcatEnumerable<
-                SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>,
-                Enumerator,
-                SelectIndexEnumerable<TEnumerable1, TEnumerator1, TPrevSource1, TResult, TAction1>,
-                SelectIndexEnumerable<TEnumerable1, TEnumerator1, TPrevSource1, TResult, TAction1>.Enumerator,
-                TResult
-            >
-            Concat<TEnumerable1, TEnumerator1, TPrevSource1, TAction1>
-            (in SelectIndexEnumerable<TEnumerable1, TEnumerator1, TPrevSource1, TResult, TAction1> second)
-            where TEnumerator1 : struct, IRefEnumerator<TPrevSource1>
-            where TEnumerable1 : struct, IRefEnumerable<TEnumerator1, TPrevSource1>
-            where TAction1 : unmanaged, ISelectIndex<TPrevSource1, TResult>
-            where TPrevSource1 : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TPrevSource1>
-#endif
-            => new ConcatEnumerable<
-                    SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>,
-                    Enumerator,
-                    SelectIndexEnumerable<TEnumerable1, TEnumerator1, TPrevSource1, TResult, TAction1>,
-                    SelectIndexEnumerable<TEnumerable1, TEnumerator1, TPrevSource1, TResult, TAction1>.Enumerator,
                     TResult>
                 (this, second);
 
@@ -289,6 +255,21 @@ namespace pcysl5edgo.Collections.LINQ
         public ConcatEnumerable<
                 SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>,
                 Enumerator,
+                DistinctEnumerable<TEnumerable1, TEnumerator1, TResult, TEqualityComparer, TGetHashCodeFunc>,
+                DistinctEnumerable<TEnumerable1, TEnumerator1, TResult, TEqualityComparer, TGetHashCodeFunc>.Enumerator,
+                TResult
+            >
+            Concat<TEnumerable1, TEnumerator1, TEqualityComparer, TGetHashCodeFunc>
+            (in DistinctEnumerable<TEnumerable1, TEnumerator1, TResult, TEqualityComparer, TGetHashCodeFunc> second)
+            where TEnumerable1 : struct, IRefEnumerable<TEnumerator1, TResult>
+            where TEnumerator1 : struct, IRefEnumerator<TResult>
+            where TEqualityComparer : struct, IRefFunc<TResult, TResult, bool>
+            where TGetHashCodeFunc : struct, IRefFunc<TResult, int>
+            => new ConcatEnumerable<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, Enumerator, DistinctEnumerable<TEnumerable1, TEnumerator1, TResult, TEqualityComparer, TGetHashCodeFunc>, DistinctEnumerable<TEnumerable1, TEnumerator1, TResult, TEqualityComparer, TGetHashCodeFunc>.Enumerator, TResult>(this, second);
+
+        public ConcatEnumerable<
+                SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>,
+                Enumerator,
                 RangeRepeatEnumerable<TResult, TAction1>,
                 RangeRepeatEnumerable<TResult, TAction1>.Enumerator,
                 TResult
@@ -297,6 +278,55 @@ namespace pcysl5edgo.Collections.LINQ
             (in RangeRepeatEnumerable<TResult, TAction1> second)
             where TAction1 : struct, IRefAction<TResult>
             => new ConcatEnumerable<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>, Enumerator, RangeRepeatEnumerable<TResult, TAction1>, RangeRepeatEnumerable<TResult, TAction1>.Enumerator, TResult>(this, second);
+
+        public ConcatEnumerable<
+                SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>,
+                Enumerator,
+                SelectEnumerable<TEnumerable1, TEnumerator1, TPrevSource1, TResult, TAction1>,
+                SelectEnumerable<TEnumerable1, TEnumerator1, TPrevSource1, TResult, TAction1>.Enumerator,
+                TResult
+            >
+            Concat<TEnumerable1, TEnumerator1, TPrevSource1, TAction1>
+            (in SelectEnumerable<TEnumerable1, TEnumerator1, TPrevSource1, TResult, TAction1> second)
+            where TEnumerator1 : struct, IRefEnumerator<TPrevSource1>
+            where TEnumerable1 : struct, IRefEnumerable<TEnumerator1, TPrevSource1>
+            where TAction1 : unmanaged, IRefAction<TPrevSource1, TResult>
+            where TPrevSource1 : unmanaged
+#if STRICT_EQUALITY
+            , IEquatable<TPrevSource1>
+#endif
+            => new ConcatEnumerable<
+                    SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>,
+                    Enumerator,
+                    SelectEnumerable<TEnumerable1, TEnumerator1, TPrevSource1, TResult, TAction1>,
+                    SelectEnumerable<TEnumerable1, TEnumerator1, TPrevSource1, TResult, TAction1>.Enumerator,
+                    TResult>
+                (this, second);
+
+        public ConcatEnumerable<
+                SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>,
+                Enumerator,
+                SelectIndexEnumerable<TEnumerable1, TEnumerator1, TPrevSource1, TResult, TAction1>,
+                SelectIndexEnumerable<TEnumerable1, TEnumerator1, TPrevSource1, TResult, TAction1>.Enumerator,
+                TResult
+            >
+            Concat<TEnumerable1, TEnumerator1, TPrevSource1, TAction1>
+            (in SelectIndexEnumerable<TEnumerable1, TEnumerator1, TPrevSource1, TResult, TAction1> second)
+            where TEnumerator1 : struct, IRefEnumerator<TPrevSource1>
+            where TEnumerable1 : struct, IRefEnumerable<TEnumerator1, TPrevSource1>
+            where TAction1 : unmanaged, ISelectIndex<TPrevSource1, TResult>
+            where TPrevSource1 : unmanaged
+#if STRICT_EQUALITY
+            , IEquatable<TPrevSource1>
+#endif
+            => new ConcatEnumerable<
+                    SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>,
+                    Enumerator,
+                    SelectIndexEnumerable<TEnumerable1, TEnumerator1, TPrevSource1, TResult, TAction1>,
+                    SelectIndexEnumerable<TEnumerable1, TEnumerator1, TPrevSource1, TResult, TAction1>.Enumerator,
+                    TResult>
+                (this, second);
+
 
         public ConcatEnumerable<
                 SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TResult, TAction>,
