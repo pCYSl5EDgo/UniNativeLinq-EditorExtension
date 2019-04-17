@@ -1,6 +1,9 @@
 using System;
-using System.Runtime.CompilerServices;
 using Unity.Collections;
+
+#if UNSAFE_ARRAY_ENUMERABLE
+using System.Runtime.CompilerServices;
+#endif
 
 namespace pcysl5edgo.Collections.LINQ
 {
@@ -13,6 +16,7 @@ namespace pcysl5edgo.Collections.LINQ
 #endif
             => new NativeEnumerable<T>(array);
 
+#if UNSAFE_ARRAY_ENUMERABLE
         public static ArrayEnumerable<T> AsRefEnumerable<T>(this T[] array)
             where T : unmanaged
 #if STRICT_EQUALITY
@@ -169,6 +173,7 @@ namespace pcysl5edgo.Collections.LINQ
                 sum += *ptr;
             return sum / (uint)@this.Length;
         }
+#endif
 
         public static Single Average(ref this NativeEnumerable<Single> @this)
         {
