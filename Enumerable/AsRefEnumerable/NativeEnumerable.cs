@@ -7,16 +7,17 @@ using Unity.Collections.LowLevel.Unsafe;
 
 namespace pcysl5edgo.Collections.LINQ
 {
-    public unsafe struct NativeEnumerable<T> : IRefEnumerable<NativeEnumerable<T>.Enumerator, T>, ILinq<T>
-        where T : unmanaged
+    public unsafe struct NativeEnumerable<TSource>
+        : IRefEnumerable<NativeEnumerable<TSource>.Enumerator, TSource>, ILinq<TSource>
+        where TSource : unmanaged
 #if STRICT_EQUALITY
-        , IEquatable<T>
+        , IEquatable<TSource>
 #endif
     {
-        internal readonly T* Ptr;
+        internal readonly TSource* Ptr;
         internal readonly int Length;
 
-        internal NativeEnumerable(NativeArray<T> array)
+        internal NativeEnumerable(NativeArray<TSource> array)
         {
             if (array.IsCreated)
             {
@@ -33,274 +34,317 @@ namespace pcysl5edgo.Collections.LINQ
         public Enumerator GetEnumerator() => new Enumerator(this);
 
         #region Enumerable
-        public AppendEnumerable<NativeEnumerable<T>, Enumerator, T> Append(T value, Allocator allocator = Allocator.Temp)
-            => new AppendEnumerable<NativeEnumerable<T>, Enumerator, T>(this, value, allocator);
+        public AppendEnumerable<NativeEnumerable<TSource>, Enumerator, TSource> Append(TSource value, Allocator allocator = Allocator.Temp)
+            => new AppendEnumerable<NativeEnumerable<TSource>, Enumerator, TSource>(this, value, allocator);
 
-        public AppendPointerEnumerable<NativeEnumerable<T>, Enumerator, T> Append(T* value)
-            => new AppendPointerEnumerable<NativeEnumerable<T>, Enumerator, T>(this, value);
+        public AppendPointerEnumerable<NativeEnumerable<TSource>, Enumerator, TSource> Append(TSource* value)
+            => new AppendPointerEnumerable<NativeEnumerable<TSource>, Enumerator, TSource>(this, value);
 
-        public NativeEnumerable<T> AsRefEnumerable() => this;
+        public NativeEnumerable<TSource> AsRefEnumerable() => this;
 
-        public DefaultIfEmptyEnumerable<NativeEnumerable<T>, Enumerator, T> DefaultIfEmpty(T defaultValue, Allocator allocator = Allocator.Temp)
-            => new DefaultIfEmptyEnumerable<NativeEnumerable<T>, Enumerator, T>(this, defaultValue, allocator);
+        public DefaultIfEmptyEnumerable<NativeEnumerable<TSource>, Enumerator, TSource> DefaultIfEmpty(TSource defaultValue, Allocator allocator = Allocator.Temp)
+            => new DefaultIfEmptyEnumerable<NativeEnumerable<TSource>, Enumerator, TSource>(this, defaultValue, allocator);
 
-        public DistinctEnumerable<NativeEnumerable<T>, Enumerator, T, DefaultEqualityComparer<T>, DefaultGetHashCodeFunc<T>>
+        public DistinctEnumerable<NativeEnumerable<TSource>, Enumerator, TSource, DefaultEqualityComparer<TSource>, DefaultGetHashCodeFunc<TSource>>
             Distinct(Allocator allocator = Allocator.Temp)
-            => new DistinctEnumerable<NativeEnumerable<T>, Enumerator, T, DefaultEqualityComparer<T>, DefaultGetHashCodeFunc<T>>(this, default, default, allocator);
+            => new DistinctEnumerable<NativeEnumerable<TSource>, Enumerator, TSource, DefaultEqualityComparer<TSource>, DefaultGetHashCodeFunc<TSource>>(this, default, default, allocator);
 
-        public DistinctEnumerable<NativeEnumerable<T>, Enumerator, T, TEqualityComparer, TGetHashCodeFunc>
+        public DistinctEnumerable<NativeEnumerable<TSource>, Enumerator, TSource, TEqualityComparer, TGetHashCodeFunc>
             Distinct<TEqualityComparer, TGetHashCodeFunc>
             (TEqualityComparer comparer, TGetHashCodeFunc getHashCodeFunc, Allocator allocator = Allocator.Temp)
-            where TEqualityComparer : struct, IRefFunc<T, T, bool>
-            where TGetHashCodeFunc : struct, IRefFunc<T, int>
-            => new DistinctEnumerable<NativeEnumerable<T>, Enumerator, T, TEqualityComparer, TGetHashCodeFunc>(this, comparer, getHashCodeFunc, allocator);
+            where TEqualityComparer : struct, IRefFunc<TSource, TSource, bool>
+            where TGetHashCodeFunc : struct, IRefFunc<TSource, int>
+            => new DistinctEnumerable<NativeEnumerable<TSource>, Enumerator, TSource, TEqualityComparer, TGetHashCodeFunc>(this, comparer, getHashCodeFunc, allocator);
 
-        public SelectEnumerable<NativeEnumerable<T>, Enumerator, T, TResult, TAction> Select<TResult, TAction>(TAction action, Allocator allocator = Allocator.Temp)
+        public SelectEnumerable<NativeEnumerable<TSource>, Enumerator, TSource, TResult, TAction> Select<TResult, TAction>(TAction action, Allocator allocator = Allocator.Temp)
             where TResult : unmanaged
 #if STRICT_EQUALITY
             , IEquatable<TResult>
 #endif
-            where TAction : unmanaged, IRefAction<T, TResult>
-            => new SelectEnumerable<NativeEnumerable<T>, Enumerator, T, TResult, TAction>(this, action, allocator);
+            where TAction : unmanaged, IRefAction<TSource, TResult>
+            => new SelectEnumerable<NativeEnumerable<TSource>, Enumerator, TSource, TResult, TAction>(this, action, allocator);
 
-        public SelectIndexEnumerable<NativeEnumerable<T>, Enumerator, T, TResult, TAction> SelectIndex<TResult, TAction>(TAction action, Allocator allocator = Allocator.Temp)
+        public SelectIndexEnumerable<NativeEnumerable<TSource>, Enumerator, TSource, TResult, TAction> SelectIndex<TResult, TAction>(TAction action, Allocator allocator = Allocator.Temp)
             where TResult : unmanaged
 #if STRICT_EQUALITY
             , IEquatable<TResult>
 #endif
-            where TAction : unmanaged, ISelectIndex<T, TResult>
-            => new SelectIndexEnumerable<NativeEnumerable<T>, Enumerator, T, TResult, TAction>(this, action, allocator);
+            where TAction : unmanaged, ISelectIndex<TSource, TResult>
+            => new SelectIndexEnumerable<NativeEnumerable<TSource>, Enumerator, TSource, TResult, TAction>(this, action, allocator);
 
-        public WhereEnumerable<NativeEnumerable<T>, Enumerator, T, TPredicate> Where<TPredicate>(TPredicate predicate)
-            where TPredicate : unmanaged, IRefFunc<T, bool>
-            => new WhereEnumerable<NativeEnumerable<T>, Enumerator, T, TPredicate>(this, predicate);
+        public SelectManyEnumerable<
+                NativeEnumerable<TSource>,
+                Enumerator,
+                TSource,
+                TResult,
+                TResultEnumerable,
+                TResultEnumerator,
+                TResultAction
+            >
+            SelectMany<TResult,
+                TResultEnumerable,
+                TResultEnumerator,
+                TResultAction>
+            (TResultAction action)
+            where TResult : unmanaged
+#if STRICT_EQUALITY
+            , IEquatable<TResult>
+#endif
+            where TResultEnumerator : struct, IRefEnumerator<TResult>
+            where TResultEnumerable : struct, IRefEnumerable<TResultEnumerator, TResult>
+            where TResultAction : struct, IRefAction<TSource, TResultEnumerable>
+            => new SelectManyEnumerable<NativeEnumerable<TSource>, Enumerator, TSource, TResult, TResultEnumerable, TResultEnumerator, TResultAction>(this, action);
+        
+        public WhereEnumerable<NativeEnumerable<TSource>, Enumerator, TSource, TPredicate> Where<TPredicate>(TPredicate predicate)
+            where TPredicate : unmanaged, IRefFunc<TSource, bool>
+            => new WhereEnumerable<NativeEnumerable<TSource>, Enumerator, TSource, TPredicate>(this, predicate);
         #endregion
 
         #region Concat
         public ConcatEnumerable<
-                NativeEnumerable<T>,
+                NativeEnumerable<TSource>,
                 Enumerator,
                 TEnumerable, TEnumerator,
-                T
+                TSource
             >
             Concat<TEnumerable, TEnumerator>(in TEnumerable second)
-            where TEnumerator : struct, IRefEnumerator<T>
-            where TEnumerable : struct, IRefEnumerable<TEnumerator, T>
+            where TEnumerator : struct, IRefEnumerator<TSource>
+            where TEnumerable : struct, IRefEnumerable<TEnumerator, TSource>
             => new ConcatEnumerable<
-                NativeEnumerable<T>,
+                NativeEnumerable<TSource>,
                 Enumerator,
-                TEnumerable, TEnumerator, T>(this, second);
+                TEnumerable, TEnumerator, TSource>(this, second);
 
         public ConcatEnumerable<
-                NativeEnumerable<T>,
+                NativeEnumerable<TSource>,
                 Enumerator,
-                NativeEnumerable<T>,
+                NativeEnumerable<TSource>,
                 Enumerator,
-                T
+                TSource
             >
-            Concat(in NativeEnumerable<T> second)
-            => new ConcatEnumerable<NativeEnumerable<T>, Enumerator, NativeEnumerable<T>, Enumerator, T>(this, second);
+            Concat(in NativeEnumerable<TSource> second)
+            => new ConcatEnumerable<NativeEnumerable<TSource>, Enumerator, NativeEnumerable<TSource>, Enumerator, TSource>(this, second);
 
         public ConcatEnumerable<
-                NativeEnumerable<T>,
+                NativeEnumerable<TSource>,
                 Enumerator,
-                NativeEnumerable<T>,
+                NativeEnumerable<TSource>,
                 Enumerator,
-                T
+                TSource
             >
-            Concat(NativeArray<T> second)
-            => new ConcatEnumerable<NativeEnumerable<T>, Enumerator, NativeEnumerable<T>, Enumerator, T>(this, second.AsRefEnumerable());
+            Concat(NativeArray<TSource> second)
+            => new ConcatEnumerable<NativeEnumerable<TSource>, Enumerator, NativeEnumerable<TSource>, Enumerator, TSource>(this, second.AsRefEnumerable());
 
         public ConcatEnumerable<
-                NativeEnumerable<T>,
+                NativeEnumerable<TSource>,
                 Enumerator,
-                ConcatEnumerable<TEnumerable0, TEnumerator0, TEnumerable1, TEnumerator1, T>,
-                ConcatEnumerable<TEnumerable0, TEnumerator0, TEnumerable1, TEnumerator1, T>.Enumerator,
-                T
+                ConcatEnumerable<TEnumerable0, TEnumerator0, TEnumerable1, TEnumerator1, TSource>,
+                ConcatEnumerable<TEnumerable0, TEnumerator0, TEnumerable1, TEnumerator1, TSource>.Enumerator,
+                TSource
             >
             Concat<TEnumerable0, TEnumerator0, TEnumerable1, TEnumerator1>
-            (in ConcatEnumerable<TEnumerable0, TEnumerator0, TEnumerable1, TEnumerator1, T> second)
-            where TEnumerator0 : struct, IRefEnumerator<T>
-            where TEnumerable0 : struct, IRefEnumerable<TEnumerator0, T>
-            where TEnumerator1 : struct, IRefEnumerator<T>
-            where TEnumerable1 : struct, IRefEnumerable<TEnumerator1, T>
-            => new ConcatEnumerable<NativeEnumerable<T>, Enumerator, ConcatEnumerable<TEnumerable0, TEnumerator0, TEnumerable1, TEnumerator1, T>, ConcatEnumerable<TEnumerable0, TEnumerator0, TEnumerable1, TEnumerator1, T>.Enumerator, T>(this, second);
+            (in ConcatEnumerable<TEnumerable0, TEnumerator0, TEnumerable1, TEnumerator1, TSource> second)
+            where TEnumerator0 : struct, IRefEnumerator<TSource>
+            where TEnumerable0 : struct, IRefEnumerable<TEnumerator0, TSource>
+            where TEnumerator1 : struct, IRefEnumerator<TSource>
+            where TEnumerable1 : struct, IRefEnumerable<TEnumerator1, TSource>
+            => new ConcatEnumerable<NativeEnumerable<TSource>, Enumerator, ConcatEnumerable<TEnumerable0, TEnumerator0, TEnumerable1, TEnumerator1, TSource>, ConcatEnumerable<TEnumerable0, TEnumerator0, TEnumerable1, TEnumerator1, TSource>.Enumerator, TSource>(this, second);
 
         public ConcatEnumerable<
-                NativeEnumerable<T>,
+                NativeEnumerable<TSource>,
                 Enumerator,
-                AppendEnumerable<TEnumerable0, TEnumerator0, T>,
-                AppendEnumerator<TEnumerator0, T>,
-                T
+                AppendEnumerable<TEnumerable0, TEnumerator0, TSource>,
+                AppendEnumerator<TEnumerator0, TSource>,
+                TSource
             >
             Concat<TEnumerable0, TEnumerator0>
-            (in AppendEnumerable<TEnumerable0, TEnumerator0, T> second)
-            where TEnumerator0 : struct, IRefEnumerator<T>
-            where TEnumerable0 : struct, IRefEnumerable<TEnumerator0, T>
-            => new ConcatEnumerable<NativeEnumerable<T>, Enumerator, AppendEnumerable<TEnumerable0, TEnumerator0, T>, AppendEnumerator<TEnumerator0, T>, T>(this, second);
+            (in AppendEnumerable<TEnumerable0, TEnumerator0, TSource> second)
+            where TEnumerator0 : struct, IRefEnumerator<TSource>
+            where TEnumerable0 : struct, IRefEnumerable<TEnumerator0, TSource>
+            => new ConcatEnumerable<NativeEnumerable<TSource>, Enumerator, AppendEnumerable<TEnumerable0, TEnumerator0, TSource>, AppendEnumerator<TEnumerator0, TSource>, TSource>(this, second);
 
         public ConcatEnumerable<
-                NativeEnumerable<T>,
+                NativeEnumerable<TSource>,
                 Enumerator,
-                AppendPointerEnumerable<TEnumerable0, TEnumerator0, T>,
-                AppendEnumerator<TEnumerator0, T>,
-                T
+                AppendPointerEnumerable<TEnumerable0, TEnumerator0, TSource>,
+                AppendEnumerator<TEnumerator0, TSource>,
+                TSource
             >
             Concat<TEnumerable0, TEnumerator0>
-            (in AppendPointerEnumerable<TEnumerable0, TEnumerator0, T> second)
-            where TEnumerator0 : struct, IRefEnumerator<T>
-            where TEnumerable0 : struct, IRefEnumerable<TEnumerator0, T>
-            => new ConcatEnumerable<NativeEnumerable<T>, Enumerator, AppendPointerEnumerable<TEnumerable0, TEnumerator0, T>, AppendEnumerator<TEnumerator0, T>, T>(this, second);
+            (in AppendPointerEnumerable<TEnumerable0, TEnumerator0, TSource> second)
+            where TEnumerator0 : struct, IRefEnumerator<TSource>
+            where TEnumerable0 : struct, IRefEnumerable<TEnumerator0, TSource>
+            => new ConcatEnumerable<NativeEnumerable<TSource>, Enumerator, AppendPointerEnumerable<TEnumerable0, TEnumerator0, TSource>, AppendEnumerator<TEnumerator0, TSource>, TSource>(this, second);
 
 #if UNSAFE_ARRAY_ENUMERABLE
         public ConcatEnumerable<
-                NativeEnumerable<T>,
+                NativeEnumerable<TSource>,
                 Enumerator,
-                ArrayEnumerable<T>,
-                ArrayEnumerable<T>.Enumerator,
-                T
+                ArrayEnumerable<TSource>,
+                ArrayEnumerable<TSource>.Enumerator,
+                TSource
             >
-            Concat(in ArrayEnumerable<T> second)
+            Concat(in ArrayEnumerable<TSource> second)
             => new ConcatEnumerable<
-                    NativeEnumerable<T>,
+                    NativeEnumerable<TSource>,
                     Enumerator,
-                    ArrayEnumerable<T>,
-                    ArrayEnumerable<T>.Enumerator,
-                    T
+                    ArrayEnumerable<TSource>,
+                    ArrayEnumerable<TSource>.Enumerator,
+                    TSource
                 >
                 (this, second);
 
         public ConcatEnumerable<
-                NativeEnumerable<T>,
+                NativeEnumerable<TSource>,
                 Enumerator,
-                ArrayEnumerable<T>,
-                ArrayEnumerable<T>.Enumerator,
-                T
+                ArrayEnumerable<TSource>,
+                ArrayEnumerable<TSource>.Enumerator,
+                TSource
             >
-            Concat(in T[] second)
+            Concat(in TSource[] second)
             => new ConcatEnumerable<
-                    NativeEnumerable<T>,
+                    NativeEnumerable<TSource>,
                     Enumerator,
-                    ArrayEnumerable<T>,
-                    ArrayEnumerable<T>.Enumerator,
-                    T
+                    ArrayEnumerable<TSource>,
+                    ArrayEnumerable<TSource>.Enumerator,
+                    TSource
                 >
                 (this, second.AsRefEnumerable());
 #endif
 
         public ConcatEnumerable<
-                NativeEnumerable<T>,
+                NativeEnumerable<TSource>,
                 Enumerator,
-                DefaultIfEmptyEnumerable<TEnumerable0, TEnumerator0, T>,
-                DefaultIfEmptyEnumerable<TEnumerable0, TEnumerator0, T>.Enumerator,
-                T
+                DefaultIfEmptyEnumerable<TEnumerable0, TEnumerator0, TSource>,
+                DefaultIfEmptyEnumerable<TEnumerable0, TEnumerator0, TSource>.Enumerator,
+                TSource
             >
             Concat<TEnumerable0, TEnumerator0>
-            (in DefaultIfEmptyEnumerable<TEnumerable0, TEnumerator0, T> second)
-            where TEnumerator0 : struct, IRefEnumerator<T>
-            where TEnumerable0 : struct, IRefEnumerable<TEnumerator0, T>
-            => new ConcatEnumerable<NativeEnumerable<T>, Enumerator, DefaultIfEmptyEnumerable<TEnumerable0, TEnumerator0, T>, DefaultIfEmptyEnumerable<TEnumerable0, TEnumerator0, T>.Enumerator, T>(this, second);
+            (in DefaultIfEmptyEnumerable<TEnumerable0, TEnumerator0, TSource> second)
+            where TEnumerator0 : struct, IRefEnumerator<TSource>
+            where TEnumerable0 : struct, IRefEnumerable<TEnumerator0, TSource>
+            => new ConcatEnumerable<NativeEnumerable<TSource>, Enumerator, DefaultIfEmptyEnumerable<TEnumerable0, TEnumerator0, TSource>, DefaultIfEmptyEnumerable<TEnumerable0, TEnumerator0, TSource>.Enumerator, TSource>(this, second);
 
         public ConcatEnumerable<
-                NativeEnumerable<T>, Enumerator,
-                DistinctEnumerable<TEnumerable0, TEnumerator0, T, TEqualityComparer, TGetHashCodeFunc>,
-                DistinctEnumerable<TEnumerable0, TEnumerator0, T, TEqualityComparer, TGetHashCodeFunc>.Enumerator,
-                T
+                NativeEnumerable<TSource>, Enumerator,
+                DistinctEnumerable<TEnumerable0, TEnumerator0, TSource, TEqualityComparer, TGetHashCodeFunc>,
+                DistinctEnumerable<TEnumerable0, TEnumerator0, TSource, TEqualityComparer, TGetHashCodeFunc>.Enumerator,
+                TSource
             >
             Concat<TEnumerable0, TEnumerator0, TEqualityComparer, TGetHashCodeFunc>
-            (in DistinctEnumerable<TEnumerable0, TEnumerator0, T, TEqualityComparer, TGetHashCodeFunc> second)
-            where TEnumerator0 : struct, IRefEnumerator<T>
-            where TEnumerable0 : struct, IRefEnumerable<TEnumerator0, T>
-            where TEqualityComparer : struct, IRefFunc<T, T, bool>
-            where TGetHashCodeFunc : struct, IRefFunc<T, int>
-            => new ConcatEnumerable<NativeEnumerable<T>, Enumerator, DistinctEnumerable<TEnumerable0, TEnumerator0, T, TEqualityComparer, TGetHashCodeFunc>, DistinctEnumerable<TEnumerable0, TEnumerator0, T, TEqualityComparer, TGetHashCodeFunc>.Enumerator, T>(this, second);
+            (in DistinctEnumerable<TEnumerable0, TEnumerator0, TSource, TEqualityComparer, TGetHashCodeFunc> second)
+            where TEnumerator0 : struct, IRefEnumerator<TSource>
+            where TEnumerable0 : struct, IRefEnumerable<TEnumerator0, TSource>
+            where TEqualityComparer : struct, IRefFunc<TSource, TSource, bool>
+            where TGetHashCodeFunc : struct, IRefFunc<TSource, int>
+            => new ConcatEnumerable<NativeEnumerable<TSource>, Enumerator, DistinctEnumerable<TEnumerable0, TEnumerator0, TSource, TEqualityComparer, TGetHashCodeFunc>, DistinctEnumerable<TEnumerable0, TEnumerator0, TSource, TEqualityComparer, TGetHashCodeFunc>.Enumerator, TSource>(this, second);
 
         public ConcatEnumerable<
-                NativeEnumerable<T>, Enumerator,
-                RangeRepeatEnumerable<T, TAction>,
-                RangeRepeatEnumerable<T, TAction>.Enumerator,
-                T
+                NativeEnumerable<TSource>, Enumerator,
+                RangeRepeatEnumerable<TSource, TAction>,
+                RangeRepeatEnumerable<TSource, TAction>.Enumerator,
+                TSource
             >
             Concat<TAction>
-            (in RangeRepeatEnumerable<T, TAction> second)
-            where TAction : struct, IRefAction<T>
+            (in RangeRepeatEnumerable<TSource, TAction> second)
+            where TAction : struct, IRefAction<TSource>
             => new ConcatEnumerable<
-                    NativeEnumerable<T>, Enumerator,
-                    RangeRepeatEnumerable<T, TAction>,
-                    RangeRepeatEnumerable<T, TAction>.Enumerator,
-                    T
+                    NativeEnumerable<TSource>, Enumerator,
+                    RangeRepeatEnumerable<TSource, TAction>,
+                    RangeRepeatEnumerable<TSource, TAction>.Enumerator,
+                    TSource
                 >
                 (this, second);
 
         public ConcatEnumerable<
-                NativeEnumerable<T>,
+                NativeEnumerable<TSource>,
                 Enumerator,
-                SelectIndexEnumerable<TEnumerable0, TEnumerator0, TPrevSource, T, TAction>,
-                SelectIndexEnumerable<TEnumerable0, TEnumerator0, TPrevSource, T, TAction>.Enumerator,
-                T
+                SelectIndexEnumerable<TEnumerable0, TEnumerator0, TPrevSource, TSource, TAction>,
+                SelectIndexEnumerable<TEnumerable0, TEnumerator0, TPrevSource, TSource, TAction>.Enumerator,
+                TSource
             >
             Concat<TEnumerable0, TEnumerator0, TPrevSource, TAction>
-            (in SelectIndexEnumerable<TEnumerable0, TEnumerator0, TPrevSource, T, TAction> second)
+            (in SelectIndexEnumerable<TEnumerable0, TEnumerator0, TPrevSource, TSource, TAction> second)
             where TEnumerator0 : struct, IRefEnumerator<TPrevSource>
             where TEnumerable0 : struct, IRefEnumerable<TEnumerator0, TPrevSource>
             where TPrevSource : unmanaged
 #if STRICT_EQUALITY
             , IEquatable<TPrevSource>
 #endif
-            where TAction : unmanaged, ISelectIndex<TPrevSource, T>
-            => new ConcatEnumerable<NativeEnumerable<T>, Enumerator, SelectIndexEnumerable<TEnumerable0, TEnumerator0, TPrevSource, T, TAction>, SelectIndexEnumerable<TEnumerable0, TEnumerator0, TPrevSource, T, TAction>.Enumerator, T>(this, second);
+            where TAction : unmanaged, ISelectIndex<TPrevSource, TSource>
+            => new ConcatEnumerable<NativeEnumerable<TSource>, Enumerator, SelectIndexEnumerable<TEnumerable0, TEnumerator0, TPrevSource, TSource, TAction>, SelectIndexEnumerable<TEnumerable0, TEnumerator0, TPrevSource, TSource, TAction>.Enumerator, TSource>(this, second);
 
         public ConcatEnumerable<
-                NativeEnumerable<T>,
+                NativeEnumerable<TSource>,
                 Enumerator,
-                SelectEnumerable<TEnumerable0, TEnumerator0, TPrevSource, T, TAction>,
-                SelectEnumerable<TEnumerable0, TEnumerator0, TPrevSource, T, TAction>.Enumerator,
-                T
+                SelectEnumerable<TEnumerable0, TEnumerator0, TPrevSource, TSource, TAction>,
+                SelectEnumerable<TEnumerable0, TEnumerator0, TPrevSource, TSource, TAction>.Enumerator,
+                TSource
             >
             Concat<TEnumerable0, TEnumerator0, TPrevSource, TAction>
-            (in SelectEnumerable<TEnumerable0, TEnumerator0, TPrevSource, T, TAction> second)
+            (in SelectEnumerable<TEnumerable0, TEnumerator0, TPrevSource, TSource, TAction> second)
             where TEnumerator0 : struct, IRefEnumerator<TPrevSource>
             where TEnumerable0 : struct, IRefEnumerable<TEnumerator0, TPrevSource>
             where TPrevSource : unmanaged
 #if STRICT_EQUALITY
             , IEquatable<TPrevSource>
 #endif
-            where TAction : unmanaged, IRefAction<TPrevSource, T>
-            => new ConcatEnumerable<NativeEnumerable<T>, Enumerator, SelectEnumerable<TEnumerable0, TEnumerator0, TPrevSource, T, TAction>, SelectEnumerable<TEnumerable0, TEnumerator0, TPrevSource, T, TAction>.Enumerator, T>(this, second);
+            where TAction : unmanaged, IRefAction<TPrevSource, TSource>
+            => new ConcatEnumerable<NativeEnumerable<TSource>, Enumerator, SelectEnumerable<TEnumerable0, TEnumerator0, TPrevSource, TSource, TAction>, SelectEnumerable<TEnumerable0, TEnumerator0, TPrevSource, TSource, TAction>.Enumerator, TSource>(this, second);
 
         public ConcatEnumerable<
-                NativeEnumerable<T>,
+                NativeEnumerable<TSource>,
                 Enumerator,
-                WhereEnumerable<TEnumerable0, TEnumerator0, T, TPredicate>,
-                WhereEnumerable<TEnumerable0, TEnumerator0, T, TPredicate>.Enumerator,
-                T
+                SelectManyEnumerable<TEnumerable0, TEnumerator0, TPrevSource0, TSource, TResultEnumerable0, TResultEnumerator0, TAction0>,
+                SelectManyEnumerable<TEnumerable0, TEnumerator0, TPrevSource0, TSource, TResultEnumerable0, TResultEnumerator0, TAction0>.Enumerator,
+                TSource
+            >
+            Concat<TEnumerable0, TEnumerator0, TPrevSource0, TResultEnumerable0, TResultEnumerator0, TAction0>
+            (in SelectManyEnumerable<TEnumerable0, TEnumerator0, TPrevSource0, TSource, TResultEnumerable0, TResultEnumerator0, TAction0> second)
+            where TEnumerable0 : struct, IRefEnumerable<TEnumerator0, TPrevSource0>
+            where TEnumerator0 : struct, IRefEnumerator<TPrevSource0>
+            where TPrevSource0 : unmanaged
+#if STRICT_EQUALITY
+            , IEquatable<TPrevSource0>
+#endif
+            where TResultEnumerator0 : struct, IRefEnumerator<TSource>
+            where TResultEnumerable0 : struct, IRefEnumerable<TResultEnumerator0, TSource>
+            where TAction0 : struct, IRefAction<TPrevSource0, TResultEnumerable0>
+            => new ConcatEnumerable<NativeEnumerable<TSource>, Enumerator, SelectManyEnumerable<TEnumerable0, TEnumerator0, TPrevSource0, TSource, TResultEnumerable0, TResultEnumerator0, TAction0>, SelectManyEnumerable<TEnumerable0, TEnumerator0, TPrevSource0, TSource, TResultEnumerable0, TResultEnumerator0, TAction0>.Enumerator, TSource>(this, second);
+
+        public ConcatEnumerable<
+                NativeEnumerable<TSource>,
+                Enumerator,
+                WhereEnumerable<TEnumerable0, TEnumerator0, TSource, TPredicate>,
+                WhereEnumerable<TEnumerable0, TEnumerator0, TSource, TPredicate>.Enumerator,
+                TSource
             >
             Concat<TEnumerable0, TEnumerator0, TPredicate>
-            (in WhereEnumerable<TEnumerable0, TEnumerator0, T, TPredicate> second)
-            where TEnumerator0 : struct, IRefEnumerator<T>
-            where TEnumerable0 : struct, IRefEnumerable<TEnumerator0, T>
-            where TPredicate : unmanaged, IRefFunc<T, bool>
-            => new ConcatEnumerable<NativeEnumerable<T>, Enumerator, WhereEnumerable<TEnumerable0, TEnumerator0, T, TPredicate>, WhereEnumerable<TEnumerable0, TEnumerator0, T, TPredicate>.Enumerator, T>(this, second);
+            (in WhereEnumerable<TEnumerable0, TEnumerator0, TSource, TPredicate> second)
+            where TEnumerator0 : struct, IRefEnumerator<TSource>
+            where TEnumerable0 : struct, IRefEnumerable<TEnumerator0, TSource>
+            where TPredicate : unmanaged, IRefFunc<TSource, bool>
+            => new ConcatEnumerable<NativeEnumerable<TSource>, Enumerator, WhereEnumerable<TEnumerable0, TEnumerator0, TSource, TPredicate>, WhereEnumerable<TEnumerable0, TEnumerator0, TSource, TPredicate>.Enumerator, TSource>(this, second);
         #endregion
 
         #region Function
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool CanFastCount() => true;
 
-        void ILinq<T>.Aggregate<TAccumulate, TFunc>(ref TAccumulate seed, TFunc func)
+        void ILinq<TSource>.Aggregate<TAccumulate, TFunc>(ref TAccumulate seed, TFunc func)
         {
             for (var i = 0; i < Length; i++)
                 func.Execute(ref seed, ref Ptr[i]);
         }
 
-        TResult ILinq<T>.Aggregate<TAccumulate, TResult, TFunc, TResultFunc>(ref TAccumulate seed, TFunc func, TResultFunc resultFunc)
+        TResult ILinq<TSource>.Aggregate<TAccumulate, TResult, TFunc, TResultFunc>(ref TAccumulate seed, TFunc func, TResultFunc resultFunc)
         {
             for (var i = 0; i < Length; i++)
                 func.Execute(ref seed, ref Ptr[i]);
             return resultFunc.Calc(ref seed);
         }
 
-        public T Aggregate(Func<T, T, T> func)
+        public TSource Aggregate(Func<TSource, TSource, TSource> func)
         {
             if (Length == 0) throw new InvalidOperationException();
             var seed = Ptr[0];
@@ -309,21 +353,21 @@ namespace pcysl5edgo.Collections.LINQ
             return seed;
         }
 
-        TAccumulate ILinq<T>.Aggregate<TAccumulate>(TAccumulate seed, Func<TAccumulate, T, TAccumulate> func)
+        TAccumulate ILinq<TSource>.Aggregate<TAccumulate>(TAccumulate seed, Func<TAccumulate, TSource, TAccumulate> func)
         {
             for (var i = 0; i < Length; i++)
                 seed = func(seed, Ptr[i]);
             return seed;
         }
 
-        TResult ILinq<T>.Aggregate<TAccumulate, TResult>(TAccumulate seed, Func<TAccumulate, T, TAccumulate> func, Func<TAccumulate, TResult> resultFunc)
+        TResult ILinq<TSource>.Aggregate<TAccumulate, TResult>(TAccumulate seed, Func<TAccumulate, TSource, TAccumulate> func, Func<TAccumulate, TResult> resultFunc)
         {
             for (var i = 0; i < Length; i++)
                 seed = func(seed, Ptr[i]);
             return resultFunc(seed);
         }
 
-        bool ILinq<T>.All<TPredicate>(TPredicate predicate)
+        bool ILinq<TSource>.All<TPredicate>(TPredicate predicate)
         {
             for (var i = 0; i < Length; i++)
                 if (!predicate.Calc(ref Ptr[i]))
@@ -331,7 +375,7 @@ namespace pcysl5edgo.Collections.LINQ
             return true;
         }
 
-        bool ILinq<T>.All(Func<T, bool> predicate)
+        bool ILinq<TSource>.All(Func<TSource, bool> predicate)
         {
             for (var i = 0; i < Length; i++)
                 if (!predicate(Ptr[i]))
@@ -341,7 +385,7 @@ namespace pcysl5edgo.Collections.LINQ
 
         public bool Any() => Length != 0;
 
-        bool ILinq<T>.Any<TPredicate>(TPredicate predicate)
+        bool ILinq<TSource>.Any<TPredicate>(TPredicate predicate)
         {
             for (var i = 0; i < Length; i++)
                 if (predicate.Calc(ref Ptr[i]))
@@ -349,7 +393,7 @@ namespace pcysl5edgo.Collections.LINQ
             return false;
         }
 
-        bool ILinq<T>.Any(Func<T, bool> predicate)
+        bool ILinq<TSource>.Any(Func<TSource, bool> predicate)
         {
             for (var i = 0; i < Length; i++)
                 if (predicate(Ptr[i]))
@@ -357,7 +401,7 @@ namespace pcysl5edgo.Collections.LINQ
             return false;
         }
 
-        bool ILinq<T>.Contains(T value)
+        bool ILinq<TSource>.Contains(TSource value)
         {
             for (var i = 0; i < Length; i++)
                 if (Ptr[i].Equals(value))
@@ -365,7 +409,7 @@ namespace pcysl5edgo.Collections.LINQ
             return false;
         }
 
-        bool ILinq<T>.Contains(T value, IEqualityComparer<T> comparer)
+        bool ILinq<TSource>.Contains(TSource value, IEqualityComparer<TSource> comparer)
         {
             for (var i = 0; i < Length; i++)
                 if (comparer.Equals(value, Ptr[i]))
@@ -373,7 +417,7 @@ namespace pcysl5edgo.Collections.LINQ
             return false;
         }
 
-        bool ILinq<T>.Contains<TComparer>(T value, TComparer comparer)
+        bool ILinq<TSource>.Contains<TComparer>(TSource value, TComparer comparer)
         {
             for (var i = 0; i < Length; i++)
                 if (comparer.Calc(ref Ptr[i], ref value))
@@ -383,7 +427,7 @@ namespace pcysl5edgo.Collections.LINQ
 
         public int Count() => this.Length;
 
-        public int Count(Func<T, bool> predicate)
+        public int Count(Func<TSource, bool> predicate)
         {
             var count = 0;
             for (var i = 0; i < Length; i++)
@@ -393,7 +437,7 @@ namespace pcysl5edgo.Collections.LINQ
         }
 
         public int Count<TPredicate>(TPredicate predicate)
-            where TPredicate : unmanaged, IRefFunc<T, bool>
+            where TPredicate : unmanaged, IRefFunc<TSource, bool>
         {
             var count = 0;
             for (var i = 0; i < Length; i++)
@@ -402,25 +446,25 @@ namespace pcysl5edgo.Collections.LINQ
             return count;
         }
 
-        IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
+        IEnumerator<TSource> IEnumerable<TSource>.GetEnumerator() => GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         public long LongCount() => this.Length;
 
-        long ILinq<T>.LongCount(Func<T, bool> predicate) => Count(predicate);
+        long ILinq<TSource>.LongCount(Func<TSource, bool> predicate) => Count(predicate);
 
-        long ILinq<T>.LongCount<TPredicate>(TPredicate predicate) => Count(predicate);
+        long ILinq<TSource>.LongCount<TPredicate>(TPredicate predicate) => Count(predicate);
 
-        T[] ILinq<T>.ToArray()
+        TSource[] ILinq<TSource>.ToArray()
         {
-            if (Length <= 0) return Array.Empty<T>();
-            var answer = new T[Length];
-            fixed (T* p = &answer[0])
-                UnsafeUtility.MemCpy(p, Ptr, sizeof(T) * Length);
+            if (Length <= 0) return Array.Empty<TSource>();
+            var answer = new TSource[Length];
+            fixed (TSource* p = &answer[0])
+                UnsafeUtility.MemCpy(p, Ptr, sizeof(TSource) * Length);
             return answer;
         }
 
-        Dictionary<TKey, TElement> ILinq<T>.ToDictionary<TKey, TElement>(Func<T, TKey> keySelector, Func<T, TElement> elementSelector)
+        Dictionary<TKey, TElement> ILinq<TSource>.ToDictionary<TKey, TElement>(Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector)
         {
             var answer = new Dictionary<TKey, TElement>(Length);
             for (var i = 0; i < Length; i++)
@@ -428,7 +472,7 @@ namespace pcysl5edgo.Collections.LINQ
             return answer;
         }
 
-        Dictionary<TKey, TElement> ILinq<T>.ToDictionary<TKey, TElement, TKeyFunc, TElementFunc>(TKeyFunc keySelector, TElementFunc elementSelector)
+        Dictionary<TKey, TElement> ILinq<TSource>.ToDictionary<TKey, TElement, TKeyFunc, TElementFunc>(TKeyFunc keySelector, TElementFunc elementSelector)
         {
             var answer = new Dictionary<TKey, TElement>(Length);
             for (var i = 0; i < Length; i++)
@@ -439,39 +483,39 @@ namespace pcysl5edgo.Collections.LINQ
             return answer;
         }
 
-        HashSet<T> ILinq<T>.ToHashSet()
+        HashSet<TSource> ILinq<TSource>.ToHashSet()
         {
-            var answer = new HashSet<T>();
+            var answer = new HashSet<TSource>();
             for (var i = 0; i < Length; i++)
                 answer.Add(Ptr[i]);
             return answer;
         }
 
-        HashSet<T> ILinq<T>.ToHashSet(IEqualityComparer<T> comparer)
+        HashSet<TSource> ILinq<TSource>.ToHashSet(IEqualityComparer<TSource> comparer)
         {
-            var answer = new HashSet<T>(comparer);
+            var answer = new HashSet<TSource>(comparer);
             for (var i = 0; i < Length; i++)
                 answer.Add(Ptr[i]);
             return answer;
         }
 
-        List<T> ILinq<T>.ToList()
+        List<TSource> ILinq<TSource>.ToList()
         {
-            var answer = new List<T>(Length);
+            var answer = new List<TSource>(Length);
             for (var i = 0; i < Length; i++)
                 answer.Add(Ptr[i]);
             return answer;
         }
 
-        NativeArray<T> ILinq<T>.ToNativeArray(Allocator allocator)
+        NativeArray<TSource> ILinq<TSource>.ToNativeArray(Allocator allocator)
         {
             if (Length == 0) return default;
-            var answer = new NativeArray<T>(Length, allocator, NativeArrayOptions.UninitializedMemory);
-            UnsafeUtility.MemCpy(answer.GetPointer(), Ptr, sizeof(T) * Length);
+            var answer = new NativeArray<TSource>(Length, allocator, NativeArrayOptions.UninitializedMemory);
+            UnsafeUtility.MemCpy(answer.GetPointer(), Ptr, sizeof(TSource) * Length);
             return answer;
         }
 
-        bool ILinq<T>.TryGetElementAt(int index, out T element)
+        bool ILinq<TSource>.TryGetElementAt(int index, out TSource element)
         {
             if (index < 0 || index >= Length)
             {
@@ -483,7 +527,7 @@ namespace pcysl5edgo.Collections.LINQ
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool TryGetFirst(out T first)
+        public bool TryGetFirst(out TSource first)
         {
             if (Length == 0)
             {
@@ -494,7 +538,7 @@ namespace pcysl5edgo.Collections.LINQ
             return true;
         }
 
-        public bool TryGetLast(out T last)
+        public bool TryGetLast(out TSource last)
         {
             if (Length == 0)
             {
@@ -505,7 +549,7 @@ namespace pcysl5edgo.Collections.LINQ
             return true;
         }
 
-        bool ILinq<T>.TryGetSingle(out T value)
+        bool ILinq<TSource>.TryGetSingle(out TSource value)
         {
             if (Length != 1)
             {
@@ -516,24 +560,24 @@ namespace pcysl5edgo.Collections.LINQ
             return true;
         }
 
-        bool ILinq<T>.TryGetSingle<TPredicate>(out T value, TPredicate predicate)
-            => this.TryGetSingle<NativeEnumerable<T>, Enumerator, T, TPredicate>(out value, predicate);
+        bool ILinq<TSource>.TryGetSingle<TPredicate>(out TSource value, TPredicate predicate)
+            => this.TryGetSingle<NativeEnumerable<TSource>, Enumerator, TSource, TPredicate>(out value, predicate);
 
-        bool ILinq<T>.TryGetSingle(out T value, Func<T, bool> predicate)
-            => this.TryGetSingle<NativeEnumerable<T>, Enumerator, T>(out value, predicate);
+        bool ILinq<TSource>.TryGetSingle(out TSource value, Func<TSource, bool> predicate)
+            => this.TryGetSingle<NativeEnumerable<TSource>, Enumerator, TSource>(out value, predicate);
         #endregion
 
-        public struct Enumerator : IRefEnumerator<T>
+        public struct Enumerator : IRefEnumerator<TSource>
         {
-            private readonly T* ptr;
+            private readonly TSource* ptr;
             private readonly int length;
             private int index;
 
-            public ref T Current => ref ptr[index];
-            T IEnumerator<T>.Current => Current;
+            public ref TSource Current => ref ptr[index];
+            TSource IEnumerator<TSource>.Current => Current;
             object IEnumerator.Current => Current;
 
-            internal Enumerator(in NativeEnumerable<T> parent)
+            internal Enumerator(in NativeEnumerable<TSource> parent)
             {
                 index = -1;
                 ptr = parent.Ptr;

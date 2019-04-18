@@ -1,14 +1,14 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.PerformanceData;
 using System.Runtime.CompilerServices;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 
 namespace pcysl5edgo.Collections.LINQ
 {
-    public unsafe struct DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, TSource> : IRefEnumerable<DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, TSource>.Enumerator, TSource>, ILinq<TSource>
+    public unsafe struct DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, TSource>
+        : IRefEnumerable<DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, TSource>.Enumerator, TSource>, ILinq<TSource>
         where TSource : unmanaged
 #if STRICT_EQUALITY
         , IEquatable<TSource>
@@ -135,6 +135,29 @@ namespace pcysl5edgo.Collections.LINQ
 #endif
             where TAction : unmanaged, ISelectIndex<TSource, TNextSource>
             => new SelectIndexEnumerable<DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, TSource>, Enumerator, TSource, TNextSource, TAction>(this, action, allocator);
+
+        public SelectManyEnumerable<
+                DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, TSource>,
+                Enumerator,
+                TSource,
+                TResult,
+                TResultEnumerable,
+                TResultEnumerator,
+                TResultAction
+            >
+            SelectMany<TResult,
+                TResultEnumerable,
+                TResultEnumerator,
+                TResultAction>
+            (TResultAction action)
+            where TResult : unmanaged
+#if STRICT_EQUALITY
+            , IEquatable<TResult>
+#endif
+            where TResultEnumerator : struct, IRefEnumerator<TResult>
+            where TResultEnumerable : struct, IRefEnumerable<TResultEnumerator, TResult>
+            where TResultAction : struct, IRefAction<TSource, TResultEnumerable>
+            => new SelectManyEnumerable<DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, TSource>, Enumerator, TSource, TResult, TResultEnumerable, TResultEnumerator, TResultAction>(this, action);
 
         public WhereEnumerable<DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, TSource>, Enumerator, TSource, TPredicate>
             Where<TPredicate>(TPredicate predicate)
@@ -328,6 +351,26 @@ namespace pcysl5edgo.Collections.LINQ
 #endif
             where TAction : unmanaged, IRefAction<TPrevSource, TSource>
             => new ConcatEnumerable<DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, TSource>, Enumerator, SelectEnumerable<TEnumerable1, TEnumerator1, TPrevSource, TSource, TAction>, SelectEnumerable<TEnumerable1, TEnumerator1, TPrevSource, TSource, TAction>.Enumerator, TSource>(this, second);
+
+        public ConcatEnumerable<
+                DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, TSource>,
+                Enumerator,
+                SelectManyEnumerable<TEnumerable0, TEnumerator0, TPrevSource0, TSource, TResultEnumerable0, TResultEnumerator0, TAction0>,
+                SelectManyEnumerable<TEnumerable0, TEnumerator0, TPrevSource0, TSource, TResultEnumerable0, TResultEnumerator0, TAction0>.Enumerator,
+                TSource
+            >
+            Concat<TEnumerable0, TEnumerator0, TPrevSource0, TResultEnumerable0, TResultEnumerator0, TAction0>
+            (in SelectManyEnumerable<TEnumerable0, TEnumerator0, TPrevSource0, TSource, TResultEnumerable0, TResultEnumerator0, TAction0> second)
+            where TEnumerable0 : struct, IRefEnumerable<TEnumerator0, TPrevSource0>
+            where TEnumerator0 : struct, IRefEnumerator<TPrevSource0>
+            where TPrevSource0 : unmanaged
+#if STRICT_EQUALITY
+            , IEquatable<TPrevSource0>
+#endif
+            where TResultEnumerator0 : struct, IRefEnumerator<TSource>
+            where TResultEnumerable0 : struct, IRefEnumerable<TResultEnumerator0, TSource>
+            where TAction0 : struct, IRefAction<TPrevSource0, TResultEnumerable0>
+            => new ConcatEnumerable<DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, TSource>, Enumerator, SelectManyEnumerable<TEnumerable0, TEnumerator0, TPrevSource0, TSource, TResultEnumerable0, TResultEnumerator0, TAction0>, SelectManyEnumerable<TEnumerable0, TEnumerator0, TPrevSource0, TSource, TResultEnumerable0, TResultEnumerator0, TAction0>.Enumerator, TSource>(this, second);
 
         public ConcatEnumerable<
                 DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, TSource>,
