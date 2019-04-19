@@ -6,7 +6,8 @@ using Unity.Collections;
 
 namespace pcysl5edgo.Collections.LINQ
 {
-    public struct WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>
+    public struct
+        WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>
         : IRefEnumerable<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>.Enumerator, TSource>, ILinq<TSource>
         where TSource : unmanaged
 #if STRICT_EQUALITY
@@ -96,6 +97,24 @@ namespace pcysl5edgo.Collections.LINQ
         public WhereEnumerable<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource, TNextPredicate> Where<TNextPredicate>(TNextPredicate predicate)
             where TNextPredicate : unmanaged, IRefFunc<TSource, bool>
             => new WhereEnumerable<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource, TNextPredicate>(this, predicate);
+
+        public ZipEnumerable<
+                WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>
+                , Enumerator, TSource, TEnumerable0, TEnumerator0, TSource0, TResult0, TAction0>
+            Zip<TEnumerable0, TEnumerator0, TSource0, TResult0, TAction0>
+            (in TEnumerable0 second, TAction0 action, TSource firstDefaultValue = default, TSource0 secondDefaultValue = default, Allocator allocator = Allocator.Temp)
+            where TEnumerable0 : struct, IRefEnumerable<TEnumerator0, TSource0>
+            where TEnumerator0 : struct, IRefEnumerator<TSource0>
+            where TSource0 : unmanaged
+#if STRICT_EQUALITY
+            , IEquatable<TSource0>
+#endif
+            where TResult0 : unmanaged
+#if STRICT_EQUALITY
+            , IEquatable<TResult0>
+#endif
+            where TAction0 : unmanaged, IRefAction<TSource, TSource0, TResult0>
+            => new ZipEnumerable<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource, TEnumerable0, TEnumerator0, TSource0, TResult0, TAction0>(this, second, action, firstDefaultValue, secondDefaultValue, allocator);
         #endregion
 
         #region Concat
@@ -322,6 +341,30 @@ namespace pcysl5edgo.Collections.LINQ
             where TEnumerator1 : struct, IRefEnumerator<TSource>
             where TPredicate1 : unmanaged, IRefFunc<TSource, bool>
             => new ConcatEnumerable<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, WhereEnumerable<TEnumerable1, TEnumerator1, TSource, TPredicate1>, WhereEnumerable<TEnumerable1, TEnumerator1, TSource, TPredicate1>.Enumerator, TSource>(this, second);
+
+        public ConcatEnumerable<
+                WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>,
+                Enumerator,
+                ZipEnumerable<TEnumerable0, TEnumerator0, TSource0, TEnumerable1, TEnumerator1, TSource1, TSource, TAction0>,
+                ZipEnumerable<TEnumerable0, TEnumerator0, TSource0, TEnumerable1, TEnumerator1, TSource1, TSource, TAction0>.Enumerator,
+                TSource
+            >
+            Concat<TEnumerable0, TEnumerator0, TSource0, TEnumerable1, TEnumerator1, TSource1, TAction0>
+            (in ZipEnumerable<TEnumerable0, TEnumerator0, TSource0, TEnumerable1, TEnumerator1, TSource1, TSource, TAction0> second)
+            where TSource0 : unmanaged
+#if STRICT_EQUALITY
+            , IEquatable<TSource0>
+#endif
+            where TEnumerator0 : struct, IRefEnumerator<TSource0>
+            where TEnumerable0 : struct, IRefEnumerable<TEnumerator0, TSource0>
+            where TSource1 : unmanaged
+#if STRICT_EQUALITY
+            , IEquatable<TSource1>
+#endif
+            where TEnumerator1 : struct, IRefEnumerator<TSource1>
+            where TEnumerable1 : struct, IRefEnumerable<TEnumerator1, TSource1>
+            where TAction0 : struct, IRefAction<TSource0, TSource1, TSource>
+            => new ConcatEnumerable<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, ZipEnumerable<TEnumerable0, TEnumerator0, TSource0, TEnumerable1, TEnumerator1, TSource1, TSource, TAction0>, ZipEnumerable<TEnumerable0, TEnumerator0, TSource0, TEnumerable1, TEnumerator1, TSource1, TSource, TAction0>.Enumerator, TSource>(this, second);
         #endregion
 
         #region Function

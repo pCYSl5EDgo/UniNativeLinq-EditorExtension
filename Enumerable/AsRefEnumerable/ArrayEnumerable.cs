@@ -8,7 +8,7 @@ using Unity.Collections.LowLevel.Unsafe;
 #if UNSAFE_ARRAY_ENUMERABLE
 namespace pcysl5edgo.Collections.LINQ
 {
-    public unsafe struct ArrayEnumerable<TSource> 
+    public unsafe struct ArrayEnumerable<TSource>
         : IRefEnumerable<ArrayEnumerable<TSource>.Enumerator, TSource>, ILinq<TSource>
         where TSource : unmanaged
 #if STRICT_EQUALITY
@@ -150,11 +150,27 @@ namespace pcysl5edgo.Collections.LINQ
             where TResultEnumerable : struct, IRefEnumerable<TResultEnumerator, TResult>
             where TResultAction : struct, IRefAction<TSource, TResultEnumerable>
             => new SelectManyEnumerable<ArrayEnumerable<TSource>, Enumerator, TSource, TResult, TResultEnumerable, TResultEnumerator, TResultAction>(this, action);
-        
+
         public WhereEnumerable<ArrayEnumerable<TSource>, Enumerator, TSource, TPredicate>
             Where<TPredicate>(TPredicate predicate)
             where TPredicate : unmanaged, IRefFunc<TSource, bool>
             => new WhereEnumerable<ArrayEnumerable<TSource>, Enumerator, TSource, TPredicate>(this, predicate);
+
+        public ZipEnumerable<ArrayEnumerable<TSource>, Enumerator, TSource, TEnumerable0, TEnumerator0, TSource0, TResult0, TAction0>
+            Zip<TEnumerable0, TEnumerator0, TSource0, TResult0, TAction0>
+            (in TEnumerable0 second, TAction0 action, TSource firstDefaultValue = default, TSource0 secondDefaultValue = default, Allocator allocator = Allocator.Temp)
+            where TEnumerable0 : struct, IRefEnumerable<TEnumerator0, TSource0>
+            where TEnumerator0 : struct, IRefEnumerator<TSource0>
+            where TSource0 : unmanaged
+#if STRICT_EQUALITY
+            , IEquatable<TSource0>
+#endif
+            where TAction0 : unmanaged, IRefAction<TSource, TSource0, TResult0>
+            where TResult0 : unmanaged
+#if STRICT_EQUALITY
+            , IEquatable<TResult0>
+#endif
+            => new ZipEnumerable<ArrayEnumerable<TSource>, Enumerator, TSource, TEnumerable0, TEnumerator0, TSource0, TResult0, TAction0>(this, second, action, firstDefaultValue, secondDefaultValue, allocator);
         #endregion
 
         #region Concat
@@ -383,6 +399,30 @@ namespace pcysl5edgo.Collections.LINQ
                     WhereEnumerable<TEnumerable0, TEnumerator0, TSource, TPredicate>.Enumerator,
                     TSource>
                 (this, second);
+
+        public ConcatEnumerable<
+                ArrayEnumerable<TSource>,
+                Enumerator,
+                ZipEnumerable<TEnumerable0, TEnumerator0, TSource0, TEnumerable1, TEnumerator1, TSource1, TSource, TAction0>,
+                ZipEnumerable<TEnumerable0, TEnumerator0, TSource0, TEnumerable1, TEnumerator1, TSource1, TSource, TAction0>.Enumerator,
+                TSource
+            >
+            Concat<TEnumerable0, TEnumerator0, TSource0, TEnumerable1, TEnumerator1, TSource1, TAction0>
+            (in ZipEnumerable<TEnumerable0, TEnumerator0, TSource0, TEnumerable1, TEnumerator1, TSource1, TSource, TAction0> second)
+            where TSource0 : unmanaged
+#if STRICT_EQUALITY
+            , IEquatable<TSource0>
+#endif
+            where TEnumerator0 : struct, IRefEnumerator<TSource0>
+            where TEnumerable0 : struct, IRefEnumerable<TEnumerator0, TSource0>
+            where TSource1 : unmanaged
+#if STRICT_EQUALITY
+            , IEquatable<TSource1>
+#endif
+            where TEnumerator1 : struct, IRefEnumerator<TSource1>
+            where TEnumerable1 : struct, IRefEnumerable<TEnumerator1, TSource1>
+            where TAction0 : struct, IRefAction<TSource0, TSource1, TSource>
+            => new ConcatEnumerable<ArrayEnumerable<TSource>, Enumerator, ZipEnumerable<TEnumerable0, TEnumerator0, TSource0, TEnumerable1, TEnumerator1, TSource1, TSource, TAction0>, ZipEnumerable<TEnumerable0, TEnumerator0, TSource0, TEnumerable1, TEnumerator1, TSource1, TSource, TAction0>.Enumerator, TSource>(this, second);
         #endregion
 
         #region Function
