@@ -31,12 +31,12 @@ namespace pcysl5edgo.Collections.LINQ
                 this.Length = 0;
             }
         }
-        
+
         public NativeEnumerable(NativeArray<TSource> array, long offset, long length)
         {
             if (array.IsCreated && length > 0)
             {
-                if(offset >= 0)
+                if (offset >= 0)
                 {
                     this.Ptr = array.GetPointer() + offset;
                     this.Length = length;
@@ -52,6 +52,17 @@ namespace pcysl5edgo.Collections.LINQ
                 this.Ptr = null;
                 this.Length = 0;
             }
+        }
+
+        public NativeEnumerable(TSource* ptr, long length)
+        {
+            if (length <= 0 || ptr == null)
+            {
+                this = default;
+                return;
+            }
+            this.Ptr = ptr;
+            this.Length = length;
         }
 
         public Enumerator GetEnumerator() => new Enumerator(this);
@@ -115,6 +126,52 @@ namespace pcysl5edgo.Collections.LINQ
             where TResultAction : struct, IRefAction<TSource, TResultEnumerable>
             => new SelectManyEnumerable<NativeEnumerable<TSource>, Enumerator, TSource, TResult, TResultEnumerable, TResultEnumerator, TResultAction>(this, action);
 
+        public
+            NativeEnumerable<TSource>
+            Skip(long count)
+            => this.Ptr != null && this.Length > count && this.Length > 0 ? new NativeEnumerable<TSource>(this.Ptr + count, this.Length - count) : default;
+
+        public
+            NativeEnumerable<TSource>
+            SkipLast(long count)
+            => this.Ptr != null && this.Length > count && this.Length > 0 ? new NativeEnumerable<TSource>(this.Ptr, this.Length - count) : default;
+
+        public
+            WhereIndexEnumerable<
+                NativeEnumerable<TSource>,
+                Enumerator,
+                TSource,
+                DefaultSkipWhileIndex<TSource, TPredicate0>
+            >
+            SkipWhileIndex<TPredicate0>(TPredicate0 predicate)
+            where TPredicate0 : struct, IWhereIndex<TSource>
+            => new WhereIndexEnumerable<NativeEnumerable<TSource>, Enumerator, TSource, DefaultSkipWhileIndex<TSource, TPredicate0>>(this, new DefaultSkipWhileIndex<TSource, TPredicate0>(predicate));
+
+        public
+            NativeEnumerable<TSource>
+            Take(long count)
+            => this.Ptr != null && this.Length > 0 && count > 0 ? new NativeEnumerable<TSource>(this.Ptr, this.Length > count ? count : this.Length) : default;
+
+        public
+            NativeEnumerable<TSource>
+            TakeLast(long count)
+            => this.Ptr != null && this.Length > 0 && count > 0
+                ? this.Length > count
+                    ? new NativeEnumerable<TSource>(this.Ptr + this.Length - count, count)
+                    : new NativeEnumerable<TSource>(this.Ptr, this.Length)
+                : default;
+
+        public
+            WhereIndexEnumerable<
+                NativeEnumerable<TSource>,
+                Enumerator,
+                TSource,
+                DefaultTakeWhileIndex<TSource, TPredicate0>
+            >
+            TakeWhileIndex<TPredicate0>(TPredicate0 predicate)
+            where TPredicate0 : struct, IWhereIndex<TSource>
+            => new WhereIndexEnumerable<NativeEnumerable<TSource>, Enumerator, TSource, DefaultTakeWhileIndex<TSource, TPredicate0>>(this, new DefaultTakeWhileIndex<TSource, TPredicate0>(predicate));
+
         public WhereEnumerable<NativeEnumerable<TSource>, Enumerator, TSource, TPredicate> Where<TPredicate>(TPredicate predicate)
             where TPredicate : unmanaged, IRefFunc<TSource, bool>
             => new WhereEnumerable<NativeEnumerable<TSource>, Enumerator, TSource, TPredicate>(this, predicate);
@@ -128,7 +185,7 @@ namespace pcysl5edgo.Collections.LINQ
             WhereIndex<TPredicate0>(TPredicate0 predicate)
             where TPredicate0 : struct, IWhereIndex<TSource>
             => new WhereIndexEnumerable<NativeEnumerable<TSource>, Enumerator, TSource, TPredicate0>(this, predicate);
-        
+
         public ZipEnumerable<NativeEnumerable<TSource>, Enumerator, TSource, TEnumerable0, TEnumerator0, TSource0, TResult0, TAction0>
             Zip<TEnumerable0, TEnumerator0, TSource0, TResult0, TAction0>
             (in TEnumerable0 second, TAction0 action, TSource firstDefaultValue = default, TSource0 secondDefaultValue = default, Allocator allocator = Allocator.Temp)
@@ -358,7 +415,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TEnumerable0 : struct, IRefEnumerable<TEnumerator0, TSource>
             where TPredicate : unmanaged, IRefFunc<TSource, bool>
             => new ConcatEnumerable<NativeEnumerable<TSource>, Enumerator, WhereEnumerable<TEnumerable0, TEnumerator0, TSource, TPredicate>, WhereEnumerable<TEnumerable0, TEnumerator0, TSource, TPredicate>.Enumerator, TSource>(this, second);
-        
+
         public ConcatEnumerable<
                 NativeEnumerable<TSource>,
                 Enumerator,
@@ -496,7 +553,7 @@ namespace pcysl5edgo.Collections.LINQ
             return false;
         }
 
-        public int Count() => (int)this.Length;
+        public int Count() => (int) this.Length;
 
         public int Count(Func<TSource, bool> predicate)
         {

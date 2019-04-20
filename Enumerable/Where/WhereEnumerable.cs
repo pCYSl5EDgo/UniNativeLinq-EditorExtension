@@ -91,6 +91,48 @@ namespace pcysl5edgo.Collections.LINQ
             where TResultAction : struct, IRefAction<TSource, TResultEnumerable>
             => new SelectManyEnumerable<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource, TResult, TResultEnumerable, TResultEnumerator, TResultAction>(this, action);
 
+        public
+            WhereIndexEnumerable<
+                WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>,
+                Enumerator,
+                TSource,
+                DefaultSkipIndex<TSource>
+            >
+            Skip(long count)
+            => new WhereIndexEnumerable<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource, DefaultSkipIndex<TSource>>(this, new DefaultSkipIndex<TSource>(count));
+
+        public
+            WhereIndexEnumerable<
+                WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>,
+                Enumerator,
+                TSource,
+                DefaultSkipWhileIndex<TSource, TPredicate0>
+            >
+            SkipWhileIndex<TPredicate0>(TPredicate0 predicate)
+            where TPredicate0 : struct, IWhereIndex<TSource>
+            => new WhereIndexEnumerable<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource, DefaultSkipWhileIndex<TSource, TPredicate0>>(this, new DefaultSkipWhileIndex<TSource, TPredicate0>(predicate));
+
+        public
+            WhereIndexEnumerable<
+                WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>,
+                Enumerator,
+                TSource,
+                DefaultTakeIndex<TSource>
+            >
+            Take(long count)
+            => new WhereIndexEnumerable<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource, DefaultTakeIndex<TSource>>(this, new DefaultTakeIndex<TSource>(count));
+
+        public
+            WhereIndexEnumerable<
+                WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>,
+                Enumerator,
+                TSource,
+                DefaultTakeWhileIndex<TSource, TPredicate0>
+            >
+            TakeWhileIndex<TPredicate0>(TPredicate0 predicate)
+            where TPredicate0 : struct, IWhereIndex<TSource>
+            => new WhereIndexEnumerable<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource, DefaultTakeWhileIndex<TSource, TPredicate0>>(this, new DefaultTakeWhileIndex<TSource, TPredicate0>(predicate));
+
         public WhereEnumerable<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource, TPredicate0> Where<TPredicate0>(TPredicate0 predicate)
             where TPredicate0 : unmanaged, IRefFunc<TSource, bool>
             => new WhereEnumerable<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource, TPredicate0>(this, predicate);

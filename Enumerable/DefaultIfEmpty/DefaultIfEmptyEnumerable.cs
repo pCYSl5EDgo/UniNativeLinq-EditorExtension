@@ -155,6 +155,48 @@ namespace pcysl5edgo.Collections.LINQ
             where TResultAction : struct, IRefAction<TSource, TResultEnumerable>
             => new SelectManyEnumerable<DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, TSource>, Enumerator, TSource, TResult, TResultEnumerable, TResultEnumerator, TResultAction>(this, action);
 
+        public
+            WhereIndexEnumerable<
+                DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, TSource>,
+                Enumerator,
+                TSource,
+                DefaultSkipIndex<TSource>
+            >
+            Skip(long count)
+            => new WhereIndexEnumerable<DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, TSource>, Enumerator, TSource, DefaultSkipIndex<TSource>>(this, new DefaultSkipIndex<TSource>(count));
+
+        public
+            WhereIndexEnumerable<
+                DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, TSource>,
+                Enumerator,
+                TSource,
+                DefaultSkipWhileIndex<TSource, TPredicate0>
+            >
+            SkipWhileIndex<TPredicate0>(TPredicate0 predicate)
+            where TPredicate0 : struct, IWhereIndex<TSource>
+            => new WhereIndexEnumerable<DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, TSource>, Enumerator, TSource, DefaultSkipWhileIndex<TSource, TPredicate0>>(this, new DefaultSkipWhileIndex<TSource, TPredicate0>(predicate));
+
+        public
+            WhereIndexEnumerable<
+                DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, TSource>,
+                Enumerator,
+                TSource,
+                DefaultTakeIndex<TSource>
+            >
+            Take(long count)
+            => new WhereIndexEnumerable<DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, TSource>, Enumerator, TSource, DefaultTakeIndex<TSource>>(this, new DefaultTakeIndex<TSource>(count));
+
+        public
+            WhereIndexEnumerable<
+                DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, TSource>,
+                Enumerator,
+                TSource,
+                DefaultTakeWhileIndex<TSource, TPredicate0>
+            >
+            TakeWhileIndex<TPredicate0>(TPredicate0 predicate)
+            where TPredicate0 : struct, IWhereIndex<TSource>
+            => new WhereIndexEnumerable<DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, TSource>, Enumerator, TSource, DefaultTakeWhileIndex<TSource, TPredicate0>>(this, new DefaultTakeWhileIndex<TSource, TPredicate0>(predicate));
+
         public WhereEnumerable<DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, TSource>, Enumerator, TSource, TPredicate>
             Where<TPredicate>(TPredicate predicate)
             where TPredicate : unmanaged, IRefFunc<TSource, bool>
@@ -169,7 +211,7 @@ namespace pcysl5edgo.Collections.LINQ
             WhereIndex<TPredicate0>(TPredicate0 predicate)
             where TPredicate0 : struct, IWhereIndex<TSource>
             => new WhereIndexEnumerable<DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, TSource>, Enumerator, TSource, TPredicate0>(this, predicate);
-        
+
         public ZipEnumerable<DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, TSource>, Enumerator, TSource, TEnumerable0, TEnumerator0, TSource0, TResult0, TAction0>
             Zip<TEnumerable0, TEnumerator0, TSource0, TResult0, TAction0>
             (in TEnumerable0 second, TAction0 action, TSource firstDefaultValue = default, TSource0 secondDefaultValue = default, Allocator allocator = Allocator.Temp)
@@ -394,7 +436,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TEnumerable1 : struct, IRefEnumerable<TEnumerator1, TSource>
             where TPredicate : unmanaged, IRefFunc<TSource, bool>
             => new ConcatEnumerable<DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, TSource>, Enumerator, WhereEnumerable<TEnumerable1, TEnumerator1, TSource, TPredicate>, WhereEnumerable<TEnumerable1, TEnumerator1, TSource, TPredicate>.Enumerator, TSource>(this, second);
-        
+
         public ConcatEnumerable<
                 DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, TSource>,
                 Enumerator,
