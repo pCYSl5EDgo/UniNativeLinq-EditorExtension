@@ -194,6 +194,16 @@ namespace pcysl5edgo.Collections.LINQ
             where TPredicate : unmanaged, IRefFunc<TSource, bool>
             => new WhereEnumerable<ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, TSource, TAction>, Enumerator, TSource, TPredicate>(this, predicate);
 
+        public WhereIndexEnumerable<
+                ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, TSource, TAction>,
+                Enumerator,
+                TSource,
+                TPredicate0
+            >
+            WhereIndex<TPredicate0>(TPredicate0 predicate)
+            where TPredicate0 : unmanaged, IWhereIndex<TSource>
+            => new WhereIndexEnumerable<ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, TSource, TAction>, Enumerator, TSource, TPredicate0>(this, predicate);
+        
         public ZipEnumerable<
                 ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, TSource, TAction>,
                 Enumerator,
@@ -380,6 +390,21 @@ namespace pcysl5edgo.Collections.LINQ
             where TEnumerable0 : struct, IRefEnumerable<TEnumerator0, TSource>
             where TPredicate0 : unmanaged, IRefFunc<TSource, bool>
             => new ConcatEnumerable<ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, TSource, TAction>, Enumerator, WhereEnumerable<TEnumerable0, TEnumerator0, TSource, TPredicate0>, WhereEnumerable<TEnumerable0, TEnumerator0, TSource, TPredicate0>.Enumerator, TSource>(this, second);
+        
+        public ConcatEnumerable<
+                ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, TSource, TAction>,
+                Enumerator,
+                WhereIndexEnumerable<TEnumerable0, TEnumerator0, TSource, TPredicate0>,
+                WhereIndexEnumerable<TEnumerable0, TEnumerator0, TSource, TPredicate0>.Enumerator,
+                TSource
+            >
+            Concat<TEnumerable0, TEnumerator0, TPredicate0>
+            (in WhereIndexEnumerable<TEnumerable0, TEnumerator0, TSource, TPredicate0> second)
+            where TEnumerator0 : struct, IRefEnumerator<TSource>
+            where TEnumerable0 : struct, IRefEnumerable<TEnumerator0, TSource>
+            where TPredicate0 : unmanaged, IWhereIndex<TSource>
+            => new ConcatEnumerable<ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, TSource, TAction>, Enumerator, WhereIndexEnumerable<TEnumerable0, TEnumerator0, TSource, TPredicate0>, WhereIndexEnumerable<TEnumerable0, TEnumerator0, TSource, TPredicate0>.Enumerator, TSource>(this, second);
+            
 
         public ConcatEnumerable<
                 ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, TSource, TAction>,

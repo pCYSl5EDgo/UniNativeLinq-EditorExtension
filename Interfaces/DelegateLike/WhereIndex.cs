@@ -1,4 +1,4 @@
-namespace LINQ2NativeArray.Interfaces.DelegateLike
+namespace pcysl5edgo.Collections.LINQ
 {
     public interface IWhereIndex<TSource>
     {

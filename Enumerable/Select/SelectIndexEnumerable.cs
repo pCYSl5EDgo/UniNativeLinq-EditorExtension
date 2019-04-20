@@ -136,6 +136,16 @@ namespace pcysl5edgo.Collections.LINQ
             where TPredicate : unmanaged, IRefFunc<TSource, bool>
             => new WhereEnumerable<SelectIndexEnumerable<TPrevEnumerable, TPrevEnumerator, TPrevSource, TSource, TAction>, Enumerator, TSource, TPredicate>(this, predicate);
 
+        public WhereIndexEnumerable<
+                SelectIndexEnumerable<TPrevEnumerable, TPrevEnumerator, TPrevSource, TSource, TAction>,
+                Enumerator,
+                TSource,
+                TPredicate0
+            >
+            WhereIndex<TPredicate0>(TPredicate0 predicate)
+            where TPredicate0 : struct, IWhereIndex<TSource>
+            => new WhereIndexEnumerable<SelectIndexEnumerable<TPrevEnumerable, TPrevEnumerator, TPrevSource, TSource, TAction>, Enumerator, TSource, TPredicate0>(this, predicate);
+        
         public ZipEnumerable<
                 SelectIndexEnumerable<TPrevEnumerable, TPrevEnumerator, TPrevSource, TSource, TAction>
                 , Enumerator, TSource, TEnumerable0, TEnumerator0, TSource0, TResult0, TAction0>
@@ -393,7 +403,7 @@ namespace pcysl5edgo.Collections.LINQ
             Concat<TEnumerable1, TEnumerator1, TPredicate>(in WhereEnumerable<TEnumerable1, TEnumerator1, TSource, TPredicate> second)
             where TEnumerable1 : struct, IRefEnumerable<TEnumerator1, TSource>
             where TEnumerator1 : struct, IRefEnumerator<TSource>
-            where TPredicate : unmanaged, IRefFunc<TSource, bool>
+            where TPredicate : struct, IRefFunc<TSource, bool>
             => new ConcatEnumerable<
                     SelectIndexEnumerable<TPrevEnumerable, TPrevEnumerator, TPrevSource, TSource, TAction>,
                     Enumerator,
@@ -401,6 +411,20 @@ namespace pcysl5edgo.Collections.LINQ
                     WhereEnumerable<TEnumerable1, TEnumerator1, TSource, TPredicate>.Enumerator,
                     TSource>
                 (this, second);
+        
+        public ConcatEnumerable<
+                SelectIndexEnumerable<TPrevEnumerable, TPrevEnumerator, TPrevSource, TSource, TAction>,
+                Enumerator,
+                WhereIndexEnumerable<TPrevEnumerable0, TPrevEnumerator0, TSource, TPredicate>,
+                WhereIndexEnumerable<TPrevEnumerable0, TPrevEnumerator0, TSource, TPredicate>.Enumerator,
+                TSource
+            >
+            Concat<TPrevEnumerable0, TPrevEnumerator0, TPredicate>
+            (in WhereIndexEnumerable<TPrevEnumerable0, TPrevEnumerator0, TSource, TPredicate> second)
+            where TPrevEnumerable0 : struct, IRefEnumerable<TPrevEnumerator0, TSource>
+            where TPrevEnumerator0 : struct, IRefEnumerator<TSource>
+            where TPredicate : struct, IWhereIndex<TSource>
+            => new ConcatEnumerable<SelectIndexEnumerable<TPrevEnumerable, TPrevEnumerator, TPrevSource, TSource, TAction>, Enumerator, WhereIndexEnumerable<TPrevEnumerable0, TPrevEnumerator0, TSource, TPredicate>, WhereIndexEnumerable<TPrevEnumerable0, TPrevEnumerator0, TSource, TPredicate>.Enumerator, TSource>(this, second);
         
         public ConcatEnumerable<
                 SelectIndexEnumerable<TPrevEnumerable, TPrevEnumerator, TPrevSource, TSource, TAction>,
