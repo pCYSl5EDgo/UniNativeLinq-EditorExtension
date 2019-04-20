@@ -241,14 +241,14 @@ namespace pcysl5edgo.Collections.LINQ
                 AppendEnumerable<TPrevEnumerable, TPrevEnumerator, TSource>,
                 Enumerator,
                 AppendEnumerable<TEnumerable1, TEnumerator1, TSource>,
-                Enumerator,
+                AppendEnumerable<TEnumerable1, TEnumerator1, TSource>.Enumerator,
                 TSource
             >
             Concat<TEnumerable1, TEnumerator1>
             (in AppendEnumerable<TEnumerable1, TEnumerator1, TSource> second)
             where TEnumerator1 : struct, IRefEnumerator<TSource>
             where TEnumerable1 : struct, IRefEnumerable<TEnumerator1, TSource>
-            => new ConcatEnumerable<AppendEnumerable<TPrevEnumerable, TPrevEnumerator, TSource>, Enumerator, AppendEnumerable<TEnumerable1, TEnumerator1, TSource>, Enumerator, TSource>(this, second);
+            => new ConcatEnumerable<AppendEnumerable<TPrevEnumerable, TPrevEnumerator, TSource>, Enumerator, AppendEnumerable<TEnumerable1, TEnumerator1, TSource>, AppendEnumerable<TEnumerable1, TEnumerator1, TSource>.Enumerator, TSource>(this, second);
 
 #if UNSAFE_ARRAY_ENUMERABLE
         public ConcatEnumerable<
