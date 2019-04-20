@@ -166,7 +166,7 @@ namespace pcysl5edgo.Collections.LINQ
             TakeWhileIndex<TPredicate0>(TPredicate0 predicate)
             where TPredicate0 : struct, IWhereIndex<TSource>
             => new WhereIndexEnumerable<ConcatEnumerable<TFirstEnumerable, TFirstEnumerator, TSecondEnumerable, TSecondEnumerator, TSource>, Enumerator, TSource, DefaultTakeWhileIndex<TSource, TPredicate0>>(this, new DefaultTakeWhileIndex<TSource, TPredicate0>(predicate));
-        
+
         public WhereEnumerable<ConcatEnumerable<TFirstEnumerable, TFirstEnumerator, TSecondEnumerable, TSecondEnumerator, TSource>, Enumerator, TSource, TPredicate> Where<TPredicate>(TPredicate predicate)
             where TPredicate : unmanaged, IRefFunc<TSource, bool>
             => new WhereEnumerable<ConcatEnumerable<TFirstEnumerable, TFirstEnumerator, TSecondEnumerable, TSecondEnumerator, TSource>, Enumerator, TSource, TPredicate>(this, predicate);
@@ -520,6 +520,11 @@ namespace pcysl5edgo.Collections.LINQ
             element = default;
             return false;
         }
+
+        public NativeEnumerable<TSource> ToNativeEnumerable(Allocator allocator)
+            => this.ToNativeEnumerable<
+                ConcatEnumerable<TFirstEnumerable, TFirstEnumerator, TSecondEnumerable, TSecondEnumerator, TSource>,
+                Enumerator, TSource>(allocator);
 
         // ReSharper disable once ParameterHidesMember
         public bool TryGetFirst(out TSource first)

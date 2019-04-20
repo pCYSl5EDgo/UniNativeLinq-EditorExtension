@@ -8,7 +8,8 @@ using Unity.Collections.LowLevel.Unsafe;
 #if UNSAFE_ARRAY_ENUMERABLE
 namespace pcysl5edgo.Collections.LINQ
 {
-    public unsafe struct ArrayEnumerable<TSource>
+    public unsafe struct
+        ArrayEnumerable<TSource>
         : IRefEnumerable<ArrayEnumerable<TSource>.Enumerator, TSource>, ILinq<TSource>
         where TSource : unmanaged
 #if STRICT_EQUALITY
@@ -647,6 +648,17 @@ namespace pcysl5edgo.Collections.LINQ
             }
             element = array[offset + index];
             return true;
+        }
+
+        public NativeEnumerable<TSource> ToNativeEnumerable(Allocator allocator)
+        {
+            if (Length == 0) return default;
+            fixed (TSource* src = &array[offset])
+            {
+                var ptr = UnsafeUtilityEx.Malloc<TSource>(Length, allocator);
+                UnsafeUtilityEx.MemCpy(ptr, src, Length);
+                return new NativeEnumerable<TSource>(ptr, Length);
+            }
         }
 
         public bool TryGetFirst(out TSource first)

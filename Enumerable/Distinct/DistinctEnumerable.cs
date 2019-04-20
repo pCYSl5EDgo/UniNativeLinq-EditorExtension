@@ -20,14 +20,14 @@ namespace pcysl5edgo.Collections.LINQ
         where TEnumerable : struct, IRefEnumerable<TEnumerator, TSource>
     {
         private TEnumerable enumerable;
-        private readonly TEqualityComparer comparer;
+        private readonly TEqualityComparer equalityComparer;
         private readonly TGetHashCodeFunc getHashCodeFunc;
         private readonly Allocator alloc;
 
-        internal DistinctEnumerable(in TEnumerable enumerable, TEqualityComparer comparer, TGetHashCodeFunc getHashCodeFunc, Allocator allocator)
+        internal DistinctEnumerable(in TEnumerable enumerable, TEqualityComparer equalityComparer, TGetHashCodeFunc getHashCodeFunc, Allocator allocator)
         {
             this.enumerable = enumerable;
-            this.comparer = comparer;
+            this.equalityComparer = equalityComparer;
             this.getHashCodeFunc = getHashCodeFunc;
             this.alloc = allocator;
         }
@@ -211,7 +211,7 @@ namespace pcysl5edgo.Collections.LINQ
             }
         }
 
-        public Enumerator GetEnumerator() => new Enumerator(ref enumerable, comparer, getHashCodeFunc, alloc);
+        public Enumerator GetEnumerator() => new Enumerator(ref enumerable, equalityComparer, getHashCodeFunc, alloc);
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         IEnumerator<TSource> IEnumerable<TSource>.GetEnumerator() => GetEnumerator();
 
@@ -596,6 +596,26 @@ namespace pcysl5edgo.Collections.LINQ
 
         public bool TryGetElementAt(long index, out TSource element)
             => this.TryGetElementAt<DistinctEnumerable<TEnumerable, TEnumerator, TSource, TEqualityComparer, TGetHashCodeFunc>, Enumerator, TSource>(index, out element);
+
+        public NativeEnumerable<TSource> ToNativeEnumerable(Allocator allocator)
+            => this.ToNativeEnumerable<
+                DistinctEnumerable<TEnumerable, TEnumerator, TSource, TEqualityComparer, TGetHashCodeFunc>,
+                Enumerator, TSource>(allocator);
+
+
+        public NativeArray<TSource> ToNativeArray(Allocator allocator)
+            => this.ToNativeArray<
+                DistinctEnumerable<TEnumerable, TEnumerator, TSource, TEqualityComparer, TGetHashCodeFunc>,
+                Enumerator, TSource>(allocator);
+
+        public TSource[] ToArray()
+            => this.ToArray<DistinctEnumerable<TEnumerable, TEnumerator, TSource, TEqualityComparer, TGetHashCodeFunc>,Enumerator, TSource>();
+
+        public HashSet<TSource> ToHashSet()
+            => this.ToHashSet<DistinctEnumerable<TEnumerable, TEnumerator, TSource, TEqualityComparer, TGetHashCodeFunc>,Enumerator, TSource>();
+
+        public HashSet<TSource> ToHashSet(IEqualityComparer<TSource> comparer)
+            => this.ToHashSet<DistinctEnumerable<TEnumerable, TEnumerator, TSource, TEqualityComparer, TGetHashCodeFunc>,Enumerator, TSource>(comparer);
         #endregion
     }
 }

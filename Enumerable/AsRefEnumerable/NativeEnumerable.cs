@@ -583,14 +583,27 @@ namespace pcysl5edgo.Collections.LINQ
 
         long ILinq<TSource>.LongCount<TPredicate>(TPredicate predicate) => Count(predicate);
 
-        TSource[] ILinq<TSource>.ToArray()
+        public NativeArray<TSource> ToNativeArray(Allocator allocator)
         {
-            if (Length <= 0) return Array.Empty<TSource>();
-            var answer = new TSource[Length];
-            fixed (TSource* p = &answer[0])
-                UnsafeUtility.MemCpy(p, Ptr, sizeof(TSource) * Length);
+            if (Length == 0) return default;
+            var answer = new NativeArray<TSource>((int)Length, allocator, NativeArrayOptions.UninitializedMemory);
+            UnsafeUtilityEx.MemCpy(answer.GetPointer(), Ptr, Length);
             return answer;
         }
+
+        public TSource[] ToArray()
+        {
+            if (Length == 0) return default;
+            var answer = new TSource[Length];
+            UnsafeUtilityEx.MemCpy((TSource*)Unsafe.AsPointer(ref answer[0]), Ptr, Length);
+            return answer;
+        }
+
+        public HashSet<TSource> ToHashSet()
+            => this.ToHashSet<NativeEnumerable<TSource>, Enumerator, TSource>();
+
+        public HashSet<TSource> ToHashSet(IEqualityComparer<TSource> comparer)
+            => this.ToHashSet<NativeEnumerable<TSource>, Enumerator, TSource>(comparer);
 
         Dictionary<TKey, TElement> ILinq<TSource>.ToDictionary<TKey, TElement>(Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector)
         {
@@ -611,22 +624,6 @@ namespace pcysl5edgo.Collections.LINQ
             return answer;
         }
 
-        HashSet<TSource> ILinq<TSource>.ToHashSet()
-        {
-            var answer = new HashSet<TSource>();
-            for (var i = 0; i < Length; i++)
-                answer.Add(Ptr[i]);
-            return answer;
-        }
-
-        HashSet<TSource> ILinq<TSource>.ToHashSet(IEqualityComparer<TSource> comparer)
-        {
-            var answer = new HashSet<TSource>(comparer);
-            for (var i = 0; i < Length; i++)
-                answer.Add(Ptr[i]);
-            return answer;
-        }
-
         List<TSource> ILinq<TSource>.ToList()
         {
             var answer = new List<TSource>(Count());
@@ -635,12 +632,12 @@ namespace pcysl5edgo.Collections.LINQ
             return answer;
         }
 
-        NativeArray<TSource> ILinq<TSource>.ToNativeArray(Allocator allocator)
+        public NativeEnumerable<TSource> ToNativeEnumerable(Allocator allocator)
         {
             if (Length == 0) return default;
-            var answer = new NativeArray<TSource>(Count(), allocator, NativeArrayOptions.UninitializedMemory);
-            UnsafeUtility.MemCpy(answer.GetPointer(), Ptr, sizeof(TSource) * Length);
-            return answer;
+            var ptr = UnsafeUtilityEx.Malloc<TSource>(Length, allocator);
+            UnsafeUtilityEx.MemCpy(ptr, Ptr, Length);
+            return new NativeEnumerable<TSource>(ptr, Length);
         }
 
         public bool TryGetElementAt(long index, out TSource element)

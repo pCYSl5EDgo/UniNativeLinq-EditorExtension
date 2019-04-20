@@ -6,7 +6,8 @@ using Unity.Collections;
 
 namespace pcysl5edgo.Collections.LINQ
 {
-    public struct SelectManyEnumerable<TEnumerable, TEnumerator, TPrevSource, TSource, TSourceEnumerable, TSourceEnumerator, TAction>
+    public struct
+        SelectManyEnumerable<TEnumerable, TEnumerator, TPrevSource, TSource, TSourceEnumerable, TSourceEnumerator, TAction>
         : IRefEnumerable<SelectManyEnumerable<TEnumerable, TEnumerator, TPrevSource, TSource, TSourceEnumerable, TSourceEnumerator, TAction>.Enumerator, TSource>, ILinq<TSource>
         where TPrevSource : unmanaged
 #if STRICT_EQUALITY
@@ -539,6 +540,11 @@ namespace pcysl5edgo.Collections.LINQ
 
         public bool TryGetElementAt(long index, out TSource element)
             => this.TryGetElementAt<SelectManyEnumerable<TEnumerable, TEnumerator, TPrevSource, TSource, TSourceEnumerable, TSourceEnumerator, TAction>, Enumerator, TSource>(index, out element);
+
+        public NativeEnumerable<TSource> ToNativeEnumerable(Allocator allocator)
+            => this.ToNativeEnumerable<
+                SelectManyEnumerable<TEnumerable, TEnumerator, TPrevSource, TSource, TSourceEnumerable, TSourceEnumerator, TAction>
+                ,Enumerator, TSource>(allocator);
 
         public bool TryGetSingle(out TSource value)
             => this.TryGetSingle<SelectManyEnumerable<TEnumerable, TEnumerator, TPrevSource, TSource, TSourceEnumerable, TSourceEnumerator, TAction>, Enumerator, TSource>(out value);

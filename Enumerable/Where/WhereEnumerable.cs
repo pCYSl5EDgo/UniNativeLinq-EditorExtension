@@ -486,6 +486,11 @@ namespace pcysl5edgo.Collections.LINQ
         public bool TryGetElementAt(long index, out TSource element)
             => this.TryGetElementAt<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource>(index, out element);
 
+        public NativeEnumerable<TSource> ToNativeEnumerable(Allocator allocator)
+            => this.ToNativeEnumerable<
+                WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>
+                ,Enumerator, TSource>(allocator);
+
         public bool TryGetFirst(out TSource first)
             => this.TryGetFirst<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource>(out first);
 

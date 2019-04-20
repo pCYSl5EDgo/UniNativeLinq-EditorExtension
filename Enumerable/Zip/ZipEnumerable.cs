@@ -245,7 +245,7 @@ namespace pcysl5edgo.Collections.LINQ
             WhereIndex<TPredicate0>(TPredicate0 predicate)
             where TPredicate0 : unmanaged, IWhereIndex<TSource>
             => new WhereIndexEnumerable<ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, TSource, TAction>, Enumerator, TSource, TPredicate0>(this, predicate);
-        
+
         public ZipEnumerable<
                 ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, TSource, TAction>,
                 Enumerator,
@@ -432,7 +432,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TEnumerable0 : struct, IRefEnumerable<TEnumerator0, TSource>
             where TPredicate0 : unmanaged, IRefFunc<TSource, bool>
             => new ConcatEnumerable<ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, TSource, TAction>, Enumerator, WhereEnumerable<TEnumerable0, TEnumerator0, TSource, TPredicate0>, WhereEnumerable<TEnumerable0, TEnumerator0, TSource, TPredicate0>.Enumerator, TSource>(this, second);
-        
+
         public ConcatEnumerable<
                 ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, TSource, TAction>,
                 Enumerator,
@@ -446,7 +446,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TEnumerable0 : struct, IRefEnumerable<TEnumerator0, TSource>
             where TPredicate0 : unmanaged, IWhereIndex<TSource>
             => new ConcatEnumerable<ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, TSource, TAction>, Enumerator, WhereIndexEnumerable<TEnumerable0, TEnumerator0, TSource, TPredicate0>, WhereIndexEnumerable<TEnumerable0, TEnumerator0, TSource, TPredicate0>.Enumerator, TSource>(this, second);
-            
+
 
         public ConcatEnumerable<
                 ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, TSource, TAction>,
@@ -556,6 +556,11 @@ namespace pcysl5edgo.Collections.LINQ
 
         public bool TryGetElementAt(long index, out TSource element)
             => this.TryGetElementAt<ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, TSource, TAction>, Enumerator, TSource>(index, out element);
+
+        public NativeEnumerable<TSource> ToNativeEnumerable(Allocator allocator)
+            => this.ToNativeEnumerable<
+                ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, TSource, TAction>
+                , Enumerator, TSource>(allocator);
 
         public bool TryGetSingle(out TSource value)
             => this.TryGetSingle<ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, TSource, TAction>, Enumerator, TSource>(out value);

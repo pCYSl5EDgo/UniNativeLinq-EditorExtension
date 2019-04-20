@@ -37,16 +37,10 @@ namespace pcysl5edgo.Collections.LINQ
         bool TryGetSingle<TPredicate>(out TSource value, TPredicate predicate) where TPredicate : unmanaged, IRefFunc<TSource, bool>;
         bool TryGetSingle(out TSource value, Func<TSource, bool> predicate);
 
-        TSource[] ToArray();
-        NativeArray<TSource> ToNativeArray(Allocator allocator);
-
         Dictionary<TKey, TElement> ToDictionary<TKey, TElement>(Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector);
         Dictionary<TKey, TElement> ToDictionary<TKey, TElement, TKeyFunc, TElementFunc>(TKeyFunc keySelector, TElementFunc elementSelector)
         where TKeyFunc : unmanaged, IRefFunc<TSource, TKey>
         where TElementFunc : unmanaged, IRefFunc<TSource, TElement>;
-
-        HashSet<TSource> ToHashSet();
-        HashSet<TSource> ToHashSet(IEqualityComparer<TSource> comparer);
 
         List<TSource> ToList();
     }

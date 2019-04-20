@@ -698,6 +698,11 @@ namespace pcysl5edgo.Collections.LINQ
             return true;
         }
 
+        public NativeEnumerable<TSource> ToNativeEnumerable(Allocator allocator)
+            => this.ToNativeEnumerable<
+                RangeRepeatEnumerable<TSource, TAction>
+                ,Enumerator, TSource>(allocator);
+
         public bool TryGetFirst(out TSource first)
         {
             first = start;

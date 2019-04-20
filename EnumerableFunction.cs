@@ -19,6 +19,9 @@ namespace pcysl5edgo.Collections.LINQ
             IRefEnumerable<TEnumerator, TSource>
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TSource : unmanaged
+#if STRICT_EQUALITY
+        , IEquatable<TSource>
+#endif
         {
             var enumerator = @this.GetEnumerator();
             if (enumerator.MoveNext())
@@ -40,6 +43,9 @@ namespace pcysl5edgo.Collections.LINQ
             IRefEnumerable<TEnumerator, TSource>
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TSource : unmanaged
+#if STRICT_EQUALITY
+            , IEquatable<TSource>
+#endif
             where TPredicate : struct, IRefFunc<TSource, bool>
         {
             var enumerator = @this.GetEnumerator();
@@ -56,6 +62,9 @@ namespace pcysl5edgo.Collections.LINQ
 
         public static bool Any<TEnumerable, TEnumerator, TSource>(ref this TEnumerable @this, Func<TSource, bool> predicate)
             where TSource : unmanaged
+#if STRICT_EQUALITY
+            , IEquatable<TSource>
+#endif
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TEnumerable :
 #if !STRICT_ENUMERABLE
@@ -115,6 +124,9 @@ namespace pcysl5edgo.Collections.LINQ
             IRefEnumerable<TEnumerator, TSource>
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TSource : unmanaged
+#if STRICT_EQUALITY
+            , IEquatable<TSource>
+#endif
             where TPredicate : struct, IRefFunc<TSource, bool>
         {
             var enumerator = @this.GetEnumerator();
@@ -139,6 +151,9 @@ namespace pcysl5edgo.Collections.LINQ
             IRefEnumerable<TEnumerator, TSource>
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TSource : unmanaged
+#if STRICT_EQUALITY
+            , IEquatable<TSource>
+#endif
         {
             var enumerator = @this.GetEnumerator();
             while (enumerator.MoveNext())
@@ -178,6 +193,9 @@ namespace pcysl5edgo.Collections.LINQ
         #region Aggregate
         public static void Aggregate<TEnumerable, TEnumerator, TSource, TAccumulate, TFunc>(ref this TEnumerable @this, ref TAccumulate seed, TFunc func)
             where TSource : unmanaged
+#if STRICT_EQUALITY
+            , IEquatable<TSource>
+#endif
             where TFunc : struct, IRefAction<TAccumulate, TSource>
             where TEnumerable :
 #if !STRICT_ENUMERABLE
@@ -196,6 +214,9 @@ namespace pcysl5edgo.Collections.LINQ
 
         public static TResult Aggregate<TEnumerable, TEnumerator, TSource, TAccumulate, TResult, TFunc, TResultFunc>(ref this TEnumerable @this, ref TAccumulate seed, TFunc func, TResultFunc resultFunc)
             where TSource : unmanaged
+#if STRICT_EQUALITY
+            , IEquatable<TSource>
+#endif
             where TFunc : struct, IRefAction<TAccumulate, TSource>
             where TResultFunc : struct, IRefFunc<TAccumulate, TResult>
             where TEnumerable :
@@ -274,6 +295,9 @@ namespace pcysl5edgo.Collections.LINQ
 
         public static TResult Aggregate<TEnumerable, TEnumerator, TSource, TAccumulate, TResult>(ref this TEnumerable @this, TAccumulate seed, Func<TAccumulate, TSource, TAccumulate> func, Func<TAccumulate, TResult> resultFunc)
             where TSource : unmanaged
+#if STRICT_EQUALITY
+            , IEquatable<TSource>
+#endif
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TEnumerable :
 #if !STRICT_ENUMERABLE
@@ -301,6 +325,9 @@ namespace pcysl5edgo.Collections.LINQ
 
         public static TAccumulate Aggregate<TEnumerable, TEnumerator, TSource, TAccumulate>(ref this TEnumerable @this, TAccumulate seed, Func<TAccumulate, TSource, TAccumulate> func)
             where TSource : unmanaged
+#if STRICT_EQUALITY
+            , IEquatable<TSource>
+#endif
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TEnumerable :
 #if !STRICT_ENUMERABLE
@@ -328,6 +355,9 @@ namespace pcysl5edgo.Collections.LINQ
 
         public static TSource Aggregate<TEnumerable, TEnumerator, TSource>(ref this TEnumerable @this, Func<TSource, TSource, TSource> func)
             where TSource : unmanaged
+#if STRICT_EQUALITY
+            , IEquatable<TSource>
+#endif
             where TEnumerable :
 #if !STRICT_ENUMERABLE
             struct,
@@ -527,6 +557,9 @@ namespace pcysl5edgo.Collections.LINQ
             IRefEnumerable<TEnumerator, TSource>
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TSource : unmanaged
+#if STRICT_EQUALITY
+            , IEquatable<TSource>
+#endif
         {
             var enumerator = @this.GetEnumerator();
             var count = 0;
@@ -541,6 +574,9 @@ namespace pcysl5edgo.Collections.LINQ
             where TEnumerable : struct, IRefEnumerable<TEnumerator, TSource>
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TSource : unmanaged
+#if STRICT_EQUALITY
+            , IEquatable<TSource>
+#endif
             where TPredicate : struct, IRefFunc<TSource, bool>
         {
             var enumerator = @this.GetEnumerator();
@@ -612,6 +648,9 @@ namespace pcysl5edgo.Collections.LINQ
             IRefEnumerable<TEnumerator, TSource>
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TSource : unmanaged
+#if STRICT_EQUALITY
+            , IEquatable<TSource>
+#endif
             where TFunc : struct, IRefFunc<TSource, Int32>
         {
             Int32 sum = default;
@@ -654,6 +693,9 @@ namespace pcysl5edgo.Collections.LINQ
             IRefEnumerable<TEnumerator, TSource>
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TSource : unmanaged
+#if STRICT_EQUALITY
+            , IEquatable<TSource>
+#endif
             where TFunc : struct, IRefFunc<TSource, Int64>
         {
             Int64 sum = default;
@@ -691,6 +733,9 @@ namespace pcysl5edgo.Collections.LINQ
             IRefEnumerable<TEnumerator, TSource>
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TSource : unmanaged
+#if STRICT_EQUALITY
+            , IEquatable<TSource>
+#endif
             where TFunc : struct, IRefFunc<TSource, UInt32>
         {
             UInt32 sum = default;
@@ -733,6 +778,9 @@ namespace pcysl5edgo.Collections.LINQ
             IRefEnumerable<TEnumerator, TSource>
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TSource : unmanaged
+#if STRICT_EQUALITY
+            , IEquatable<TSource>
+#endif
             where TFunc : struct, IRefFunc<TSource, UInt64>
         {
             UInt64 sum = default;
@@ -775,6 +823,9 @@ namespace pcysl5edgo.Collections.LINQ
             IRefEnumerable<TEnumerator, TSource>
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TSource : unmanaged
+#if STRICT_EQUALITY
+            , IEquatable<TSource>
+#endif
             where TFunc : struct, IRefFunc<TSource, Single>
         {
             Single sum = default;
@@ -811,6 +862,9 @@ namespace pcysl5edgo.Collections.LINQ
             where TEnumerable : struct, IRefEnumerable<TEnumerator, TSource>
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TSource : unmanaged
+#if STRICT_EQUALITY
+            , IEquatable<TSource>
+#endif
             where TFunc : struct, IRefFunc<TSource, Double>
         {
             Double sum = default;
@@ -853,6 +907,9 @@ namespace pcysl5edgo.Collections.LINQ
             IRefEnumerable<TEnumerator, TSource>
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TSource : unmanaged
+#if STRICT_EQUALITY
+            , IEquatable<TSource>
+#endif
             where TFunc : struct, IRefFunc<TSource, Decimal>
         {
             Decimal sum = default;
@@ -1079,6 +1136,9 @@ namespace pcysl5edgo.Collections.LINQ
             IRefEnumerable<TEnumerator, TSource>
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TSource : unmanaged
+#if STRICT_EQUALITY
+            , IEquatable<TSource>
+#endif
         {
             if (index < 0)
             {
@@ -1135,6 +1195,9 @@ namespace pcysl5edgo.Collections.LINQ
             IRefEnumerable<TEnumerator, TSource>
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TSource : unmanaged
+#if STRICT_EQUALITY
+            , IEquatable<TSource>
+#endif
         {
             var enumerator = @this.GetEnumerator();
             if (enumerator.MoveNext())
@@ -1172,6 +1235,9 @@ namespace pcysl5edgo.Collections.LINQ
             IRefEnumerable<TEnumerator, TSource>
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TSource : unmanaged
+#if STRICT_EQUALITY
+            , IEquatable<TSource>
+#endif
         {
             var enumerator = @this.GetEnumerator();
             if (!enumerator.MoveNext())
@@ -1199,6 +1265,9 @@ namespace pcysl5edgo.Collections.LINQ
             IRefEnumerable<TEnumerator, TSource>
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TSource : unmanaged
+#if STRICT_EQUALITY
+            , IEquatable<TSource>
+#endif
         {
             var enumerator = @this.GetEnumerator();
             var count = 0L;
@@ -1218,6 +1287,9 @@ namespace pcysl5edgo.Collections.LINQ
             IRefEnumerable<TEnumerator, TSource>
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TSource : unmanaged
+#if STRICT_EQUALITY
+            , IEquatable<TSource>
+#endif
             where TPredicate : struct, IRefFunc<TSource, bool>
         {
             var enumerator = @this.GetEnumerator();
@@ -1239,6 +1311,9 @@ namespace pcysl5edgo.Collections.LINQ
             IRefEnumerable<TEnumerator, TSource>
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TSource : unmanaged
+#if STRICT_EQUALITY
+            , IEquatable<TSource>
+#endif
         {
             var enumerator = @this.GetEnumerator();
             var count = 0L;
@@ -1977,6 +2052,9 @@ namespace pcysl5edgo.Collections.LINQ
             IRefEnumerable<TEnumerator, TSource>
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TSource : unmanaged
+#if STRICT_EQUALITY
+            , IEquatable<TSource>
+#endif
             where TPredicate : struct, IRefFunc<TSource, bool>
         {
             value = default;
@@ -2004,6 +2082,9 @@ namespace pcysl5edgo.Collections.LINQ
             IRefEnumerable<TEnumerator, TSource>
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TSource : unmanaged
+#if STRICT_EQUALITY
+            , IEquatable<TSource>
+#endif
         {
             value = default;
             var enumerator = @this.GetEnumerator();
@@ -2030,6 +2111,9 @@ namespace pcysl5edgo.Collections.LINQ
             IRefEnumerable<TEnumerator, TSource>
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TSource : unmanaged
+#if STRICT_EQUALITY
+            , IEquatable<TSource>
+#endif
         {
             var enumerator = @this.GetEnumerator();
             if (!enumerator.MoveNext())
@@ -2334,6 +2418,9 @@ namespace pcysl5edgo.Collections.LINQ
             IRefEnumerable<TEnumerator, TSource>
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TSource : unmanaged
+#if STRICT_EQUALITY
+            , IEquatable<TSource>
+#endif
         {
             var enumerator = @this.GetEnumerator();
             var ptr = CountUp<TEnumerator, TSource>(ref enumerator, out var count);
@@ -2342,6 +2429,30 @@ namespace pcysl5edgo.Collections.LINQ
             var answer = new TSource[count];
             fixed (TSource* destination = &answer[0])
                 CopyToAndCleanUp(ptr, count, destination);
+            return answer;
+        }
+
+        public static NativeEnumerable<TSource>
+            ToNativeEnumerable<TEnumerable, TEnumerator, TSource>(ref this TEnumerable enumerable, Allocator allocator)
+            where TEnumerable :
+#if !STRICT_ENUMERABLE
+            struct,
+#else
+            unmanaged,
+#endif
+            IRefEnumerable<TEnumerator, TSource>
+            where TEnumerator : struct, IRefEnumerator<TSource>
+            where TSource : unmanaged
+#if STRICT_EQUALITY
+            , IEquatable<TSource>
+#endif
+        {
+            var count = enumerable.LongCount();
+            if (count == 0) return default;
+            var answer = new NativeEnumerable<TSource>(UnsafeUtilityEx.Malloc<TSource>(count, allocator), count);
+            var ptr = answer.Ptr;
+            foreach (ref var item in enumerable)
+                *ptr++ = item;
             return answer;
         }
 
@@ -2355,6 +2466,9 @@ namespace pcysl5edgo.Collections.LINQ
             IRefEnumerable<TEnumerator, TSource>
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TSource : unmanaged
+#if STRICT_EQUALITY
+            , IEquatable<TSource>
+#endif
         {
             var enumerator = @this.GetEnumerator();
             var ptr = CountUp<TEnumerator, TSource>(ref enumerator, out var count);
@@ -2418,6 +2532,9 @@ namespace pcysl5edgo.Collections.LINQ
             IRefEnumerable<TEnumerator, TSource>
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TSource : unmanaged
+#if STRICT_EQUALITY
+            , IEquatable<TSource>
+#endif
             where TKeyFunc : struct, IRefFunc<TSource, TKey>
             where TValueFunc : struct, IRefFunc<TSource, TElement>
         {
@@ -2442,6 +2559,9 @@ namespace pcysl5edgo.Collections.LINQ
             IRefEnumerable<TEnumerator, TSource>
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TSource : unmanaged
+#if STRICT_EQUALITY
+            , IEquatable<TSource>
+#endif
         {
             var answer = new Dictionary<TKey, TElement>();
             var enumerator = @this.GetEnumerator();
@@ -2487,6 +2607,9 @@ namespace pcysl5edgo.Collections.LINQ
             IRefEnumerable<TEnumerator, TSource>
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TSource : unmanaged
+#if STRICT_EQUALITY
+            , IEquatable<TSource>
+#endif
         {
             var answer = new HashSet<TSource>(comparer);
             var enumerator = @this.GetEnumerator();
@@ -2506,6 +2629,9 @@ namespace pcysl5edgo.Collections.LINQ
             IRefEnumerable<TEnumerator, TSource>
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TSource : unmanaged
+#if STRICT_EQUALITY
+            , IEquatable<TSource>
+#endif
         {
             var answer = new HashSet<TSource>();
             var enumerator = @this.GetEnumerator();
@@ -2545,6 +2671,9 @@ namespace pcysl5edgo.Collections.LINQ
             IRefEnumerable<TEnumerator, TSource>
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TSource : unmanaged
+#if STRICT_EQUALITY
+            , IEquatable<TSource>
+#endif
         {
             var answer = new List<TSource>();
             var enumerator = @this.GetEnumerator();
