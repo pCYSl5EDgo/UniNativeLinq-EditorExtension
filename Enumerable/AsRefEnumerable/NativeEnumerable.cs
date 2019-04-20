@@ -16,14 +16,36 @@ namespace pcysl5edgo.Collections.LINQ
 #endif
     {
         internal readonly TSource* Ptr;
-        internal readonly int Length;
+        internal readonly long Length;
 
-        internal NativeEnumerable(NativeArray<TSource> array)
+        public NativeEnumerable(NativeArray<TSource> array)
         {
             if (array.IsCreated)
             {
                 this.Ptr = array.GetPointer();
                 this.Length = array.Length;
+            }
+            else
+            {
+                this.Ptr = null;
+                this.Length = 0;
+            }
+        }
+        
+        public NativeEnumerable(NativeArray<TSource> array, long offset, long length)
+        {
+            if (array.IsCreated && length > 0)
+            {
+                if(offset >= 0)
+                {
+                    this.Ptr = array.GetPointer() + offset;
+                    this.Length = length;
+                }
+                else
+                {
+                    this.Ptr = array.GetPointer();
+                    this.Length = length + offset;
+                }
             }
             else
             {
@@ -474,7 +496,7 @@ namespace pcysl5edgo.Collections.LINQ
             return false;
         }
 
-        public int Count() => this.Length;
+        public int Count() => (int)this.Length;
 
         public int Count(Func<TSource, bool> predicate)
         {
@@ -515,7 +537,7 @@ namespace pcysl5edgo.Collections.LINQ
 
         Dictionary<TKey, TElement> ILinq<TSource>.ToDictionary<TKey, TElement>(Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector)
         {
-            var answer = new Dictionary<TKey, TElement>(Length);
+            var answer = new Dictionary<TKey, TElement>(Count());
             for (var i = 0; i < Length; i++)
                 answer.Add(keySelector(Ptr[i]), elementSelector(Ptr[i]));
             return answer;
@@ -523,7 +545,7 @@ namespace pcysl5edgo.Collections.LINQ
 
         Dictionary<TKey, TElement> ILinq<TSource>.ToDictionary<TKey, TElement, TKeyFunc, TElementFunc>(TKeyFunc keySelector, TElementFunc elementSelector)
         {
-            var answer = new Dictionary<TKey, TElement>(Length);
+            var answer = new Dictionary<TKey, TElement>(Count());
             for (var i = 0; i < Length; i++)
             {
                 ref var item = ref Ptr[i];
@@ -550,7 +572,7 @@ namespace pcysl5edgo.Collections.LINQ
 
         List<TSource> ILinq<TSource>.ToList()
         {
-            var answer = new List<TSource>(Length);
+            var answer = new List<TSource>(Count());
             for (var i = 0; i < Length; i++)
                 answer.Add(Ptr[i]);
             return answer;
@@ -559,7 +581,7 @@ namespace pcysl5edgo.Collections.LINQ
         NativeArray<TSource> ILinq<TSource>.ToNativeArray(Allocator allocator)
         {
             if (Length == 0) return default;
-            var answer = new NativeArray<TSource>(Length, allocator, NativeArrayOptions.UninitializedMemory);
+            var answer = new NativeArray<TSource>(Count(), allocator, NativeArrayOptions.UninitializedMemory);
             UnsafeUtility.MemCpy(answer.GetPointer(), Ptr, sizeof(TSource) * Length);
             return answer;
         }
@@ -619,8 +641,8 @@ namespace pcysl5edgo.Collections.LINQ
         public struct Enumerator : IRefEnumerator<TSource>
         {
             private readonly TSource* ptr;
-            private readonly int length;
-            private int index;
+            private readonly long length;
+            private long index;
 
             public ref TSource Current => ref ptr[index];
             TSource IEnumerator<TSource>.Current => Current;
