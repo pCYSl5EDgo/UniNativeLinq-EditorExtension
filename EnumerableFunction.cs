@@ -1069,7 +1069,7 @@ namespace pcysl5edgo.Collections.LINQ
 
 
         #region ElementAt
-        public static bool TryGetElementAt<TEnumerable, TEnumerator, TSource>(ref this TEnumerable @this, int index, out TSource value)
+        public static bool TryGetElementAt<TEnumerable, TEnumerator, TSource>(ref this TEnumerable @this, long index, out TSource value)
             where TEnumerable :
 #if !STRICT_ENUMERABLE
             struct,

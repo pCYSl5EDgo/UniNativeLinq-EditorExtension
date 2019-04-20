@@ -642,7 +642,7 @@ namespace pcysl5edgo.Collections.LINQ
             return count;
         }
 
-        public bool TryGetElementAt(int index, out TSource element)
+        public bool TryGetElementAt(long index, out TSource element)
         {
             element = start;
             if (index < 0 || index >= length)

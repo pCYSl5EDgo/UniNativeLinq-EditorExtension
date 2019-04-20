@@ -15,5 +15,6 @@ namespace pcysl5edgo.Collections
 
         bool TryGetFirst(out T first);
         bool TryGetLast(out T last);
+        bool TryGetElementAt(long index, out T element);
     }
 }

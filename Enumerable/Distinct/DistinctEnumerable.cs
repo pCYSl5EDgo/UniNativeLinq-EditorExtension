@@ -417,7 +417,7 @@ namespace pcysl5edgo.Collections.LINQ
                 RangeRepeatEnumerable<TSource, TAction>.Enumerator,
                 TSource
             >
-            Concat<TEnumerable0, TEnumerator0, TAction>(in RangeRepeatEnumerable<TSource, TAction> second)
+            Concat<TAction>(in RangeRepeatEnumerable<TSource, TAction> second)
             where TAction : struct, IRefAction<TSource>
             => new ConcatEnumerable<DistinctEnumerable<TEnumerable, TEnumerator, TSource, TEqualityComparer, TGetHashCodeFunc>, Enumerator, RangeRepeatEnumerable<TSource, TAction>, RangeRepeatEnumerable<TSource, TAction>.Enumerator, TSource>(this, second);
 
@@ -490,7 +490,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TEnumerable0 : struct, IRefEnumerable<TEnumerator0, TSource>
             where TPredicate : unmanaged, IRefFunc<TSource, bool>
             => new ConcatEnumerable<DistinctEnumerable<TEnumerable, TEnumerator, TSource, TEqualityComparer, TGetHashCodeFunc>, Enumerator, WhereEnumerable<TEnumerable0, TEnumerator0, TSource, TPredicate>, WhereEnumerable<TEnumerable0, TEnumerator0, TSource, TPredicate>.Enumerator, TSource>(this, second);
-                
+
         public ConcatEnumerable<
                 DistinctEnumerable<TEnumerable, TEnumerator, TSource, TEqualityComparer, TGetHashCodeFunc>,
                 Enumerator,
@@ -514,7 +514,6 @@ namespace pcysl5edgo.Collections.LINQ
             where TEnumerable1 : struct, IRefEnumerable<TEnumerator1, TSource1>
             where TAction0 : struct, IRefAction<TSource0, TSource1, TSource>
             => new ConcatEnumerable<DistinctEnumerable<TEnumerable, TEnumerator, TSource, TEqualityComparer, TGetHashCodeFunc>, Enumerator, ZipEnumerable<TEnumerable0, TEnumerator0, TSource0, TEnumerable1, TEnumerator1, TSource1, TSource, TAction0>, ZipEnumerable<TEnumerable0, TEnumerator0, TSource0, TEnumerable1, TEnumerator1, TSource1, TSource, TAction0>.Enumerator, TSource>(this, second);
-        
         #endregion
 
         #region Function
@@ -549,6 +548,9 @@ namespace pcysl5edgo.Collections.LINQ
 
         public bool TryGetLast(out TSource last)
             => this.TryGetLast<DistinctEnumerable<TEnumerable, TEnumerator, TSource, TEqualityComparer, TGetHashCodeFunc>, Enumerator, TSource>(out last);
+
+        public bool TryGetElementAt(long index, out TSource element)
+            => this.TryGetElementAt<DistinctEnumerable<TEnumerable, TEnumerator, TSource, TEqualityComparer, TGetHashCodeFunc>, Enumerator, TSource>(index, out element);
         #endregion
     }
 }

@@ -536,7 +536,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TPredicate : unmanaged, IRefFunc<TSource, bool>
             => this.Count<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TPrevSource, TSource, TAction>, Enumerator, TSource, TPredicate>(predicate);
 
-        public bool TryGetElementAt(int index, out TSource element)
+        public bool TryGetElementAt(long index, out TSource element)
             => this.TryGetElementAt<SelectEnumerable<TPrevEnumerable, TPrevEnumerator, TPrevSource, TSource, TAction>, Enumerator, TSource>(index, out element);
 
         public bool TryGetFirst(out TSource first)

@@ -436,7 +436,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TAnotherPredicate : unmanaged, IRefFunc<TSource, bool>
             => this.LongCount<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource, TAnotherPredicate>(predicate);
 
-        public bool TryGetElementAt(int index, out TSource element)
+        public bool TryGetElementAt(long index, out TSource element)
             => this.TryGetElementAt<WhereEnumerable<TPrevEnumerable, TPrevEnumerator, TSource, TPredicate>, Enumerator, TSource>(index, out element);
 
         public bool TryGetFirst(out TSource first)

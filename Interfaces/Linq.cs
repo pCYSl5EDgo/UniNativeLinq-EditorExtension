@@ -31,8 +31,6 @@ namespace pcysl5edgo.Collections.LINQ
         long LongCount(Func<TSource, bool> predicate);
         long LongCount<TPredicate>(TPredicate predicate) where TPredicate : unmanaged, IRefFunc<TSource, bool>;
 
-        bool TryGetElementAt(int index, out TSource element);
-
         bool TryGetSingle(out TSource value);
         bool TryGetSingle<TPredicate>(out TSource value, TPredicate predicate) where TPredicate : unmanaged, IRefFunc<TSource, bool>;
         bool TryGetSingle(out TSource value, Func<TSource, bool> predicate);

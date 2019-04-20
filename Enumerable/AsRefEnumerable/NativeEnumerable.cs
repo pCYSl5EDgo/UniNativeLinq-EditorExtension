@@ -556,7 +556,7 @@ namespace pcysl5edgo.Collections.LINQ
             return answer;
         }
 
-        bool ILinq<TSource>.TryGetElementAt(int index, out TSource element)
+        public bool TryGetElementAt(long index, out TSource element)
         {
             if (index < 0 || index >= Length)
             {

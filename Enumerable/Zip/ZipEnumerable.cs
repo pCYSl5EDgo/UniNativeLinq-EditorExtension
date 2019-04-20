@@ -508,7 +508,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TPredicate : unmanaged, IRefFunc<TSource, bool>
             => this.LongCount<ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, TSource, TAction>, Enumerator, TSource, TPredicate>(predicate);
 
-        public bool TryGetElementAt(int index, out TSource element)
+        public bool TryGetElementAt(long index, out TSource element)
             => this.TryGetElementAt<ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, TSource, TAction>, Enumerator, TSource>(index, out element);
 
         public bool TryGetSingle(out TSource value)
