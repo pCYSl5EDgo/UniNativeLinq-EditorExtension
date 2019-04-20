@@ -39,7 +39,7 @@ namespace pcysl5edgo.Collections.LINQ
             private readonly TSource* current;
             private readonly Allocator allocator;
             private TAction action;
-            private int index;
+            private long index;
 
             internal Enumerator(in TPrevEnumerator enumerator, TAction action, Allocator allocator)
             {

@@ -2,6 +2,6 @@ namespace pcysl5edgo.Collections.LINQ
 {
     public interface ISelectIndex<TSource, TResult>
     {
-        void Execute(ref TSource source, int index, ref TResult result);
+        void Execute(ref TSource source, long index, ref TResult result);
     }
 }
