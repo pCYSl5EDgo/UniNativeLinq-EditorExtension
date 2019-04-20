@@ -65,8 +65,7 @@ namespace pcysl5edgo.Collections.LINQ
                 {
                     if (isDefault)
                         return ref *ptr;
-                    else
-                        return ref enumerator.Current;
+                    return ref enumerator.Current;
                 }
             }
 
@@ -100,10 +99,6 @@ namespace pcysl5edgo.Collections.LINQ
         public AppendEnumerable<DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, TSource>, Enumerator, TSource>
             Append(TSource value, Allocator allocator = Allocator.Temp)
             => new AppendEnumerable<DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, TSource>, Enumerator, TSource>(this, value, allocator);
-
-        public AppendPointerEnumerable<DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, TSource>, Enumerator, TSource>
-            Append(TSource* value)
-            => new AppendPointerEnumerable<DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, TSource>, Enumerator, TSource>(this, value);
 
         public DefaultIfEmptyEnumerable<DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, TSource>, Enumerator, TSource>
             DefaultIfEmpty(TSource defaultValue, Allocator allocator = Allocator.Temp)
@@ -235,27 +230,14 @@ namespace pcysl5edgo.Collections.LINQ
                 DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, TSource>,
                 Enumerator,
                 AppendEnumerable<TEnumerable1, TEnumerator1, TSource>,
-                AppendEnumerator<TEnumerator1, TSource>,
+                AppendEnumerable<TEnumerable1, TEnumerator1, TSource>.Enumerator,
                 TSource
             >
             Concat<TEnumerable1, TEnumerator1>
             (in AppendEnumerable<TEnumerable1, TEnumerator1, TSource> second)
             where TEnumerator1 : struct, IRefEnumerator<TSource>
             where TEnumerable1 : struct, IRefEnumerable<TEnumerator1, TSource>
-            => new ConcatEnumerable<DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, TSource>, Enumerator, AppendEnumerable<TEnumerable1, TEnumerator1, TSource>, AppendEnumerator<TEnumerator1, TSource>, TSource>(this, second);
-
-        public ConcatEnumerable<
-                DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, TSource>,
-                Enumerator,
-                AppendPointerEnumerable<TEnumerable1, TEnumerator1, TSource>,
-                AppendEnumerator<TEnumerator1, TSource>,
-                TSource
-            >
-            Concat<TEnumerable1, TEnumerator1>
-            (in AppendPointerEnumerable<TEnumerable1, TEnumerator1, TSource> second)
-            where TEnumerator1 : struct, IRefEnumerator<TSource>
-            where TEnumerable1 : struct, IRefEnumerable<TEnumerator1, TSource>
-            => new ConcatEnumerable<DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, TSource>, Enumerator, AppendPointerEnumerable<TEnumerable1, TEnumerator1, TSource>, AppendEnumerator<TEnumerator1, TSource>, TSource>(this, second);
+            => new ConcatEnumerable<DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, TSource>, Enumerator, AppendEnumerable<TEnumerable1, TEnumerator1, TSource>, AppendEnumerable<TEnumerable1, TEnumerator1, TSource>.Enumerator, TSource>(this, second);
 
 #if UNSAFE_ARRAY_ENUMERABLE
         public ConcatEnumerable<

@@ -115,7 +115,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TSecondEnumerator : struct, IRefEnumerator<TSecondSource>
             where TSecondEnumerable : struct, IRefEnumerable<TSecondEnumerator, TSecondSource>
             where TAction : struct, IRefAction<TFirstSource, TSecondSource, Single>
-            => enumerable.SumSingle<ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, Single, TAction>, ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, Single, TAction>.Enumerator>();
+            => enumerable.SumSingle<ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, Single, TAction>, ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, float, TAction>.Enumerator>();
 
         public static Double
             Sum<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, TAction>
@@ -133,7 +133,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TSecondEnumerator : struct, IRefEnumerator<TSecondSource>
             where TSecondEnumerable : struct, IRefEnumerable<TSecondEnumerator, TSecondSource>
             where TAction : struct, IRefAction<TFirstSource, TSecondSource, Double>
-            => enumerable.SumDouble<ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, Double, TAction>, ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, Double, TAction>.Enumerator>();
+            => enumerable.SumDouble<ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, Double, TAction>, ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, double, TAction>.Enumerator>();
 
         public static Decimal
             Sum<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, TAction>
@@ -151,7 +151,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TSecondEnumerator : struct, IRefEnumerator<TSecondSource>
             where TSecondEnumerable : struct, IRefEnumerable<TSecondEnumerator, TSecondSource>
             where TAction : struct, IRefAction<TFirstSource, TSecondSource, Decimal>
-            => enumerable.SumDecimal<ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, Decimal, TAction>, ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, Decimal, TAction>.Enumerator>();
+            => enumerable.SumDecimal<ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, Decimal, TAction>, ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, decimal, TAction>.Enumerator>();
 
         public static Int32
             Sum<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, TAction>
@@ -169,7 +169,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TSecondEnumerator : struct, IRefEnumerator<TSecondSource>
             where TSecondEnumerable : struct, IRefEnumerable<TSecondEnumerator, TSecondSource>
             where TAction : struct, IRefAction<TFirstSource, TSecondSource, Int32>
-            => enumerable.SumInt32<ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, Int32, TAction>, ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, Int32, TAction>.Enumerator>();
+            => enumerable.SumInt32<ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, Int32, TAction>, ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, int, TAction>.Enumerator>();
 
         public static Int64
             Sum<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, TAction>
@@ -187,7 +187,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TSecondEnumerator : struct, IRefEnumerator<TSecondSource>
             where TSecondEnumerable : struct, IRefEnumerable<TSecondEnumerator, TSecondSource>
             where TAction : struct, IRefAction<TFirstSource, TSecondSource, Int64>
-            => enumerable.SumInt64<ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, Int64, TAction>, ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, Int64, TAction>.Enumerator>();
+            => enumerable.SumInt64<ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, Int64, TAction>, ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, long, TAction>.Enumerator>();
 
         public static UInt64
             Sum<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, TAction>
@@ -205,7 +205,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TSecondEnumerator : struct, IRefEnumerator<TSecondSource>
             where TSecondEnumerable : struct, IRefEnumerable<TSecondEnumerator, TSecondSource>
             where TAction : struct, IRefAction<TFirstSource, TSecondSource, UInt64>
-            => enumerable.SumUInt64<ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, UInt64, TAction>, ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, UInt64, TAction>.Enumerator>();
+            => enumerable.SumUInt64<ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, UInt64, TAction>, ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, ulong, TAction>.Enumerator>();
 
         public static UInt32
             Sum<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, TAction>
@@ -223,7 +223,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TSecondEnumerator : struct, IRefEnumerator<TSecondSource>
             where TSecondEnumerable : struct, IRefEnumerable<TSecondEnumerator, TSecondSource>
             where TAction : struct, IRefAction<TFirstSource, TSecondSource, UInt32>
-            => enumerable.SumUInt32<ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, UInt32, TAction>, ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, UInt32, TAction>.Enumerator>();
+            => enumerable.SumUInt32<ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, UInt32, TAction>, ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, uint, TAction>.Enumerator>();
         
         public static Single
             Average<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, TAction>
@@ -241,7 +241,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TSecondEnumerator : struct, IRefEnumerator<TSecondSource>
             where TSecondEnumerable : struct, IRefEnumerable<TSecondEnumerator, TSecondSource>
             where TAction : struct, IRefAction<TFirstSource, TSecondSource, Single>
-            => enumerable.AverageSingle<ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, Single, TAction>, ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, Single, TAction>.Enumerator>();
+            => enumerable.AverageSingle<ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, Single, TAction>, ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, float, TAction>.Enumerator>();
         
         public static Double
             Average<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, TAction>
@@ -259,7 +259,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TSecondEnumerator : struct, IRefEnumerator<TSecondSource>
             where TSecondEnumerable : struct, IRefEnumerable<TSecondEnumerator, TSecondSource>
             where TAction : struct, IRefAction<TFirstSource, TSecondSource, Double>
-            => enumerable.AverageDouble<ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, Double, TAction>, ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, Double, TAction>.Enumerator>();
+            => enumerable.AverageDouble<ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, Double, TAction>, ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, double, TAction>.Enumerator>();
         
         public static Decimal
             Average<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, TAction>
@@ -277,7 +277,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TSecondEnumerator : struct, IRefEnumerator<TSecondSource>
             where TSecondEnumerable : struct, IRefEnumerable<TSecondEnumerator, TSecondSource>
             where TAction : struct, IRefAction<TFirstSource, TSecondSource, Decimal>
-            => enumerable.AverageDecimal<ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, Decimal, TAction>, ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, Decimal, TAction>.Enumerator>();
+            => enumerable.AverageDecimal<ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, Decimal, TAction>, ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, decimal, TAction>.Enumerator>();
         
         public static Int32
             Average<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, TAction>
@@ -295,7 +295,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TSecondEnumerator : struct, IRefEnumerator<TSecondSource>
             where TSecondEnumerable : struct, IRefEnumerable<TSecondEnumerator, TSecondSource>
             where TAction : struct, IRefAction<TFirstSource, TSecondSource, Int32>
-            => enumerable.AverageInt32<ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, Int32, TAction>, ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, Int32, TAction>.Enumerator>();
+            => enumerable.AverageInt32<ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, Int32, TAction>, ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, int, TAction>.Enumerator>();
         
         public static Int64
             Average<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, TAction>
@@ -313,7 +313,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TSecondEnumerator : struct, IRefEnumerator<TSecondSource>
             where TSecondEnumerable : struct, IRefEnumerable<TSecondEnumerator, TSecondSource>
             where TAction : struct, IRefAction<TFirstSource, TSecondSource, Int64>
-            => enumerable.AverageInt64<ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, Int64, TAction>, ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, Int64, TAction>.Enumerator>();
+            => enumerable.AverageInt64<ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, Int64, TAction>, ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, long, TAction>.Enumerator>();
         
         public static UInt32
             Average<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, TAction>
@@ -331,7 +331,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TSecondEnumerator : struct, IRefEnumerator<TSecondSource>
             where TSecondEnumerable : struct, IRefEnumerable<TSecondEnumerator, TSecondSource>
             where TAction : struct, IRefAction<TFirstSource, TSecondSource, UInt32>
-            => enumerable.AverageUInt32<ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, UInt32, TAction>, ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, UInt32, TAction>.Enumerator>();
+            => enumerable.AverageUInt32<ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, UInt32, TAction>, ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, uint, TAction>.Enumerator>();
         
         public static UInt64
             Average<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, TAction>
@@ -349,6 +349,6 @@ namespace pcysl5edgo.Collections.LINQ
             where TSecondEnumerator : struct, IRefEnumerator<TSecondSource>
             where TSecondEnumerable : struct, IRefEnumerable<TSecondEnumerator, TSecondSource>
             where TAction : struct, IRefAction<TFirstSource, TSecondSource, UInt64>
-            => enumerable.AverageUInt64<ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, UInt64, TAction>, ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, UInt64, TAction>.Enumerator>();
+            => enumerable.AverageUInt64<ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, UInt64, TAction>, ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, ulong, TAction>.Enumerator>();
     }
 }

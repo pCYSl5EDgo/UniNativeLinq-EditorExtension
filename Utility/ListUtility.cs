@@ -1,12 +1,11 @@
 using System;
-using System.Reflection;
 using System.Collections.Generic;
+using System.Reflection;
+using System.Reflection.Emit;
 
 namespace pcysl5edgo
 {
 #if !ENABLE_IL2CPP
-    using System.Reflection.Emit;
-
     public struct GetArrayFromListCache<T>
         where T : unmanaged
     {
@@ -14,7 +13,7 @@ namespace pcysl5edgo
 
         static GetArrayFromListCache()
         {
-            var method = new DynamicMethod("GetArray", MethodAttributes.Public | MethodAttributes.Static, CallingConventions.Standard, typeof(T[]), new Type[] {typeof(List<T>)}, typeof(List<T>), true);
+            var method = new DynamicMethod("GetArray", MethodAttributes.Public | MethodAttributes.Static, CallingConventions.Standard, typeof(T[]), new[] {typeof(List<T>)}, typeof(List<T>), true);
             var fis = typeof(List<T>).GetFields(BindingFlags.NonPublic | BindingFlags.Instance);
             FieldInfo arrayField = default;
             for (var i = 0; i < fis.Length; ++i)

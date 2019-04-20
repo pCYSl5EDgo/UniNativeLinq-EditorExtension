@@ -224,14 +224,6 @@ namespace pcysl5edgo.Collections.LINQ
             Append(TSource value, Allocator allocator = Allocator.Temp)
             => new AppendEnumerable<DistinctEnumerable<TEnumerable, TEnumerator, TSource, TEqualityComparer, TGetHashCodeFunc>, Enumerator, TSource>(this, value, allocator);
 
-        public AppendPointerEnumerable<
-                DistinctEnumerable<TEnumerable, TEnumerator, TSource, TEqualityComparer, TGetHashCodeFunc>,
-                Enumerator,
-                TSource
-            >
-            Append(TSource* value)
-            => new AppendPointerEnumerable<DistinctEnumerable<TEnumerable, TEnumerator, TSource, TEqualityComparer, TGetHashCodeFunc>, Enumerator, TSource>(this, value);
-
         public DistinctEnumerable<TEnumerable, TEnumerator, TSource, TEqualityComparer, TGetHashCodeFunc>
             AsRefEnumerable() => this;
 
@@ -339,27 +331,14 @@ namespace pcysl5edgo.Collections.LINQ
                 DistinctEnumerable<TEnumerable, TEnumerator, TSource, TEqualityComparer, TGetHashCodeFunc>,
                 Enumerator,
                 AppendEnumerable<TEnumerable0, TEnumerator0, TSource>,
-                AppendEnumerator<TEnumerator0, TSource>,
+                AppendEnumerable<TEnumerable0, TEnumerator0, TSource>.Enumerator,
                 TSource
             >
             Concat<TEnumerable0, TEnumerator0>
             (in AppendEnumerable<TEnumerable0, TEnumerator0, TSource> second)
             where TEnumerator0 : struct, IRefEnumerator<TSource>
             where TEnumerable0 : struct, IRefEnumerable<TEnumerator0, TSource>
-            => new ConcatEnumerable<DistinctEnumerable<TEnumerable, TEnumerator, TSource, TEqualityComparer, TGetHashCodeFunc>, Enumerator, AppendEnumerable<TEnumerable0, TEnumerator0, TSource>, AppendEnumerator<TEnumerator0, TSource>, TSource>(this, second);
-
-        public ConcatEnumerable<
-                DistinctEnumerable<TEnumerable, TEnumerator, TSource, TEqualityComparer, TGetHashCodeFunc>,
-                Enumerator,
-                AppendPointerEnumerable<TEnumerable0, TEnumerator0, TSource>,
-                AppendEnumerator<TEnumerator0, TSource>,
-                TSource
-            >
-            Concat<TEnumerable0, TEnumerator0>
-            (in AppendPointerEnumerable<TEnumerable0, TEnumerator0, TSource> second)
-            where TEnumerator0 : struct, IRefEnumerator<TSource>
-            where TEnumerable0 : struct, IRefEnumerable<TEnumerator0, TSource>
-            => new ConcatEnumerable<DistinctEnumerable<TEnumerable, TEnumerator, TSource, TEqualityComparer, TGetHashCodeFunc>, Enumerator, AppendPointerEnumerable<TEnumerable0, TEnumerator0, TSource>, AppendEnumerator<TEnumerator0, TSource>, TSource>(this, second);
+            => new ConcatEnumerable<DistinctEnumerable<TEnumerable, TEnumerator, TSource, TEqualityComparer, TGetHashCodeFunc>, Enumerator, AppendEnumerable<TEnumerable0, TEnumerator0, TSource>, AppendEnumerable<TEnumerable0, TEnumerator0, TSource>.Enumerator, TSource>(this, second);
 
         public ConcatEnumerable<
                 DistinctEnumerable<TEnumerable, TEnumerator, TSource, TEqualityComparer, TGetHashCodeFunc>,

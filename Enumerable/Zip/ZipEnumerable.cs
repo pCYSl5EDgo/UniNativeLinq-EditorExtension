@@ -120,14 +120,6 @@ namespace pcysl5edgo.Collections.LINQ
             Append(TSource value, Allocator allocator = Allocator.Temp)
             => new AppendEnumerable<ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, TSource, TAction>, Enumerator, TSource>(this, value, allocator);
 
-        public AppendPointerEnumerable<
-                ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, TSource, TAction>,
-                Enumerator,
-                TSource
-            >
-            Append(TSource* value)
-            => new AppendPointerEnumerable<ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, TSource, TAction>, Enumerator, TSource>(this, value);
-
         public ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, TSource, TAction>
             AsRefEnumerable() => this;
 
@@ -245,27 +237,14 @@ namespace pcysl5edgo.Collections.LINQ
                 ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, TSource, TAction>,
                 Enumerator,
                 AppendEnumerable<TEnumerable0, TEnumerator0, TSource>,
-                AppendEnumerator<TEnumerator0, TSource>,
+                AppendEnumerable<TEnumerable0, TEnumerator0, TSource>.Enumerator,
                 TSource
             >
             Concat<TEnumerable0, TEnumerator0>
             (in AppendEnumerable<TEnumerable0, TEnumerator0, TSource> second)
             where TEnumerator0 : struct, IRefEnumerator<TSource>
             where TEnumerable0 : struct, IRefEnumerable<TEnumerator0, TSource>
-            => new ConcatEnumerable<ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, TSource, TAction>, Enumerator, AppendEnumerable<TEnumerable0, TEnumerator0, TSource>, AppendEnumerator<TEnumerator0, TSource>, TSource>(this, second);
-
-        public ConcatEnumerable<
-                ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, TSource, TAction>,
-                Enumerator,
-                AppendPointerEnumerable<TEnumerable0, TEnumerator0, TSource>,
-                AppendEnumerator<TEnumerator0, TSource>,
-                TSource
-            >
-            Concat<TEnumerable0, TEnumerator0>
-            (in AppendPointerEnumerable<TEnumerable0, TEnumerator0, TSource> second)
-            where TEnumerator0 : struct, IRefEnumerator<TSource>
-            where TEnumerable0 : struct, IRefEnumerable<TEnumerator0, TSource>
-            => new ConcatEnumerable<ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, TSource, TAction>, Enumerator, AppendPointerEnumerable<TEnumerable0, TEnumerator0, TSource>, AppendEnumerator<TEnumerator0, TSource>, TSource>(this, second);
+            => new ConcatEnumerable<ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, TSource, TAction>, Enumerator, AppendEnumerable<TEnumerable0, TEnumerator0, TSource>, AppendEnumerable<TEnumerable0, TEnumerator0, TSource>.Enumerator, TSource>(this, second);
 
         public ConcatEnumerable<
                 ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, TSource, TAction>,

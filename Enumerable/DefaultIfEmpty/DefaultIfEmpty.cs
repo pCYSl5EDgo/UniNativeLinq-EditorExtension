@@ -34,7 +34,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TEnumerable : struct, IRefEnumerable<TEnumerator, Single>
             => values.AverageSingle<
                     DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, Single>,
-                    DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, Single>.Enumerator>
+                    DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, float>.Enumerator>
                 ();
 
         public static Double
@@ -44,7 +44,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TEnumerable : struct, IRefEnumerable<TEnumerator, Double>
             => values.AverageDouble<
                     DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, Double>,
-                    DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, Double>.Enumerator>
+                    DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, double>.Enumerator>
                 ();
 
         public static Decimal
@@ -54,7 +54,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TEnumerable : struct, IRefEnumerable<TEnumerator, Decimal>
             => values.AverageDecimal<
                     DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, Decimal>,
-                    DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, Decimal>.Enumerator>
+                    DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, decimal>.Enumerator>
                 ();
 
         public static Int32
@@ -64,7 +64,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TEnumerable : struct, IRefEnumerable<TEnumerator, Int32>
             => values.AverageInt32<
                     DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, Int32>,
-                    DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, Int32>.Enumerator>
+                    DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, int>.Enumerator>
                 ();
 
         public static Int64
@@ -74,7 +74,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TEnumerable : struct, IRefEnumerable<TEnumerator, Int64>
             => values.AverageInt64<
                     DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, Int64>,
-                    DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, Int64>.Enumerator>
+                    DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, long>.Enumerator>
                 ();
 
         public static UInt32
@@ -84,7 +84,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TEnumerable : struct, IRefEnumerable<TEnumerator, UInt32>
             => values.AverageUInt32<
                     DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, UInt32>,
-                    DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, UInt32>.Enumerator>
+                    DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, uint>.Enumerator>
                 ();
 
         public static UInt64
@@ -94,7 +94,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TEnumerable : struct, IRefEnumerable<TEnumerator, UInt64>
             => values.AverageUInt64<
                     DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, UInt64>,
-                    DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, UInt64>.Enumerator>
+                    DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, ulong>.Enumerator>
                 ();
         #endregion Average
 
@@ -106,7 +106,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TEnumerable : struct, IRefEnumerable<TEnumerator, Single>
             => values.SumSingle<
                     DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, Single>,
-                    DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, Single>.Enumerator
+                    DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, float>.Enumerator
                 >
                 ();
 
@@ -117,7 +117,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TEnumerable : struct, IRefEnumerable<TEnumerator, Double>
             => values.SumDouble<
                     DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, Double>,
-                    DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, Double>.Enumerator
+                    DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, double>.Enumerator
                 >
                 ();
 
@@ -128,7 +128,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TEnumerable : struct, IRefEnumerable<TEnumerator, Decimal>
             => values.SumDecimal<
                     DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, Decimal>,
-                    DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, Decimal>.Enumerator
+                    DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, decimal>.Enumerator
                 >
                 ();
 
@@ -139,7 +139,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TEnumerable : struct, IRefEnumerable<TEnumerator, Int32>
             => values.SumInt32<
                     DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, Int32>,
-                    DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, Int32>.Enumerator
+                    DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, int>.Enumerator
                 >
                 ();
 
@@ -150,7 +150,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TEnumerable : struct, IRefEnumerable<TEnumerator, Int64>
             => values.SumInt64<
                     DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, Int64>,
-                    DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, Int64>.Enumerator
+                    DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, long>.Enumerator
                 >
                 ();
 
@@ -161,7 +161,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TEnumerable : struct, IRefEnumerable<TEnumerator, UInt32>
             => values.SumUInt32<
                     DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, UInt32>,
-                    DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, UInt32>.Enumerator
+                    DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, uint>.Enumerator
                 >
                 ();
 
@@ -172,7 +172,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TEnumerable : struct, IRefEnumerable<TEnumerator, UInt64>
             => values.SumUInt64<
                     DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, UInt64>,
-                    DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, UInt64>.Enumerator
+                    DefaultIfEmptyEnumerable<TEnumerable, TEnumerator, ulong>.Enumerator
                 >
                 ();
         #endregion

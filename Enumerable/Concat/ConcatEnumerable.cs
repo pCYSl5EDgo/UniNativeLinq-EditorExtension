@@ -6,7 +6,7 @@ using Unity.Collections;
 
 namespace pcysl5edgo.Collections.LINQ
 {
-    public unsafe struct
+    public struct
         ConcatEnumerable<TFirstEnumerable, TFirstEnumerator, TSecondEnumerable, TSecondEnumerator, TSource>
         : IRefEnumerable<ConcatEnumerable<TFirstEnumerable, TFirstEnumerator, TSecondEnumerable, TSecondEnumerator, TSource>.Enumerator, TSource>, ILinq<TSource>
         where TSource : unmanaged
@@ -69,9 +69,6 @@ namespace pcysl5edgo.Collections.LINQ
         #region Enumerable
         public AppendEnumerable<ConcatEnumerable<TFirstEnumerable, TFirstEnumerator, TSecondEnumerable, TSecondEnumerator, TSource>, Enumerator, TSource> Append(TSource value, Allocator allocator = Allocator.Temp)
             => new AppendEnumerable<ConcatEnumerable<TFirstEnumerable, TFirstEnumerator, TSecondEnumerable, TSecondEnumerator, TSource>, Enumerator, TSource>(this, value, allocator);
-
-        public AppendPointerEnumerable<ConcatEnumerable<TFirstEnumerable, TFirstEnumerator, TSecondEnumerable, TSecondEnumerator, TSource>, Enumerator, TSource> Append(TSource* value)
-            => new AppendPointerEnumerable<ConcatEnumerable<TFirstEnumerable, TFirstEnumerator, TSecondEnumerable, TSecondEnumerator, TSource>, Enumerator, TSource>(this, value);
 
         public ConcatEnumerable<TFirstEnumerable, TFirstEnumerator, TSecondEnumerable, TSecondEnumerator, TSource> AsRefEnumerable() => this;
 
@@ -192,27 +189,14 @@ namespace pcysl5edgo.Collections.LINQ
                 ConcatEnumerable<TFirstEnumerable, TFirstEnumerator, TSecondEnumerable, TSecondEnumerator, TSource>,
                 Enumerator,
                 AppendEnumerable<TEnumerable2, TEnumerator2, TSource>,
-                AppendEnumerator<TEnumerator2, TSource>,
+                AppendEnumerable<TEnumerable2, TEnumerator2, TSource>.Enumerator,
                 TSource
             >
             Concat<TEnumerable2, TEnumerator2>
             (in AppendEnumerable<TEnumerable2, TEnumerator2, TSource> second)
             where TEnumerator2 : struct, IRefEnumerator<TSource>
             where TEnumerable2 : struct, IRefEnumerable<TEnumerator2, TSource>
-            => new ConcatEnumerable<ConcatEnumerable<TFirstEnumerable, TFirstEnumerator, TSecondEnumerable, TSecondEnumerator, TSource>, Enumerator, AppendEnumerable<TEnumerable2, TEnumerator2, TSource>, AppendEnumerator<TEnumerator2, TSource>, TSource>(this, second);
-
-        public ConcatEnumerable<
-                ConcatEnumerable<TFirstEnumerable, TFirstEnumerator, TSecondEnumerable, TSecondEnumerator, TSource>,
-                Enumerator,
-                AppendPointerEnumerable<TEnumerable2, TEnumerator2, TSource>,
-                AppendEnumerator<TEnumerator2, TSource>,
-                TSource
-            >
-            Concat<TEnumerable2, TEnumerator2>
-            (in AppendPointerEnumerable<TEnumerable2, TEnumerator2, TSource> second)
-            where TEnumerator2 : struct, IRefEnumerator<TSource>
-            where TEnumerable2 : struct, IRefEnumerable<TEnumerator2, TSource>
-            => new ConcatEnumerable<ConcatEnumerable<TFirstEnumerable, TFirstEnumerator, TSecondEnumerable, TSecondEnumerator, TSource>, Enumerator, AppendPointerEnumerable<TEnumerable2, TEnumerator2, TSource>, AppendEnumerator<TEnumerator2, TSource>, TSource>(this, second);
+            => new ConcatEnumerable<ConcatEnumerable<TFirstEnumerable, TFirstEnumerator, TSecondEnumerable, TSecondEnumerator, TSource>, Enumerator, AppendEnumerable<TEnumerable2, TEnumerator2, TSource>, AppendEnumerable<TEnumerable2, TEnumerator2, TSource>.Enumerator, TSource>(this, second);
 
 #if UNSAFE_ARRAY_ENUMERABLE
         public ConcatEnumerable<
@@ -496,19 +480,16 @@ namespace pcysl5edgo.Collections.LINQ
                 firstEnumerator.Dispose();
                 return true;
             }
-            else
+            firstEnumerator.Dispose();
+            if (secondEnumerator.MoveNext())
             {
-                firstEnumerator.Dispose();
-                if (secondEnumerator.MoveNext())
-                {
-                    value = secondEnumerator.Current;
-                    secondEnumerator.Dispose();
-                    return true;
-                }
+                value = secondEnumerator.Current;
                 secondEnumerator.Dispose();
-                value = default;
-                return false;
+                return true;
             }
+            secondEnumerator.Dispose();
+            value = default;
+            return false;
         }
 
         public bool TryGetSingle<TPredicate>(out TSource value, TPredicate predicate)

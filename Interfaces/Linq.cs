@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using Unity.Collections;
 
 namespace pcysl5edgo.Collections.LINQ
 {
@@ -23,7 +25,7 @@ namespace pcysl5edgo.Collections.LINQ
         TResult Aggregate<TAccumulate, TResult>(TAccumulate seed, Func<TAccumulate, TSource, TAccumulate> func, Func<TAccumulate, TResult> resultFunc);
 
         bool Contains(TSource value);
-        bool Contains(TSource value, System.Collections.Generic.IEqualityComparer<TSource> comparer);
+        bool Contains(TSource value, IEqualityComparer<TSource> comparer);
         bool Contains<TComparer>(TSource value, TComparer comparer) where TComparer : unmanaged, IRefFunc<TSource, TSource, bool>;
 
         int Count(Func<TSource, bool> predicate);
@@ -36,16 +38,16 @@ namespace pcysl5edgo.Collections.LINQ
         bool TryGetSingle(out TSource value, Func<TSource, bool> predicate);
 
         TSource[] ToArray();
-        Unity.Collections.NativeArray<TSource> ToNativeArray(Unity.Collections.Allocator allocator);
+        NativeArray<TSource> ToNativeArray(Allocator allocator);
 
-        System.Collections.Generic.Dictionary<TKey, TElement> ToDictionary<TKey, TElement>(Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector);
-        System.Collections.Generic.Dictionary<TKey, TElement> ToDictionary<TKey, TElement, TKeyFunc, TElementFunc>(TKeyFunc keySelector, TElementFunc elementSelector)
+        Dictionary<TKey, TElement> ToDictionary<TKey, TElement>(Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector);
+        Dictionary<TKey, TElement> ToDictionary<TKey, TElement, TKeyFunc, TElementFunc>(TKeyFunc keySelector, TElementFunc elementSelector)
         where TKeyFunc : unmanaged, IRefFunc<TSource, TKey>
         where TElementFunc : unmanaged, IRefFunc<TSource, TElement>;
 
-        System.Collections.Generic.HashSet<TSource> ToHashSet();
-        System.Collections.Generic.HashSet<TSource> ToHashSet(System.Collections.Generic.IEqualityComparer<TSource> comparer);
+        HashSet<TSource> ToHashSet();
+        HashSet<TSource> ToHashSet(IEqualityComparer<TSource> comparer);
 
-        System.Collections.Generic.List<TSource> ToList();
+        List<TSource> ToList();
     }
 }

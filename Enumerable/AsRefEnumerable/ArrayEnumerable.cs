@@ -87,10 +87,6 @@ namespace pcysl5edgo.Collections.LINQ
             Append(TSource value, Allocator allocator = Allocator.Temp)
             => new AppendEnumerable<ArrayEnumerable<TSource>, Enumerator, TSource>(this, value, allocator);
 
-        public AppendPointerEnumerable<ArrayEnumerable<TSource>, Enumerator, TSource>
-            Append(TSource* value)
-            => new AppendPointerEnumerable<ArrayEnumerable<TSource>, Enumerator, TSource>(this, value);
-
         public ArrayEnumerable<TSource> AsRefEnumerable() => this;
 
         public DefaultIfEmptyEnumerable<ArrayEnumerable<TSource>, Enumerator, TSource>
@@ -217,7 +213,7 @@ namespace pcysl5edgo.Collections.LINQ
         public ConcatEnumerable<
                 ArrayEnumerable<TSource>, Enumerator,
                 AppendEnumerable<TEnumerable0, TEnumerator0, TSource>,
-                AppendEnumerator<TEnumerator0, TSource>,
+                AppendEnumerable<TEnumerable0, TEnumerator0, TSource>.Enumerator,
                 TSource
             >
             Concat<TEnumerable0, TEnumerator0>
@@ -226,23 +222,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TEnumerable0 : struct, IRefEnumerable<TEnumerator0, TSource>
             => new ConcatEnumerable<ArrayEnumerable<TSource>, Enumerator,
                     AppendEnumerable<TEnumerable0, TEnumerator0, TSource>,
-                    AppendEnumerator<TEnumerator0, TSource>,
-                    TSource>
-                (this, second);
-
-        public ConcatEnumerable<
-                ArrayEnumerable<TSource>, Enumerator,
-                AppendPointerEnumerable<TEnumerable0, TEnumerator0, TSource>,
-                AppendEnumerator<TEnumerator0, TSource>,
-                TSource
-            >
-            Concat<TEnumerable0, TEnumerator0>
-            (in AppendPointerEnumerable<TEnumerable0, TEnumerator0, TSource> second)
-            where TEnumerator0 : struct, IRefEnumerator<TSource>
-            where TEnumerable0 : struct, IRefEnumerable<TEnumerator0, TSource>
-            => new ConcatEnumerable<ArrayEnumerable<TSource>, Enumerator,
-                    AppendPointerEnumerable<TEnumerable0, TEnumerator0, TSource>,
-                    AppendEnumerator<TEnumerator0, TSource>,
+                    AppendEnumerable<TEnumerable0, TEnumerator0, TSource>.Enumerator,
                     TSource>
                 (this, second);
 

@@ -73,13 +73,6 @@ namespace pcysl5edgo.Collections.LINQ
         > Append(TSource value, Allocator allocator = Allocator.Temp)
             => new AppendEnumerable<RangeRepeatEnumerable<TSource, TAction>, Enumerator, TSource>(this, value, allocator);
 
-        public AppendPointerEnumerable<
-            RangeRepeatEnumerable<TSource, TAction>,
-            Enumerator,
-            TSource
-        > Append(TSource* value)
-            => new AppendPointerEnumerable<RangeRepeatEnumerable<TSource, TAction>, Enumerator, TSource>(this, value);
-
         public RangeRepeatEnumerable<TSource, TAction> AsRefEnumerable() => this;
 
         public DefaultIfEmptyEnumerable<
@@ -199,27 +192,14 @@ namespace pcysl5edgo.Collections.LINQ
                 RangeRepeatEnumerable<TSource, TAction>,
                 Enumerator,
                 AppendEnumerable<TEnumerable0, TEnumerator0, TSource>,
-                AppendEnumerator<TEnumerator0, TSource>,
+                AppendEnumerable<TEnumerable0, TEnumerator0, TSource>.Enumerator,
                 TSource
             >
             Concat<TEnumerable0, TEnumerator0>
             (in AppendEnumerable<TEnumerable0, TEnumerator0, TSource> second)
             where TEnumerator0 : struct, IRefEnumerator<TSource>
             where TEnumerable0 : struct, IRefEnumerable<TEnumerator0, TSource>
-            => new ConcatEnumerable<RangeRepeatEnumerable<TSource, TAction>, Enumerator, AppendEnumerable<TEnumerable0, TEnumerator0, TSource>, AppendEnumerator<TEnumerator0, TSource>, TSource>(this, second);
-
-        public ConcatEnumerable<
-                RangeRepeatEnumerable<TSource, TAction>,
-                Enumerator,
-                AppendPointerEnumerable<TEnumerable0, TEnumerator0, TSource>,
-                AppendEnumerator<TEnumerator0, TSource>,
-                TSource
-            >
-            Concat<TEnumerable0, TEnumerator0>
-            (in AppendPointerEnumerable<TEnumerable0, TEnumerator0, TSource> second)
-            where TEnumerator0 : struct, IRefEnumerator<TSource>
-            where TEnumerable0 : struct, IRefEnumerable<TEnumerator0, TSource>
-            => new ConcatEnumerable<RangeRepeatEnumerable<TSource, TAction>, Enumerator, AppendPointerEnumerable<TEnumerable0, TEnumerator0, TSource>, AppendEnumerator<TEnumerator0, TSource>, TSource>(this, second);
+            => new ConcatEnumerable<RangeRepeatEnumerable<TSource, TAction>, Enumerator, AppendEnumerable<TEnumerable0, TEnumerator0, TSource>, AppendEnumerable<TEnumerable0, TEnumerator0, TSource>.Enumerator, TSource>(this, second);
 
         public ConcatEnumerable<
                 RangeRepeatEnumerable<TSource, TAction>,

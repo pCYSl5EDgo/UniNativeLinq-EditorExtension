@@ -68,7 +68,7 @@ namespace pcysl5edgo.Collections.LINQ
                 NativeEnumerable<TSource>,
                 NativeEnumerable<TSource>.Enumerator,
                 AppendEnumerable<TEnumerable0, TEnumerator0, TSource>,
-                AppendEnumerator<TEnumerator0, TSource>,
+                AppendEnumerable<TEnumerable0, TEnumerator0, TSource>.Enumerator,
                 TSource
             >
             Concat<TEnumerable0, TEnumerator0, TSource>(
@@ -80,26 +80,7 @@ namespace pcysl5edgo.Collections.LINQ
 #endif
             where TEnumerator0 : struct, IRefEnumerator<TSource>
             where TEnumerable0 : struct, IRefEnumerable<TEnumerator0, TSource>
-            => new ConcatEnumerable<NativeEnumerable<TSource>, NativeEnumerable<TSource>.Enumerator, AppendEnumerable<TEnumerable0, TEnumerator0, TSource>, AppendEnumerator<TEnumerator0, TSource>, TSource>(first.AsRefEnumerable(), second);
-
-        public static
-            ConcatEnumerable<
-                NativeEnumerable<TSource>,
-                NativeEnumerable<TSource>.Enumerator,
-                AppendPointerEnumerable<TEnumerable0, TEnumerator0, TSource>,
-                AppendEnumerator<TEnumerator0, TSource>,
-                TSource
-            >
-            Concat<TEnumerable0, TEnumerator0, TSource>(
-                this NativeArray<TSource> first,
-                in AppendPointerEnumerable<TEnumerable0, TEnumerator0, TSource> second)
-            where TSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TSource>
-#endif
-            where TEnumerator0 : struct, IRefEnumerator<TSource>
-            where TEnumerable0 : struct, IRefEnumerable<TEnumerator0, TSource>
-            => new ConcatEnumerable<NativeEnumerable<TSource>, NativeEnumerable<TSource>.Enumerator, AppendPointerEnumerable<TEnumerable0, TEnumerator0, TSource>, AppendEnumerator<TEnumerator0, TSource>, TSource>(first.AsRefEnumerable(), second);
+            => new ConcatEnumerable<NativeEnumerable<TSource>, NativeEnumerable<TSource>.Enumerator, AppendEnumerable<TEnumerable0, TEnumerator0, TSource>, AppendEnumerable<TEnumerable0, TEnumerator0, TSource>.Enumerator, TSource>(first.AsRefEnumerable(), second);
 
 #if UNSAFE_ARRAY_ENUMERABLE
         public static
@@ -192,7 +173,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TPrevEnumerator1 : unmanaged, IRefEnumerator<Single>
             => @this.AverageSingle<
                 ConcatEnumerable<TPrevEnumerable0, TPrevEnumerator0, TPrevEnumerable1, TPrevEnumerator1, Single>,
-                ConcatEnumerable<TPrevEnumerable0, TPrevEnumerator0, TPrevEnumerable1, TPrevEnumerator1, Single>.Enumerator
+                ConcatEnumerable<TPrevEnumerable0, TPrevEnumerator0, TPrevEnumerable1, TPrevEnumerator1, float>.Enumerator
             >();
 
         public static Double
@@ -204,7 +185,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TPrevEnumerator1 : unmanaged, IRefEnumerator<Double>
             => @this.AverageDouble<
                 ConcatEnumerable<TPrevEnumerable0, TPrevEnumerator0, TPrevEnumerable1, TPrevEnumerator1, Double>,
-                ConcatEnumerable<TPrevEnumerable0, TPrevEnumerator0, TPrevEnumerable1, TPrevEnumerator1, Double>.Enumerator
+                ConcatEnumerable<TPrevEnumerable0, TPrevEnumerator0, TPrevEnumerable1, TPrevEnumerator1, double>.Enumerator
             >();
 
         public static Decimal
@@ -216,7 +197,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TPrevEnumerator1 : unmanaged, IRefEnumerator<Decimal>
             => @this.AverageDecimal<
                 ConcatEnumerable<TPrevEnumerable0, TPrevEnumerator0, TPrevEnumerable1, TPrevEnumerator1, Decimal>,
-                ConcatEnumerable<TPrevEnumerable0, TPrevEnumerator0, TPrevEnumerable1, TPrevEnumerator1, Decimal>.Enumerator
+                ConcatEnumerable<TPrevEnumerable0, TPrevEnumerator0, TPrevEnumerable1, TPrevEnumerator1, decimal>.Enumerator
             >();
 
         public static Int32
@@ -228,7 +209,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TPrevEnumerator1 : unmanaged, IRefEnumerator<Int32>
             => @this.AverageInt32<
                 ConcatEnumerable<TPrevEnumerable0, TPrevEnumerator0, TPrevEnumerable1, TPrevEnumerator1, Int32>,
-                ConcatEnumerable<TPrevEnumerable0, TPrevEnumerator0, TPrevEnumerable1, TPrevEnumerator1, Int32>.Enumerator
+                ConcatEnumerable<TPrevEnumerable0, TPrevEnumerator0, TPrevEnumerable1, TPrevEnumerator1, int>.Enumerator
             >();
 
         public static Int64
@@ -240,7 +221,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TPrevEnumerator1 : unmanaged, IRefEnumerator<Int64>
             => @this.AverageInt64<
                 ConcatEnumerable<TPrevEnumerable0, TPrevEnumerator0, TPrevEnumerable1, TPrevEnumerator1, Int64>,
-                ConcatEnumerable<TPrevEnumerable0, TPrevEnumerator0, TPrevEnumerable1, TPrevEnumerator1, Int64>.Enumerator
+                ConcatEnumerable<TPrevEnumerable0, TPrevEnumerator0, TPrevEnumerable1, TPrevEnumerator1, long>.Enumerator
             >();
 
         public static UInt32
@@ -252,7 +233,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TPrevEnumerator1 : unmanaged, IRefEnumerator<UInt32>
             => @this.AverageUInt32<
                 ConcatEnumerable<TPrevEnumerable0, TPrevEnumerator0, TPrevEnumerable1, TPrevEnumerator1, UInt32>,
-                ConcatEnumerable<TPrevEnumerable0, TPrevEnumerator0, TPrevEnumerable1, TPrevEnumerator1, UInt32>.Enumerator
+                ConcatEnumerable<TPrevEnumerable0, TPrevEnumerator0, TPrevEnumerable1, TPrevEnumerator1, uint>.Enumerator
             >();
 
         public static UInt64
@@ -264,7 +245,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TPrevEnumerator1 : unmanaged, IRefEnumerator<UInt64>
             => @this.AverageUInt64<
                 ConcatEnumerable<TPrevEnumerable0, TPrevEnumerator0, TPrevEnumerable1, TPrevEnumerator1, UInt64>,
-                ConcatEnumerable<TPrevEnumerable0, TPrevEnumerator0, TPrevEnumerable1, TPrevEnumerator1, UInt64>.Enumerator
+                ConcatEnumerable<TPrevEnumerable0, TPrevEnumerator0, TPrevEnumerable1, TPrevEnumerator1, ulong>.Enumerator
             >();
         #endregion
 

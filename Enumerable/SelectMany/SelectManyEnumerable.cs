@@ -6,7 +6,7 @@ using Unity.Collections;
 
 namespace pcysl5edgo.Collections.LINQ
 {
-    public unsafe struct SelectManyEnumerable<TEnumerable, TEnumerator, TPrevSource, TSource, TSourceEnumerable, TSourceEnumerator, TAction>
+    public struct SelectManyEnumerable<TEnumerable, TEnumerator, TPrevSource, TSource, TSourceEnumerable, TSourceEnumerator, TAction>
         : IRefEnumerable<SelectManyEnumerable<TEnumerable, TEnumerator, TPrevSource, TSource, TSourceEnumerable, TSourceEnumerator, TAction>.Enumerator, TSource>, ILinq<TSource>
         where TPrevSource : unmanaged
 #if STRICT_EQUALITY
@@ -107,14 +107,6 @@ namespace pcysl5edgo.Collections.LINQ
             >
             Append(TSource value, Allocator allocator = Allocator.Temp)
             => new AppendEnumerable<SelectManyEnumerable<TEnumerable, TEnumerator, TPrevSource, TSource, TSourceEnumerable, TSourceEnumerator, TAction>, Enumerator, TSource>(this, value, allocator);
-
-        public AppendPointerEnumerable<
-                SelectManyEnumerable<TEnumerable, TEnumerator, TPrevSource, TSource, TSourceEnumerable, TSourceEnumerator, TAction>,
-                Enumerator,
-                TSource
-            >
-            Append(TSource* value)
-            => new AppendPointerEnumerable<SelectManyEnumerable<TEnumerable, TEnumerator, TPrevSource, TSource, TSourceEnumerable, TSourceEnumerator, TAction>, Enumerator, TSource>(this, value);
 
         public SelectManyEnumerable<TEnumerable, TEnumerator, TPrevSource, TSource, TSourceEnumerable, TSourceEnumerator, TAction>
             AsRefEnumerable()
@@ -218,27 +210,14 @@ namespace pcysl5edgo.Collections.LINQ
                 SelectManyEnumerable<TEnumerable, TEnumerator, TPrevSource, TSource, TSourceEnumerable, TSourceEnumerator, TAction>,
                 Enumerator,
                 AppendEnumerable<TEnumerable0, TEnumerator0, TSource>,
-                AppendEnumerator<TEnumerator0, TSource>,
+                AppendEnumerable<TEnumerable0, TEnumerator0, TSource>.Enumerator,
                 TSource
             >
             Concat<TEnumerable0, TEnumerator0>
             (in AppendEnumerable<TEnumerable0, TEnumerator0, TSource> second)
             where TEnumerable0 : struct, IRefEnumerable<TEnumerator0, TSource>
             where TEnumerator0 : struct, IRefEnumerator<TSource>
-            => new ConcatEnumerable<SelectManyEnumerable<TEnumerable, TEnumerator, TPrevSource, TSource, TSourceEnumerable, TSourceEnumerator, TAction>, Enumerator, AppendEnumerable<TEnumerable0, TEnumerator0, TSource>, AppendEnumerator<TEnumerator0, TSource>, TSource>(this, second);
-
-        public ConcatEnumerable<
-                SelectManyEnumerable<TEnumerable, TEnumerator, TPrevSource, TSource, TSourceEnumerable, TSourceEnumerator, TAction>,
-                Enumerator,
-                AppendPointerEnumerable<TEnumerable0, TEnumerator0, TSource>,
-                AppendEnumerator<TEnumerator0, TSource>,
-                TSource
-            >
-            Concat<TEnumerable0, TEnumerator0>
-            (in AppendPointerEnumerable<TEnumerable0, TEnumerator0, TSource> second)
-            where TEnumerable0 : struct, IRefEnumerable<TEnumerator0, TSource>
-            where TEnumerator0 : struct, IRefEnumerator<TSource>
-            => new ConcatEnumerable<SelectManyEnumerable<TEnumerable, TEnumerator, TPrevSource, TSource, TSourceEnumerable, TSourceEnumerator, TAction>, Enumerator, AppendPointerEnumerable<TEnumerable0, TEnumerator0, TSource>, AppendEnumerator<TEnumerator0, TSource>, TSource>(this, second);
+            => new ConcatEnumerable<SelectManyEnumerable<TEnumerable, TEnumerator, TPrevSource, TSource, TSourceEnumerable, TSourceEnumerator, TAction>, Enumerator, AppendEnumerable<TEnumerable0, TEnumerator0, TSource>, AppendEnumerable<TEnumerable0, TEnumerator0, TSource>.Enumerator, TSource>(this, second);
 
         public ConcatEnumerable<
                 SelectManyEnumerable<TEnumerable, TEnumerator, TPrevSource, TSource, TSourceEnumerable, TSourceEnumerator, TAction>,

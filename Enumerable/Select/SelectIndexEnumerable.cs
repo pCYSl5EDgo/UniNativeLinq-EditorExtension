@@ -74,10 +74,6 @@ namespace pcysl5edgo.Collections.LINQ
             Append(TSource value, Allocator allocator = Allocator.Temp)
             => new AppendEnumerable<SelectIndexEnumerable<TPrevEnumerable, TPrevEnumerator, TPrevSource, TSource, TAction>, Enumerator, TSource>(this, value, allocator);
 
-        public AppendPointerEnumerable<SelectIndexEnumerable<TPrevEnumerable, TPrevEnumerator, TPrevSource, TSource, TAction>, Enumerator, TSource>
-            Append(TSource* value)
-            => new AppendPointerEnumerable<SelectIndexEnumerable<TPrevEnumerable, TPrevEnumerator, TPrevSource, TSource, TAction>, Enumerator, TSource>(this, value);
-
         public SelectIndexEnumerable<TPrevEnumerable, TPrevEnumerator, TPrevSource, TSource, TAction> AsRefEnumerable() => this;
 
         public DefaultIfEmptyEnumerable<SelectIndexEnumerable<TPrevEnumerable, TPrevEnumerator, TPrevSource, TSource, TAction>, Enumerator, TSource>
@@ -235,27 +231,8 @@ namespace pcysl5edgo.Collections.LINQ
         public ConcatEnumerable<
                 SelectIndexEnumerable<TPrevEnumerable, TPrevEnumerator, TPrevSource, TSource, TAction>,
                 Enumerator,
-                AppendPointerEnumerable<TEnumerable1, TEnumerator1, TSource>,
-                AppendEnumerator<TEnumerator1, TSource>,
-                TSource
-            >
-            Concat<TEnumerable1, TEnumerator1>
-            (in AppendPointerEnumerable<TEnumerable1, TEnumerator1, TSource> second)
-            where TEnumerable1 : struct, IRefEnumerable<TEnumerator1, TSource>
-            where TEnumerator1 : struct, IRefEnumerator<TSource>
-            => new ConcatEnumerable<
-                    SelectIndexEnumerable<TPrevEnumerable, TPrevEnumerator, TPrevSource, TSource, TAction>,
-                    Enumerator,
-                    AppendPointerEnumerable<TEnumerable1, TEnumerator1, TSource>,
-                    AppendEnumerator<TEnumerator1, TSource>,
-                    TSource>
-                (this, second);
-
-        public ConcatEnumerable<
-                SelectIndexEnumerable<TPrevEnumerable, TPrevEnumerator, TPrevSource, TSource, TAction>,
-                Enumerator,
                 AppendEnumerable<TEnumerable1, TEnumerator1, TSource>,
-                AppendEnumerator<TEnumerator1, TSource>,
+                AppendEnumerable<TEnumerable1, TEnumerator1, TSource>.Enumerator,
                 TSource
             >
             Concat<TEnumerable1, TEnumerator1>
@@ -266,7 +243,7 @@ namespace pcysl5edgo.Collections.LINQ
                     SelectIndexEnumerable<TPrevEnumerable, TPrevEnumerator, TPrevSource, TSource, TAction>,
                     Enumerator,
                     AppendEnumerable<TEnumerable1, TEnumerator1, TSource>,
-                    AppendEnumerator<TEnumerator1, TSource>,
+                    AppendEnumerable<TEnumerable1, TEnumerator1, TSource>.Enumerator,
                     TSource>
                 (this, second);
 

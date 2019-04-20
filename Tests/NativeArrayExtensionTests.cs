@@ -1,5 +1,6 @@
-﻿using Unity.Collections;
+﻿using System;
 using NUnit.Framework;
+using Unity.Collections;
 using static NUnit.Framework.Assert;
 
 namespace pcysl5edgo.Collections.LINQ.Test
@@ -7,8 +8,8 @@ namespace pcysl5edgo.Collections.LINQ.Test
     public class NativeArrayExtensionTests
     {
         private NativeArray<int> array, zero;
-        private readonly System.Func<int, bool> pEqualOrGreaterThan100 = x => x * x >= 100;
-        private readonly System.Func<int, bool> pLessThan10 = x => x < 10;
+        private readonly Func<int, bool> pEqualOrGreaterThan100 = x => x * x >= 100;
+        private readonly Func<int, bool> pLessThan10 = x => x < 10;
         private readonly TestPredicate tp0 = new TestPredicate(0);
         private readonly TestPredicate tp10 = new TestPredicate(10);
 

@@ -38,9 +38,6 @@ namespace pcysl5edgo.Collections.LINQ
         public AppendEnumerable<NativeEnumerable<TSource>, Enumerator, TSource> Append(TSource value, Allocator allocator = Allocator.Temp)
             => new AppendEnumerable<NativeEnumerable<TSource>, Enumerator, TSource>(this, value, allocator);
 
-        public AppendPointerEnumerable<NativeEnumerable<TSource>, Enumerator, TSource> Append(TSource* value)
-            => new AppendPointerEnumerable<NativeEnumerable<TSource>, Enumerator, TSource>(this, value);
-
         public NativeEnumerable<TSource> AsRefEnumerable() => this;
 
         public DefaultIfEmptyEnumerable<NativeEnumerable<TSource>, Enumerator, TSource> DefaultIfEmpty(TSource defaultValue, Allocator allocator = Allocator.Temp)
@@ -171,27 +168,14 @@ namespace pcysl5edgo.Collections.LINQ
                 NativeEnumerable<TSource>,
                 Enumerator,
                 AppendEnumerable<TEnumerable0, TEnumerator0, TSource>,
-                AppendEnumerator<TEnumerator0, TSource>,
+                AppendEnumerable<TEnumerable0, TEnumerator0, TSource>.Enumerator,
                 TSource
             >
             Concat<TEnumerable0, TEnumerator0>
             (in AppendEnumerable<TEnumerable0, TEnumerator0, TSource> second)
             where TEnumerator0 : struct, IRefEnumerator<TSource>
             where TEnumerable0 : struct, IRefEnumerable<TEnumerator0, TSource>
-            => new ConcatEnumerable<NativeEnumerable<TSource>, Enumerator, AppendEnumerable<TEnumerable0, TEnumerator0, TSource>, AppendEnumerator<TEnumerator0, TSource>, TSource>(this, second);
-
-        public ConcatEnumerable<
-                NativeEnumerable<TSource>,
-                Enumerator,
-                AppendPointerEnumerable<TEnumerable0, TEnumerator0, TSource>,
-                AppendEnumerator<TEnumerator0, TSource>,
-                TSource
-            >
-            Concat<TEnumerable0, TEnumerator0>
-            (in AppendPointerEnumerable<TEnumerable0, TEnumerator0, TSource> second)
-            where TEnumerator0 : struct, IRefEnumerator<TSource>
-            where TEnumerable0 : struct, IRefEnumerable<TEnumerator0, TSource>
-            => new ConcatEnumerable<NativeEnumerable<TSource>, Enumerator, AppendPointerEnumerable<TEnumerable0, TEnumerator0, TSource>, AppendEnumerator<TEnumerator0, TSource>, TSource>(this, second);
+            => new ConcatEnumerable<NativeEnumerable<TSource>, Enumerator, AppendEnumerable<TEnumerable0, TEnumerator0, TSource>, AppendEnumerable<TEnumerable0, TEnumerator0, TSource>.Enumerator, TSource>(this, second);
 
 #if UNSAFE_ARRAY_ENUMERABLE
         public ConcatEnumerable<

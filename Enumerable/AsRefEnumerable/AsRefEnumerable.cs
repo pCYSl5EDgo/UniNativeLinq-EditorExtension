@@ -1,8 +1,7 @@
 using System;
 using Unity.Collections;
-
 #if UNSAFE_ARRAY_ENUMERABLE
-using System.Runtime.CompilerServices;
+
 #endif
 
 namespace pcysl5edgo.Collections.LINQ

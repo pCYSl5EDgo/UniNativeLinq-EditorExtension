@@ -6,9 +6,9 @@ namespace pcysl5edgo.Collections.LINQ.Test
     {
         private Stopwatch stopwatch;
 
-        public static SW Create() => new SW()
+        public static SW Create() => new SW
         {
-            stopwatch = new Stopwatch(),
+            stopwatch = new Stopwatch()
         };
 
         public void Start() => stopwatch.Restart();

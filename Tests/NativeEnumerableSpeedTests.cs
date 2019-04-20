@@ -1,9 +1,7 @@
 using NUnit.Framework;
 using Unity.Collections;
 using UnityEngine;
-using Debug = UnityEngine.Debug;
 using LE = System.Linq.Enumerable;
-using Random = UnityEngine.Random;
 
 namespace pcysl5edgo.Collections.LINQ.Test
 {

@@ -13,7 +13,7 @@ namespace pcysl5edgo.Collections.LINQ.Test
                 [0] = 0,
                 [1] = 1,
                 [2] = 2,
-                [3] = 3,
+                [3] = 3
             };
             var distinct = array.Distinct();
             Assert.IsFalse(distinct.CanFastCount());
