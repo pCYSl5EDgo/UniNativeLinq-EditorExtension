@@ -10,9 +10,6 @@ namespace pcysl5edgo.Collections.LINQ
         NativeEnumerable<TSource>
         : IRefEnumerable<NativeEnumerable<TSource>.Enumerator, TSource>, ILinq<TSource>
         where TSource : unmanaged
-#if STRICT_EQUALITY
-        , IEquatable<TSource>
-#endif
     {
         internal readonly TSource* Ptr;
         internal readonly long Length;
@@ -88,17 +85,11 @@ namespace pcysl5edgo.Collections.LINQ
 
         public SelectEnumerable<NativeEnumerable<TSource>, Enumerator, TSource, TResult, TAction> Select<TResult, TAction>(TAction action, Allocator allocator = Allocator.Temp)
             where TResult : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TResult>
-#endif
             where TAction : unmanaged, IRefAction<TSource, TResult>
             => new SelectEnumerable<NativeEnumerable<TSource>, Enumerator, TSource, TResult, TAction>(this, action, allocator);
 
         public SelectIndexEnumerable<NativeEnumerable<TSource>, Enumerator, TSource, TResult, TAction> SelectIndex<TResult, TAction>(TAction action, Allocator allocator = Allocator.Temp)
             where TResult : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TResult>
-#endif
             where TAction : unmanaged, ISelectIndex<TSource, TResult>
             => new SelectIndexEnumerable<NativeEnumerable<TSource>, Enumerator, TSource, TResult, TAction>(this, action, allocator);
 
@@ -117,9 +108,6 @@ namespace pcysl5edgo.Collections.LINQ
                 TResultAction>
             (TResultAction action)
             where TResult : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TResult>
-#endif
             where TResultEnumerator : struct, IRefEnumerator<TResult>
             where TResultEnumerable : struct, IRefEnumerable<TResultEnumerator, TResult>
             where TResultAction : struct, IRefAction<TSource, TResultEnumerable>
@@ -191,14 +179,8 @@ namespace pcysl5edgo.Collections.LINQ
             where TEnumerable0 : struct, IRefEnumerable<TEnumerator0, TSource0>
             where TEnumerator0 : struct, IRefEnumerator<TSource0>
             where TSource0 : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TSource0>
-#endif
             where TAction0 : unmanaged, IRefAction<TSource, TSource0, TResult0>
             where TResult0 : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TResult0>
-#endif
             => new ZipEnumerable<NativeEnumerable<TSource>, Enumerator, TSource, TEnumerable0, TEnumerator0, TSource0, TResult0, TAction0>(this, second, action, firstDefaultValue, secondDefaultValue, allocator);
         #endregion
 
@@ -265,7 +247,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TEnumerable0 : struct, IRefEnumerable<TEnumerator0, TSource>
             => new ConcatEnumerable<NativeEnumerable<TSource>, Enumerator, AppendEnumerable<TEnumerable0, TEnumerator0, TSource>, AppendEnumerable<TEnumerable0, TEnumerator0, TSource>.Enumerator, TSource>(this, second);
 
-#if UNSAFE_ARRAY_ENUMERABLE
+
         public ConcatEnumerable<
                 NativeEnumerable<TSource>,
                 Enumerator,
@@ -299,7 +281,7 @@ namespace pcysl5edgo.Collections.LINQ
                     TSource
                 >
                 (this, second.AsRefEnumerable());
-#endif
+
 
         public ConcatEnumerable<
                 NativeEnumerable<TSource>,
@@ -357,9 +339,6 @@ namespace pcysl5edgo.Collections.LINQ
             where TEnumerator0 : struct, IRefEnumerator<TPrevSource>
             where TEnumerable0 : struct, IRefEnumerable<TEnumerator0, TPrevSource>
             where TPrevSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TPrevSource>
-#endif
             where TAction : unmanaged, ISelectIndex<TPrevSource, TSource>
             => new ConcatEnumerable<NativeEnumerable<TSource>, Enumerator, SelectIndexEnumerable<TEnumerable0, TEnumerator0, TPrevSource, TSource, TAction>, SelectIndexEnumerable<TEnumerable0, TEnumerator0, TPrevSource, TSource, TAction>.Enumerator, TSource>(this, second);
 
@@ -375,9 +354,6 @@ namespace pcysl5edgo.Collections.LINQ
             where TEnumerator0 : struct, IRefEnumerator<TPrevSource>
             where TEnumerable0 : struct, IRefEnumerable<TEnumerator0, TPrevSource>
             where TPrevSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TPrevSource>
-#endif
             where TAction : unmanaged, IRefAction<TPrevSource, TSource>
             => new ConcatEnumerable<NativeEnumerable<TSource>, Enumerator, SelectEnumerable<TEnumerable0, TEnumerator0, TPrevSource, TSource, TAction>, SelectEnumerable<TEnumerable0, TEnumerator0, TPrevSource, TSource, TAction>.Enumerator, TSource>(this, second);
 
@@ -393,9 +369,6 @@ namespace pcysl5edgo.Collections.LINQ
             where TEnumerable0 : struct, IRefEnumerable<TEnumerator0, TPrevSource0>
             where TEnumerator0 : struct, IRefEnumerator<TPrevSource0>
             where TPrevSource0 : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TPrevSource0>
-#endif
             where TResultEnumerator0 : struct, IRefEnumerator<TSource>
             where TResultEnumerable0 : struct, IRefEnumerable<TResultEnumerator0, TSource>
             where TAction0 : struct, IRefAction<TPrevSource0, TResultEnumerable0>
@@ -439,15 +412,9 @@ namespace pcysl5edgo.Collections.LINQ
             Concat<TEnumerable0, TEnumerator0, TSource0, TEnumerable1, TEnumerator1, TSource1, TAction0>
             (in ZipEnumerable<TEnumerable0, TEnumerator0, TSource0, TEnumerable1, TEnumerator1, TSource1, TSource, TAction0> second)
             where TSource0 : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TSource0>
-#endif
             where TEnumerator0 : struct, IRefEnumerator<TSource0>
             where TEnumerable0 : struct, IRefEnumerable<TEnumerator0, TSource0>
             where TSource1 : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TSource1>
-#endif
             where TEnumerator1 : struct, IRefEnumerator<TSource1>
             where TEnumerable1 : struct, IRefEnumerable<TEnumerator1, TSource1>
             where TAction0 : struct, IRefAction<TSource0, TSource1, TSource>

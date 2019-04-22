@@ -39,9 +39,6 @@ namespace pcysl5edgo.Collections.LINQ
 
     public struct NoAction<T> : IRefAction<T>
         where T : unmanaged
-#if STRICT_EQUALITY
-        , IEquatable<T>
-#endif
     {
         public void Execute(ref T arg0) { }
     }

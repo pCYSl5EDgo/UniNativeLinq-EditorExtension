@@ -11,9 +11,6 @@ namespace pcysl5edgo.Collections.LINQ
         RangeRepeatEnumerable<TSource, TAction>
         : IRefEnumerable<RangeRepeatEnumerable<TSource, TAction>.Enumerator, TSource>, ILinq<TSource>
         where TSource : unmanaged
-#if STRICT_EQUALITY
-        , IEquatable<TSource>
-#endif
         where TAction : struct, IRefAction<TSource>
     {
         private readonly TSource start;
@@ -106,9 +103,6 @@ namespace pcysl5edgo.Collections.LINQ
             >
             SelectIndex<TResult, TAction1>(TAction1 action, Allocator allocator = Allocator.Temp)
             where TResult : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TResult>
-#endif
             where TAction1 : unmanaged, ISelectIndex<TSource, TResult>
             => new SelectIndexEnumerable<RangeRepeatEnumerable<TSource, TAction>, Enumerator, TSource, TResult, TAction1>(this, action, allocator);
 
@@ -121,9 +115,6 @@ namespace pcysl5edgo.Collections.LINQ
             >
             Select<TResult, TAction1>(TAction1 action, Allocator allocator = Allocator.Temp)
             where TResult : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TResult>
-#endif
             where TAction1 : unmanaged, IRefAction<TSource, TResult>
             => new SelectEnumerable<RangeRepeatEnumerable<TSource, TAction>, Enumerator, TSource, TResult, TAction1>(this, action, allocator);
 
@@ -138,9 +129,6 @@ namespace pcysl5edgo.Collections.LINQ
             >
             SelectMany<TResult, TResultEnumerable, TResultEnumerator, TResultAction>(TResultAction action)
             where TResult : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TResult>
-#endif
             where TResultEnumerator : struct, IRefEnumerator<TResult>
             where TResultEnumerable : struct, IRefEnumerable<TResultEnumerator, TResult>
             where TResultAction : struct, IRefAction<TSource, TResultEnumerable>
@@ -216,13 +204,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TEnumerable0 : struct, IRefEnumerable<TEnumerator0, TSource0>
             where TEnumerator0 : struct, IRefEnumerator<TSource0>
             where TSource0 : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TSource0>
-#endif
             where TResult0 : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TResult0>
-#endif
             where TAction0 : unmanaged, IRefAction<TSource, TSource0, TResult0>
             => new ZipEnumerable<RangeRepeatEnumerable<TSource, TAction>, Enumerator, TSource, TEnumerable0, TEnumerator0, TSource0, TResult0, TAction0>(this, second, action, firstDefaultValue, secondDefaultValue, allocator);
         #endregion
@@ -273,7 +255,7 @@ namespace pcysl5edgo.Collections.LINQ
             Concat(NativeArray<TSource> second)
             => new ConcatEnumerable<RangeRepeatEnumerable<TSource, TAction>, Enumerator, NativeEnumerable<TSource>, NativeEnumerable<TSource>.Enumerator, TSource>(this, second.AsRefEnumerable());
 
-#if UNSAFE_ARRAY_ENUMERABLE
+
         public ConcatEnumerable<
                 RangeRepeatEnumerable<TSource, TAction>,
                 Enumerator,
@@ -293,7 +275,7 @@ namespace pcysl5edgo.Collections.LINQ
             >
             Concat(TSource[] second)
             => new ConcatEnumerable<RangeRepeatEnumerable<TSource, TAction>, Enumerator, ArrayEnumerable<TSource>, ArrayEnumerable<TSource>.Enumerator, TSource>(this, second.AsRefEnumerable());
-#endif
+
 
         public ConcatEnumerable<
                 RangeRepeatEnumerable<TSource, TAction>,
@@ -358,9 +340,6 @@ namespace pcysl5edgo.Collections.LINQ
             Concat<TEnumerable0, TEnumerator0, TPrevSource, TAction0>
             (in SelectEnumerable<TEnumerable0, TEnumerator0, TPrevSource, TSource, TAction0> second)
             where TPrevSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TPrevSource>
-#endif
             where TEnumerator0 : struct, IRefEnumerator<TPrevSource>
             where TEnumerable0 : struct, IRefEnumerable<TEnumerator0, TPrevSource>
             where TAction0 : unmanaged, IRefAction<TPrevSource, TSource>
@@ -376,9 +355,6 @@ namespace pcysl5edgo.Collections.LINQ
             Concat<TEnumerable0, TEnumerator0, TPrevSource, TAction0>
             (in SelectIndexEnumerable<TEnumerable0, TEnumerator0, TPrevSource, TSource, TAction0> second)
             where TPrevSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TPrevSource>
-#endif
             where TEnumerator0 : struct, IRefEnumerator<TPrevSource>
             where TEnumerable0 : struct, IRefEnumerable<TEnumerator0, TPrevSource>
             where TAction0 : unmanaged, ISelectIndex<TPrevSource, TSource>
@@ -396,9 +372,6 @@ namespace pcysl5edgo.Collections.LINQ
             where TEnumerable0 : struct, IRefEnumerable<TEnumerator0, TPrevSource0>
             where TEnumerator0 : struct, IRefEnumerator<TPrevSource0>
             where TPrevSource0 : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TPrevSource0>
-#endif
             where TResultEnumerator0 : struct, IRefEnumerator<TSource>
             where TResultEnumerable0 : struct, IRefEnumerable<TResultEnumerator0, TSource>
             where TAction0 : struct, IRefAction<TPrevSource0, TResultEnumerable0>
@@ -442,15 +415,9 @@ namespace pcysl5edgo.Collections.LINQ
             Concat<TEnumerable0, TEnumerator0, TSource0, TEnumerable1, TEnumerator1, TSource1, TAction0>
             (in ZipEnumerable<TEnumerable0, TEnumerator0, TSource0, TEnumerable1, TEnumerator1, TSource1, TSource, TAction0> second)
             where TSource0 : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TSource0>
-#endif
             where TEnumerator0 : struct, IRefEnumerator<TSource0>
             where TEnumerable0 : struct, IRefEnumerable<TEnumerator0, TSource0>
             where TSource1 : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TSource1>
-#endif
             where TEnumerator1 : struct, IRefEnumerator<TSource1>
             where TEnumerable1 : struct, IRefEnumerable<TEnumerator1, TSource1>
             where TAction0 : struct, IRefAction<TSource0, TSource1, TSource>

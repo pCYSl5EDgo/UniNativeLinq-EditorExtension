@@ -10,9 +10,6 @@ namespace pcysl5edgo.Collections.LINQ
         ConcatEnumerable<TFirstEnumerable, TFirstEnumerator, TSecondEnumerable, TSecondEnumerator, TSource>
         : IRefEnumerable<ConcatEnumerable<TFirstEnumerable, TFirstEnumerator, TSecondEnumerable, TSecondEnumerator, TSource>.Enumerator, TSource>, ILinq<TSource>
         where TSource : unmanaged
-#if STRICT_EQUALITY
-        , IEquatable<TSource>
-#endif
         where TFirstEnumerable : struct, IRefEnumerable<TFirstEnumerator, TSource>
         where TFirstEnumerator : struct, IRefEnumerator<TSource>
         where TSecondEnumerable : struct, IRefEnumerable<TSecondEnumerator, TSource>
@@ -88,17 +85,11 @@ namespace pcysl5edgo.Collections.LINQ
 
         public SelectEnumerable<ConcatEnumerable<TFirstEnumerable, TFirstEnumerator, TSecondEnumerable, TSecondEnumerator, TSource>, Enumerator, TSource, TResult, TAction> Select<TResult, TAction>(TAction action, Allocator allocator = Allocator.Temp)
             where TResult : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TResult>
-#endif
             where TAction : unmanaged, IRefAction<TSource, TResult>
             => new SelectEnumerable<ConcatEnumerable<TFirstEnumerable, TFirstEnumerator, TSecondEnumerable, TSecondEnumerator, TSource>, Enumerator, TSource, TResult, TAction>(this, action, allocator);
 
         public SelectIndexEnumerable<ConcatEnumerable<TFirstEnumerable, TFirstEnumerator, TSecondEnumerable, TSecondEnumerator, TSource>, Enumerator, TSource, TResult, TAction> SelectIndex<TResult, TAction>(TAction action, Allocator allocator = Allocator.Temp)
             where TResult : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TResult>
-#endif
             where TAction : unmanaged, ISelectIndex<TSource, TResult>
             => new SelectIndexEnumerable<ConcatEnumerable<TFirstEnumerable, TFirstEnumerator, TSecondEnumerable, TSecondEnumerator, TSource>, Enumerator, TSource, TResult, TAction>(this, action, allocator);
 
@@ -117,9 +108,6 @@ namespace pcysl5edgo.Collections.LINQ
                 TResultAction>
             (TResultAction action)
             where TResult : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TResult>
-#endif
             where TResultEnumerator : struct, IRefEnumerator<TResult>
             where TResultEnumerable : struct, IRefEnumerable<TResultEnumerator, TResult>
             where TResultAction : struct, IRefAction<TSource, TResultEnumerable>
@@ -187,14 +175,8 @@ namespace pcysl5edgo.Collections.LINQ
             where TEnumerable0 : struct, IRefEnumerable<TEnumerator0, TSource0>
             where TEnumerator0 : struct, IRefEnumerator<TSource0>
             where TSource0 : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TSource0>
-#endif
             where TAction0 : unmanaged, IRefAction<TSource, TSource0, TResult0>
             where TResult0 : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TResult0>
-#endif
             => new ZipEnumerable<ConcatEnumerable<TFirstEnumerable, TFirstEnumerator, TSecondEnumerable, TSecondEnumerator, TSource>, Enumerator, TSource, TEnumerable0, TEnumerator0, TSource0, TResult0, TAction0>(this, second, action, firstDefaultValue, secondDefaultValue, allocator);
         #endregion
 
@@ -250,7 +232,7 @@ namespace pcysl5edgo.Collections.LINQ
             where TEnumerable2 : struct, IRefEnumerable<TEnumerator2, TSource>
             => new ConcatEnumerable<ConcatEnumerable<TFirstEnumerable, TFirstEnumerator, TSecondEnumerable, TSecondEnumerator, TSource>, Enumerator, AppendEnumerable<TEnumerable2, TEnumerator2, TSource>, AppendEnumerable<TEnumerable2, TEnumerator2, TSource>.Enumerator, TSource>(this, second);
 
-#if UNSAFE_ARRAY_ENUMERABLE
+
         public ConcatEnumerable<
                 ConcatEnumerable<TFirstEnumerable, TFirstEnumerator, TSecondEnumerable, TSecondEnumerator, TSource>,
                 Enumerator,
@@ -270,7 +252,7 @@ namespace pcysl5edgo.Collections.LINQ
             >
             Concat(TSource[] second)
             => new ConcatEnumerable<ConcatEnumerable<TFirstEnumerable, TFirstEnumerator, TSecondEnumerable, TSecondEnumerator, TSource>, Enumerator, ArrayEnumerable<TSource>, ArrayEnumerable<TSource>.Enumerator, TSource>(this, second.AsRefEnumerable());
-#endif
+
 
         public ConcatEnumerable<
                 ConcatEnumerable<TFirstEnumerable, TFirstEnumerator, TSecondEnumerable, TSecondEnumerator, TSource>,
@@ -322,9 +304,6 @@ namespace pcysl5edgo.Collections.LINQ
             Concat<TEnumerable2, TEnumerator2, TPrevSource, TAction>
             (in SelectIndexEnumerable<TEnumerable2, TEnumerator2, TPrevSource, TSource, TAction> second)
             where TPrevSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TPrevSource>
-#endif
             where TEnumerator2 : struct, IRefEnumerator<TPrevSource>
             where TEnumerable2 : struct, IRefEnumerable<TEnumerator2, TPrevSource>
             where TAction : unmanaged, ISelectIndex<TPrevSource, TSource>
@@ -342,9 +321,6 @@ namespace pcysl5edgo.Collections.LINQ
             where TEnumerable0 : struct, IRefEnumerable<TEnumerator0, TPrevSource0>
             where TEnumerator0 : struct, IRefEnumerator<TPrevSource0>
             where TPrevSource0 : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TPrevSource0>
-#endif
             where TResultEnumerator0 : struct, IRefEnumerator<TSource>
             where TResultEnumerable0 : struct, IRefEnumerable<TResultEnumerator0, TSource>
             where TAction0 : struct, IRefAction<TPrevSource0, TResultEnumerable0>
@@ -388,9 +364,6 @@ namespace pcysl5edgo.Collections.LINQ
             Concat<TEnumerable2, TEnumerator2, TPrevSource, TAction>
             (in SelectEnumerable<TEnumerable2, TEnumerator2, TPrevSource, TSource, TAction> second)
             where TPrevSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TPrevSource>
-#endif
             where TEnumerator2 : struct, IRefEnumerator<TPrevSource>
             where TEnumerable2 : struct, IRefEnumerable<TEnumerator2, TPrevSource>
             where TAction : unmanaged, IRefAction<TPrevSource, TSource>
@@ -406,15 +379,9 @@ namespace pcysl5edgo.Collections.LINQ
             Concat<TEnumerable0, TEnumerator0, TSource0, TEnumerable1, TEnumerator1, TSource1, TAction0>
             (in ZipEnumerable<TEnumerable0, TEnumerator0, TSource0, TEnumerable1, TEnumerator1, TSource1, TSource, TAction0> second)
             where TSource0 : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TSource0>
-#endif
             where TEnumerator0 : struct, IRefEnumerator<TSource0>
             where TEnumerable0 : struct, IRefEnumerable<TEnumerator0, TSource0>
             where TSource1 : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TSource1>
-#endif
             where TEnumerator1 : struct, IRefEnumerator<TSource1>
             where TEnumerable1 : struct, IRefEnumerable<TEnumerator1, TSource1>
             where TAction0 : struct, IRefAction<TSource0, TSource1, TSource>

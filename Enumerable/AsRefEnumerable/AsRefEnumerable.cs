@@ -7,31 +7,19 @@ namespace pcysl5edgo.Collections.LINQ
     {
         public static NativeEnumerable<T> AsRefEnumerable<T>(this NativeArray<T> array)
             where T : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<T>
-#endif
             => new NativeEnumerable<T>(array);
 
-#if UNSAFE_ARRAY_ENUMERABLE
+
         public static ArrayEnumerable<T> AsRefEnumerable<T>(this T[] array)
             where T : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<T>
-#endif
             => new ArrayEnumerable<T>(array);
 
         public static ArrayEnumerable<T> AsRefEnumerable<T>(this T[] array, long offset, long count)
             where T : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<T>
-#endif
             => new ArrayEnumerable<T>(array, offset, count);
 
         public static ArrayEnumerable<T> AsRefEnumerable<T>(this ArraySegment<T> arraySegment)
             where T : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<T>
-#endif
             => new ArrayEnumerable<T>(arraySegment);
         
         public static Single Sum(ref this ArrayEnumerable<Single> enumerable)
@@ -169,7 +157,7 @@ namespace pcysl5edgo.Collections.LINQ
                 sum += *ptr;
             return sum / (uint)enumerable.Length;
         }
-#endif
+
 
         public static Single Average(ref this NativeEnumerable<Single> enumerable)
         {

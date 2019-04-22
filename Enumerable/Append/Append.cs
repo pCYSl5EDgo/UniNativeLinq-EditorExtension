@@ -7,9 +7,6 @@ namespace pcysl5edgo.Collections.LINQ
     {
         public static AppendEnumerable<NativeEnumerable<T>, NativeEnumerable<T>.Enumerator, T> Append<T>(this NativeArray<T> array, T value, Allocator allocator = Allocator.Temp)
             where T : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<T>
-#endif
             => new AppendEnumerable<NativeEnumerable<T>, NativeEnumerable<T>.Enumerator, T>(array.AsRefEnumerable(), value, allocator);
 
         public static Single Average<TPrevEnumerable, TPrevEnumerator>(ref this AppendEnumerable<TPrevEnumerable, TPrevEnumerator, Single> @this)

@@ -15,9 +15,6 @@ namespace pcysl5edgo.Collections.LINQ
             WhereIndex<TEnumerable, TEnumerator, TSource, TPredicate>
             (ref this TEnumerable enumerable, TPredicate predicate)
             where TSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TSource>
-#endif
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TEnumerable : struct, IRefEnumerable<TEnumerator, TSource>
             where TPredicate : struct, IWhereIndex<TSource>
@@ -33,9 +30,6 @@ namespace pcysl5edgo.Collections.LINQ
             Skip<TEnumerable, TEnumerator, TSource>
             (ref this TEnumerable enumerable, long count)
             where TSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TSource>
-#endif
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TEnumerable : struct, IRefEnumerable<TEnumerator, TSource>
             => new WhereIndexEnumerable<TEnumerable, TEnumerator, TSource, DefaultSkipIndex<TSource>>(enumerable, new DefaultSkipIndex<TSource>(count));
@@ -50,9 +44,6 @@ namespace pcysl5edgo.Collections.LINQ
             Take<TEnumerable, TEnumerator, TSource>
             (ref this TEnumerable enumerable, long count)
             where TSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TSource>
-#endif
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TEnumerable : struct, IRefEnumerable<TEnumerator, TSource>
             => new WhereIndexEnumerable<TEnumerable, TEnumerator, TSource, DefaultTakeIndex<TSource>>(enumerable, new DefaultTakeIndex<TSource>(count));
@@ -67,9 +58,6 @@ namespace pcysl5edgo.Collections.LINQ
             SkipWhileIndex<TEnumerable, TEnumerator, TSource, TPredicate>
             (ref this TEnumerable enumerable, TPredicate predicate)
             where TSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TSource>
-#endif
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TEnumerable : struct, IRefEnumerable<TEnumerator, TSource>
             where TPredicate : struct, IWhereIndex<TSource>
@@ -85,9 +73,6 @@ namespace pcysl5edgo.Collections.LINQ
             TakeWhileIndex<TEnumerable, TEnumerator, TSource, TPredicate>
             (ref this TEnumerable enumerable, TPredicate predicate)
             where TSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TSource>
-#endif
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TEnumerable : struct, IRefEnumerable<TEnumerator, TSource>
             where TPredicate : struct, IWhereIndex<TSource>
@@ -97,9 +82,6 @@ namespace pcysl5edgo.Collections.LINQ
             WhereIndexEnumerable<NativeEnumerable<TSource>, NativeEnumerable<TSource>.Enumerator, TSource, TPredicate>
             WhereIndex<TSource, TPredicate>(this NativeArray<TSource> enumerable, TPredicate predicate)
             where TSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TSource>
-#endif
             where TPredicate : struct, IWhereIndex<TSource>
             => new WhereIndexEnumerable<NativeEnumerable<TSource>, NativeEnumerable<TSource>.Enumerator, TSource, TPredicate>(enumerable.AsRefEnumerable(), predicate);
 
@@ -107,9 +89,6 @@ namespace pcysl5edgo.Collections.LINQ
             WhereIndexEnumerable<NativeEnumerable<TSource>, NativeEnumerable<TSource>.Enumerator, TSource, DefaultSkipWhileIndex<TSource, TPredicate>>
             SkipWhileIndex<TSource, TPredicate>(this NativeArray<TSource> enumerable, TPredicate predicate)
             where TSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TSource>
-#endif
             where TPredicate : struct, IWhereIndex<TSource>
             => new WhereIndexEnumerable<NativeEnumerable<TSource>, NativeEnumerable<TSource>.Enumerator, TSource, DefaultSkipWhileIndex<TSource, TPredicate>>(enumerable.AsRefEnumerable(), new DefaultSkipWhileIndex<TSource, TPredicate>(predicate));
 
@@ -117,20 +96,14 @@ namespace pcysl5edgo.Collections.LINQ
             WhereIndexEnumerable<NativeEnumerable<TSource>, NativeEnumerable<TSource>.Enumerator, TSource, DefaultTakeWhileIndex<TSource, TPredicate>>
             TakeWhileIndex<TSource, TPredicate>(this NativeArray<TSource> enumerable, TPredicate predicate)
             where TSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TSource>
-#endif
             where TPredicate : struct, IWhereIndex<TSource>
             => new WhereIndexEnumerable<NativeEnumerable<TSource>, NativeEnumerable<TSource>.Enumerator, TSource, DefaultTakeWhileIndex<TSource, TPredicate>>(enumerable.AsRefEnumerable(), new DefaultTakeWhileIndex<TSource, TPredicate>(predicate));
 
-#if UNSAFE_ARRAY_ENUMERABLE
+
         public static
             WhereIndexEnumerable<ArrayEnumerable<TSource>, ArrayEnumerable<TSource>.Enumerator, TSource, TPredicate>
             WhereIndex<TSource, TPredicate>(this TSource[] enumerable, TPredicate predicate)
             where TSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TSource>
-#endif
             where TPredicate : struct, IWhereIndex<TSource>
             => new WhereIndexEnumerable<ArrayEnumerable<TSource>, ArrayEnumerable<TSource>.Enumerator, TSource, TPredicate>(enumerable.AsRefEnumerable(), predicate);
 
@@ -138,9 +111,6 @@ namespace pcysl5edgo.Collections.LINQ
             WhereIndexEnumerable<ArrayEnumerable<TSource>, ArrayEnumerable<TSource>.Enumerator, TSource, DefaultSkipWhileIndex<TSource, TPredicate>>
             SkipWhileIndex<TSource, TPredicate>(this TSource[] enumerable, TPredicate predicate)
             where TSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TSource>
-#endif
             where TPredicate : struct, IWhereIndex<TSource>
             => new WhereIndexEnumerable<ArrayEnumerable<TSource>, ArrayEnumerable<TSource>.Enumerator, TSource, DefaultSkipWhileIndex<TSource, TPredicate>>(enumerable.AsRefEnumerable(), new DefaultSkipWhileIndex<TSource, TPredicate>(predicate));
 
@@ -148,12 +118,8 @@ namespace pcysl5edgo.Collections.LINQ
             WhereIndexEnumerable<ArrayEnumerable<TSource>, ArrayEnumerable<TSource>.Enumerator, TSource, DefaultTakeWhileIndex<TSource, TPredicate>>
             TakeWhileIndex<TSource, TPredicate>(this TSource[] enumerable, TPredicate predicate)
             where TSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TSource>
-#endif
             where TPredicate : struct, IWhereIndex<TSource>
             => new WhereIndexEnumerable<ArrayEnumerable<TSource>, ArrayEnumerable<TSource>.Enumerator, TSource, DefaultTakeWhileIndex<TSource, TPredicate>>(enumerable.AsRefEnumerable(), new DefaultTakeWhileIndex<TSource, TPredicate>(predicate));
-#endif
 
         public static Single Average<TPrevEnumerable, TPrevEnumerator, TPredicate>(ref this WhereIndexEnumerable<TPrevEnumerable, TPrevEnumerator, Single, TPredicate> enumerable)
             where TPrevEnumerable : unmanaged, IRefEnumerable<TPrevEnumerator, Single>

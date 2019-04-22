@@ -8,34 +8,19 @@ namespace pcysl5edgo.Collections.LINQ
         public static SelectIndexEnumerable<NativeEnumerable<T>, NativeEnumerable<T>.Enumerator, T, TResult, TAction>
             SelectIndex<T, TResult, TAction>(this NativeArray<T> array, TAction action, Allocator allocator = Allocator.Temp)
             where T : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<T>
-#endif
             where TResult : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TResult>
-#endif
             where TAction : unmanaged, ISelectIndex<T, TResult>
             => new SelectIndexEnumerable<NativeEnumerable<T>, NativeEnumerable<T>.Enumerator, T, TResult, TAction>(array.AsRefEnumerable(), action, allocator);
 
         public static SelectIndexEnumerable<NativeEnumerable<T>, NativeEnumerable<T>.Enumerator, T, TResult, TAction>
             SelectIndex<T, TResult, TAction>(this NativeEnumerable<T> enumerable, TAction action, Allocator allocator = Allocator.Temp)
             where T : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<T>
-#endif
             where TResult : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TResult>
-#endif
             where TAction : unmanaged, ISelectIndex<T, TResult>
             => new SelectIndexEnumerable<NativeEnumerable<T>, NativeEnumerable<T>.Enumerator, T, TResult, TAction>(enumerable, action, allocator);
 
         public static Single Average<TPrevEnumerable, TPrevEnumerator, TPrevSource, TAction>(ref this SelectIndexEnumerable<TPrevEnumerable, TPrevEnumerator, TPrevSource, Single, TAction> @this)
             where TPrevSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TPrevSource>
-#endif
             where TPrevEnumerable : unmanaged, IRefEnumerable<TPrevEnumerator, TPrevSource>
             where TPrevEnumerator : unmanaged, IRefEnumerator<TPrevSource>
             where TAction : unmanaged, ISelectIndex<TPrevSource, Single>
@@ -43,9 +28,6 @@ namespace pcysl5edgo.Collections.LINQ
 
         public static Double Average<TPrevEnumerable, TPrevEnumerator, TPrevSource, TAction>(ref this SelectIndexEnumerable<TPrevEnumerable, TPrevEnumerator, TPrevSource, Double, TAction> @this)
             where TPrevSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TPrevSource>
-#endif
             where TPrevEnumerable : unmanaged, IRefEnumerable<TPrevEnumerator, TPrevSource>
             where TPrevEnumerator : unmanaged, IRefEnumerator<TPrevSource>
             where TAction : unmanaged, ISelectIndex<TPrevSource, Double>
@@ -53,9 +35,6 @@ namespace pcysl5edgo.Collections.LINQ
 
         public static Decimal Average<TPrevEnumerable, TPrevEnumerator, TPrevSource, TAction>(ref this SelectIndexEnumerable<TPrevEnumerable, TPrevEnumerator, TPrevSource, Decimal, TAction> @this)
             where TPrevSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TPrevSource>
-#endif
             where TPrevEnumerable : unmanaged, IRefEnumerable<TPrevEnumerator, TPrevSource>
             where TPrevEnumerator : unmanaged, IRefEnumerator<TPrevSource>
             where TAction : unmanaged, ISelectIndex<TPrevSource, Decimal>
@@ -63,9 +42,6 @@ namespace pcysl5edgo.Collections.LINQ
 
         public static Int32 Average<TPrevEnumerable, TPrevEnumerator, TPrevSource, TAction>(ref this SelectIndexEnumerable<TPrevEnumerable, TPrevEnumerator, TPrevSource, Int32, TAction> @this)
             where TPrevSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TPrevSource>
-#endif
             where TPrevEnumerable : unmanaged, IRefEnumerable<TPrevEnumerator, TPrevSource>
             where TPrevEnumerator : unmanaged, IRefEnumerator<TPrevSource>
             where TAction : unmanaged, ISelectIndex<TPrevSource, Int32>
@@ -73,9 +49,6 @@ namespace pcysl5edgo.Collections.LINQ
 
         public static UInt32 Average<TPrevEnumerable, TPrevEnumerator, TPrevSource, TAction>(ref this SelectIndexEnumerable<TPrevEnumerable, TPrevEnumerator, TPrevSource, UInt32, TAction> @this)
             where TPrevSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TPrevSource>
-#endif
             where TPrevEnumerable : unmanaged, IRefEnumerable<TPrevEnumerator, TPrevSource>
             where TPrevEnumerator : unmanaged, IRefEnumerator<TPrevSource>
             where TAction : unmanaged, ISelectIndex<TPrevSource, UInt32>
@@ -83,9 +56,6 @@ namespace pcysl5edgo.Collections.LINQ
 
         public static UInt64 Average<TPrevEnumerable, TPrevEnumerator, TPrevSource, TAction>(ref this SelectIndexEnumerable<TPrevEnumerable, TPrevEnumerator, TPrevSource, UInt64, TAction> @this)
             where TPrevSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TPrevSource>
-#endif
             where TPrevEnumerable : unmanaged, IRefEnumerable<TPrevEnumerator, TPrevSource>
             where TPrevEnumerator : unmanaged, IRefEnumerator<TPrevSource>
             where TAction : unmanaged, ISelectIndex<TPrevSource, UInt64>
@@ -93,9 +63,6 @@ namespace pcysl5edgo.Collections.LINQ
 
         public static Int64 Average<TPrevEnumerable, TPrevEnumerator, TPrevSource, TAction>(ref this SelectIndexEnumerable<TPrevEnumerable, TPrevEnumerator, TPrevSource, Int64, TAction> @this)
             where TPrevSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TPrevSource>
-#endif
             where TPrevEnumerable : unmanaged, IRefEnumerable<TPrevEnumerator, TPrevSource>
             where TPrevEnumerator : unmanaged, IRefEnumerator<TPrevSource>
             where TAction : unmanaged, ISelectIndex<TPrevSource, Int64>

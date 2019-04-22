@@ -20,20 +20,11 @@ namespace pcysl5edgo.Collections.LINQ
             (ref this TFirstEnumerable firstEnumerable, in TSecondEnumerable secondEnumerable, TAction action, TFirstSource firstDefaultValue = default, TSecondSource secondDefaultValue = default, Allocator allocator = Allocator.Temp)
             where TFirstEnumerable : struct, IRefEnumerable<TFirstEnumerator, TFirstSource>
             where TFirstSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TFirstSource>
-#endif
             where TFirstEnumerator : struct, IRefEnumerator<TFirstSource>
             where TSecondSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TSecondSource>
-#endif
             where TSecondEnumerator : struct, IRefEnumerator<TSecondSource>
             where TSecondEnumerable : struct, IRefEnumerable<TSecondEnumerator, TSecondSource>
             where TSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TSource>
-#endif
             where TAction : struct, IRefAction<TFirstSource, TSecondSource, TSource>
             => new ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, TSource, TAction>(firstEnumerable, secondEnumerable, action, firstDefaultValue, secondDefaultValue, allocator);
 
@@ -51,23 +42,14 @@ namespace pcysl5edgo.Collections.LINQ
             Zip<TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, TSource, TAction>
             (this NativeArray<TFirstSource> first, in TSecondEnumerable second, TAction action, TFirstSource firstDefaultValue = default, TSecondSource secondDefaultValue = default, Allocator allocator = Allocator.Temp)
             where TFirstSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TFirstSource>
-#endif
             where TSecondSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TSecondSource>
-#endif
             where TSecondEnumerator : struct, IRefEnumerator<TSecondSource>
             where TSecondEnumerable : struct, IRefEnumerable<TSecondEnumerator, TSecondSource>
             where TSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TSource>
-#endif
             where TAction : struct, IRefAction<TFirstSource, TSecondSource, TSource>
             => new ZipEnumerable<NativeEnumerable<TFirstSource>, NativeEnumerable<TFirstSource>.Enumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, TSource, TAction>(first.AsRefEnumerable(), second, action, firstDefaultValue, secondDefaultValue, allocator);
 
-#if UNSAFE_ARRAY_ENUMERABLE
+
         public static
             ZipEnumerable<
                 ArrayEnumerable<TFirstSource>,
@@ -82,21 +64,11 @@ namespace pcysl5edgo.Collections.LINQ
             Zip<TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, TSource, TAction>
             (this TFirstSource[] first, in TSecondEnumerable second, TAction action, TFirstSource firstDefaultValue = default, TSecondSource secondDefaultValue = default, Allocator allocator = Allocator.Temp)
             where TFirstSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TFirstSource>
-#endif
             where TSecondSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TSecondSource>
-#endif
             where TSecondEnumerator : struct, IRefEnumerator<TSecondSource>
             where TSecondEnumerable : struct, IRefEnumerable<TSecondEnumerator, TSecondSource>
             where TSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TSource>
-#endif
             where TAction : struct, IRefAction<TFirstSource, TSecondSource, TSource>
-#endif
             => new ZipEnumerable<ArrayEnumerable<TFirstSource>, ArrayEnumerable<TFirstSource>.Enumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, TSource, TAction>(first.AsRefEnumerable(), second, action, firstDefaultValue, secondDefaultValue, allocator);
 
         public static Single
@@ -104,14 +76,8 @@ namespace pcysl5edgo.Collections.LINQ
             (ref this ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, Single, TAction> enumerable)
             where TFirstEnumerable : struct, IRefEnumerable<TFirstEnumerator, TFirstSource>
             where TFirstSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TFirstSource>
-#endif
             where TFirstEnumerator : struct, IRefEnumerator<TFirstSource>
             where TSecondSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TSecondSource>
-#endif
             where TSecondEnumerator : struct, IRefEnumerator<TSecondSource>
             where TSecondEnumerable : struct, IRefEnumerable<TSecondEnumerator, TSecondSource>
             where TAction : struct, IRefAction<TFirstSource, TSecondSource, Single>
@@ -122,14 +88,8 @@ namespace pcysl5edgo.Collections.LINQ
             (ref this ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, Double, TAction> enumerable)
             where TFirstEnumerable : struct, IRefEnumerable<TFirstEnumerator, TFirstSource>
             where TFirstSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TFirstSource>
-#endif
             where TFirstEnumerator : struct, IRefEnumerator<TFirstSource>
             where TSecondSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TSecondSource>
-#endif
             where TSecondEnumerator : struct, IRefEnumerator<TSecondSource>
             where TSecondEnumerable : struct, IRefEnumerable<TSecondEnumerator, TSecondSource>
             where TAction : struct, IRefAction<TFirstSource, TSecondSource, Double>
@@ -140,14 +100,8 @@ namespace pcysl5edgo.Collections.LINQ
             (ref this ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, Decimal, TAction> enumerable)
             where TFirstEnumerable : struct, IRefEnumerable<TFirstEnumerator, TFirstSource>
             where TFirstSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TFirstSource>
-#endif
             where TFirstEnumerator : struct, IRefEnumerator<TFirstSource>
             where TSecondSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TSecondSource>
-#endif
             where TSecondEnumerator : struct, IRefEnumerator<TSecondSource>
             where TSecondEnumerable : struct, IRefEnumerable<TSecondEnumerator, TSecondSource>
             where TAction : struct, IRefAction<TFirstSource, TSecondSource, Decimal>
@@ -158,14 +112,8 @@ namespace pcysl5edgo.Collections.LINQ
             (ref this ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, Int32, TAction> enumerable)
             where TFirstEnumerable : struct, IRefEnumerable<TFirstEnumerator, TFirstSource>
             where TFirstSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TFirstSource>
-#endif
             where TFirstEnumerator : struct, IRefEnumerator<TFirstSource>
             where TSecondSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TSecondSource>
-#endif
             where TSecondEnumerator : struct, IRefEnumerator<TSecondSource>
             where TSecondEnumerable : struct, IRefEnumerable<TSecondEnumerator, TSecondSource>
             where TAction : struct, IRefAction<TFirstSource, TSecondSource, Int32>
@@ -176,14 +124,8 @@ namespace pcysl5edgo.Collections.LINQ
             (ref this ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, Int64, TAction> enumerable)
             where TFirstEnumerable : struct, IRefEnumerable<TFirstEnumerator, TFirstSource>
             where TFirstSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TFirstSource>
-#endif
             where TFirstEnumerator : struct, IRefEnumerator<TFirstSource>
             where TSecondSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TSecondSource>
-#endif
             where TSecondEnumerator : struct, IRefEnumerator<TSecondSource>
             where TSecondEnumerable : struct, IRefEnumerable<TSecondEnumerator, TSecondSource>
             where TAction : struct, IRefAction<TFirstSource, TSecondSource, Int64>
@@ -194,14 +136,8 @@ namespace pcysl5edgo.Collections.LINQ
             (ref this ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, UInt64, TAction> enumerable)
             where TFirstEnumerable : struct, IRefEnumerable<TFirstEnumerator, TFirstSource>
             where TFirstSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TFirstSource>
-#endif
             where TFirstEnumerator : struct, IRefEnumerator<TFirstSource>
             where TSecondSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TSecondSource>
-#endif
             where TSecondEnumerator : struct, IRefEnumerator<TSecondSource>
             where TSecondEnumerable : struct, IRefEnumerable<TSecondEnumerator, TSecondSource>
             where TAction : struct, IRefAction<TFirstSource, TSecondSource, UInt64>
@@ -212,14 +148,8 @@ namespace pcysl5edgo.Collections.LINQ
             (ref this ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, UInt32, TAction> enumerable)
             where TFirstEnumerable : struct, IRefEnumerable<TFirstEnumerator, TFirstSource>
             where TFirstSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TFirstSource>
-#endif
             where TFirstEnumerator : struct, IRefEnumerator<TFirstSource>
             where TSecondSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TSecondSource>
-#endif
             where TSecondEnumerator : struct, IRefEnumerator<TSecondSource>
             where TSecondEnumerable : struct, IRefEnumerable<TSecondEnumerator, TSecondSource>
             where TAction : struct, IRefAction<TFirstSource, TSecondSource, UInt32>
@@ -230,14 +160,8 @@ namespace pcysl5edgo.Collections.LINQ
             (ref this ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, Single, TAction> enumerable)
             where TFirstEnumerable : struct, IRefEnumerable<TFirstEnumerator, TFirstSource>
             where TFirstSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TFirstSource>
-#endif
             where TFirstEnumerator : struct, IRefEnumerator<TFirstSource>
             where TSecondSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TSecondSource>
-#endif
             where TSecondEnumerator : struct, IRefEnumerator<TSecondSource>
             where TSecondEnumerable : struct, IRefEnumerable<TSecondEnumerator, TSecondSource>
             where TAction : struct, IRefAction<TFirstSource, TSecondSource, Single>
@@ -248,14 +172,8 @@ namespace pcysl5edgo.Collections.LINQ
             (ref this ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, Double, TAction> enumerable)
             where TFirstEnumerable : struct, IRefEnumerable<TFirstEnumerator, TFirstSource>
             where TFirstSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TFirstSource>
-#endif
             where TFirstEnumerator : struct, IRefEnumerator<TFirstSource>
             where TSecondSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TSecondSource>
-#endif
             where TSecondEnumerator : struct, IRefEnumerator<TSecondSource>
             where TSecondEnumerable : struct, IRefEnumerable<TSecondEnumerator, TSecondSource>
             where TAction : struct, IRefAction<TFirstSource, TSecondSource, Double>
@@ -266,14 +184,8 @@ namespace pcysl5edgo.Collections.LINQ
             (ref this ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, Decimal, TAction> enumerable)
             where TFirstEnumerable : struct, IRefEnumerable<TFirstEnumerator, TFirstSource>
             where TFirstSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TFirstSource>
-#endif
             where TFirstEnumerator : struct, IRefEnumerator<TFirstSource>
             where TSecondSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TSecondSource>
-#endif
             where TSecondEnumerator : struct, IRefEnumerator<TSecondSource>
             where TSecondEnumerable : struct, IRefEnumerable<TSecondEnumerator, TSecondSource>
             where TAction : struct, IRefAction<TFirstSource, TSecondSource, Decimal>
@@ -284,14 +196,8 @@ namespace pcysl5edgo.Collections.LINQ
             (ref this ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, Int32, TAction> enumerable)
             where TFirstEnumerable : struct, IRefEnumerable<TFirstEnumerator, TFirstSource>
             where TFirstSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TFirstSource>
-#endif
             where TFirstEnumerator : struct, IRefEnumerator<TFirstSource>
             where TSecondSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TSecondSource>
-#endif
             where TSecondEnumerator : struct, IRefEnumerator<TSecondSource>
             where TSecondEnumerable : struct, IRefEnumerable<TSecondEnumerator, TSecondSource>
             where TAction : struct, IRefAction<TFirstSource, TSecondSource, Int32>
@@ -302,14 +208,8 @@ namespace pcysl5edgo.Collections.LINQ
             (ref this ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, Int64, TAction> enumerable)
             where TFirstEnumerable : struct, IRefEnumerable<TFirstEnumerator, TFirstSource>
             where TFirstSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TFirstSource>
-#endif
             where TFirstEnumerator : struct, IRefEnumerator<TFirstSource>
             where TSecondSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TSecondSource>
-#endif
             where TSecondEnumerator : struct, IRefEnumerator<TSecondSource>
             where TSecondEnumerable : struct, IRefEnumerable<TSecondEnumerator, TSecondSource>
             where TAction : struct, IRefAction<TFirstSource, TSecondSource, Int64>
@@ -320,14 +220,8 @@ namespace pcysl5edgo.Collections.LINQ
             (ref this ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, UInt32, TAction> enumerable)
             where TFirstEnumerable : struct, IRefEnumerable<TFirstEnumerator, TFirstSource>
             where TFirstSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TFirstSource>
-#endif
             where TFirstEnumerator : struct, IRefEnumerator<TFirstSource>
             where TSecondSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TSecondSource>
-#endif
             where TSecondEnumerator : struct, IRefEnumerator<TSecondSource>
             where TSecondEnumerable : struct, IRefEnumerable<TSecondEnumerator, TSecondSource>
             where TAction : struct, IRefAction<TFirstSource, TSecondSource, UInt32>
@@ -338,14 +232,8 @@ namespace pcysl5edgo.Collections.LINQ
             (ref this ZipEnumerable<TFirstEnumerable, TFirstEnumerator, TFirstSource, TSecondEnumerable, TSecondEnumerator, TSecondSource, UInt64, TAction> enumerable)
             where TFirstEnumerable : struct, IRefEnumerable<TFirstEnumerator, TFirstSource>
             where TFirstSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TFirstSource>
-#endif
             where TFirstEnumerator : struct, IRefEnumerator<TFirstSource>
             where TSecondSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TSecondSource>
-#endif
             where TSecondEnumerator : struct, IRefEnumerator<TSecondSource>
             where TSecondEnumerable : struct, IRefEnumerable<TSecondEnumerator, TSecondSource>
             where TAction : struct, IRefAction<TFirstSource, TSecondSource, UInt64>

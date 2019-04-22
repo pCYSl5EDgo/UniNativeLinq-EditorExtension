@@ -18,9 +18,6 @@ namespace pcysl5edgo.Collections.LINQ
                 this NativeArray<TSource> first,
                 in TEnumerable second)
             where TSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TSource>
-#endif
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TEnumerable : struct, IRefEnumerable<TEnumerator, TSource>
             => new ConcatEnumerable<NativeEnumerable<TSource>, NativeEnumerable<TSource>.Enumerator, TEnumerable, TEnumerator, TSource>(first.AsRefEnumerable(), second);
@@ -37,9 +34,6 @@ namespace pcysl5edgo.Collections.LINQ
                 this NativeArray<TSource> first,
                 NativeArray<TSource> second)
             where TSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TSource>
-#endif
             => new ConcatEnumerable<NativeEnumerable<TSource>, NativeEnumerable<TSource>.Enumerator, NativeEnumerable<TSource>, NativeEnumerable<TSource>.Enumerator, TSource>(first.AsRefEnumerable(), second.AsRefEnumerable());
 
         public static
@@ -54,9 +48,6 @@ namespace pcysl5edgo.Collections.LINQ
                 this NativeArray<TSource> first,
                 in ConcatEnumerable<TEnumerable0, TEnumerator0, TEnumerable1, TEnumerator1, TSource> second)
             where TSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TSource>
-#endif
             where TEnumerator0 : struct, IRefEnumerator<TSource>
             where TEnumerable0 : struct, IRefEnumerable<TEnumerator0, TSource>
             where TEnumerator1 : struct, IRefEnumerator<TSource>
@@ -75,14 +66,11 @@ namespace pcysl5edgo.Collections.LINQ
                 this NativeArray<TSource> first,
                 in AppendEnumerable<TEnumerable0, TEnumerator0, TSource> second)
             where TSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TSource>
-#endif
             where TEnumerator0 : struct, IRefEnumerator<TSource>
             where TEnumerable0 : struct, IRefEnumerable<TEnumerator0, TSource>
             => new ConcatEnumerable<NativeEnumerable<TSource>, NativeEnumerable<TSource>.Enumerator, AppendEnumerable<TEnumerable0, TEnumerator0, TSource>, AppendEnumerable<TEnumerable0, TEnumerator0, TSource>.Enumerator, TSource>(first.AsRefEnumerable(), second);
 
-#if UNSAFE_ARRAY_ENUMERABLE
+
         public static
             ConcatEnumerable<
                 NativeEnumerable<TSource>,
@@ -95,9 +83,6 @@ namespace pcysl5edgo.Collections.LINQ
                 this NativeArray<TSource> first,
                 in ArrayEnumerable<TSource> second)
             where TSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TSource>
-#endif
             => new ConcatEnumerable<NativeEnumerable<TSource>, NativeEnumerable<TSource>.Enumerator, ArrayEnumerable<TSource>, ArrayEnumerable<TSource>.Enumerator, TSource>(first.AsRefEnumerable(), second);
 
         public static
@@ -112,11 +97,8 @@ namespace pcysl5edgo.Collections.LINQ
                 this NativeArray<TSource> first,
                 TSource[] second)
             where TSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TSource>
-#endif
             => new ConcatEnumerable<NativeEnumerable<TSource>, NativeEnumerable<TSource>.Enumerator, ArrayEnumerable<TSource>, ArrayEnumerable<TSource>.Enumerator, TSource>(first.AsRefEnumerable(), second.AsRefEnumerable());
-#endif
+
 
         public static
             ConcatEnumerable<
@@ -130,13 +112,7 @@ namespace pcysl5edgo.Collections.LINQ
                 this NativeArray<TSource> first,
                 SelectEnumerable<TEnumerable0, TEnumerator0, TPrevSource, TSource, TAction> second)
             where TPrevSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TPrevSource>
-#endif
             where TSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TSource>
-#endif
             where TEnumerator0 : struct, IRefEnumerator<TPrevSource>
             where TEnumerable0 : struct, IRefEnumerable<TEnumerator0, TPrevSource>
             where TAction : unmanaged, IRefAction<TPrevSource, TSource>
@@ -154,9 +130,6 @@ namespace pcysl5edgo.Collections.LINQ
                 this NativeArray<TSource> first,
                 in WhereEnumerable<TEnumerable0, TEnumerator0, TSource, TPredicate> second)
             where TSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TSource>
-#endif
             where TEnumerator0 : struct, IRefEnumerator<TSource>
             where TEnumerable0 : struct, IRefEnumerable<TEnumerator0, TSource>
             where TPredicate : unmanaged, IRefFunc<TSource, bool>

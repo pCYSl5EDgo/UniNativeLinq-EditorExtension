@@ -15,9 +15,6 @@ namespace pcysl5edgo.Collections.LINQ
             Where<TEnumerable, TEnumerator, TSource, TPredicate>
             (ref this TEnumerable enumerable, TPredicate predicate)
             where TSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TSource>
-#endif
             where TPredicate : unmanaged, IRefFunc<TSource, bool>
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TEnumerable : struct, IRefEnumerable<TEnumerator, TSource>
@@ -33,9 +30,6 @@ namespace pcysl5edgo.Collections.LINQ
             SkipWhile<TEnumerable, TEnumerator, TSource, TPredicate>
             (ref this TEnumerable enumerable, TPredicate predicate)
             where TSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TSource>
-#endif
             where TPredicate : unmanaged, IRefFunc<TSource, bool>
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TEnumerable : struct, IRefEnumerable<TEnumerator, TSource>
@@ -51,9 +45,6 @@ namespace pcysl5edgo.Collections.LINQ
             TakeWhile<TEnumerable, TEnumerator, TSource, TPredicate>
             (ref this TEnumerable enumerable, TPredicate predicate)
             where TSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TSource>
-#endif
             where TPredicate : unmanaged, IRefFunc<TSource, bool>
             where TEnumerator : struct, IRefEnumerator<TSource>
             where TEnumerable : struct, IRefEnumerable<TEnumerator, TSource>
@@ -61,9 +52,6 @@ namespace pcysl5edgo.Collections.LINQ
 
         public static WhereEnumerable<NativeEnumerable<T>, NativeEnumerable<T>.Enumerator, T, TPredicate> Where<T, TPredicate>(this NativeArray<T> array, TPredicate predicate)
             where T : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<T>
-#endif
             where TPredicate : unmanaged, IRefFunc<T, bool>
             => new WhereEnumerable<NativeEnumerable<T>, NativeEnumerable<T>.Enumerator, T, TPredicate>(array.AsRefEnumerable(), predicate);
 
@@ -71,36 +59,24 @@ namespace pcysl5edgo.Collections.LINQ
             NativeEnumerable<T>
             Skip<T>(this NativeArray<T> enumerable, long count)
             where T : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<T>
-#endif
             => new NativeEnumerable<T>(enumerable, count, enumerable.Length - count);
 
         public static
             NativeEnumerable<T>
             Take<T>(this NativeArray<T> enumerable, long count)
             where T : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<T>
-#endif
             => new NativeEnumerable<T>(enumerable, 0, count);
 
         public static
             NativeEnumerable<T>
             SkipLast<T>(this NativeArray<T> enumerable, long count)
             where T : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<T>
-#endif
             => new NativeEnumerable<T>(enumerable, 0, enumerable.Length - count);
 
         public static
             NativeEnumerable<T>
             TakeLast<T>(this NativeArray<T> enumerable, long count)
             where T : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<T>
-#endif
             => new NativeEnumerable<T>(enumerable, enumerable.Length - count, count);
 
         public static WhereEnumerable<
@@ -111,9 +87,6 @@ namespace pcysl5edgo.Collections.LINQ
             >
             SkipWhile<T, TPredicate>(this NativeArray<T> enumerable, TPredicate predicate)
             where T : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<T>
-#endif
             where TPredicate : unmanaged, IRefFunc<T, bool>
             => new WhereEnumerable<NativeEnumerable<T>, NativeEnumerable<T>.Enumerator, T, DefaultSkipWhile<T, TPredicate>>(enumerable.AsRefEnumerable(), new DefaultSkipWhile<T, TPredicate>(predicate));
 
@@ -125,20 +98,14 @@ namespace pcysl5edgo.Collections.LINQ
             >
             TakeWhile<T, TPredicate>(this NativeArray<T> enumerable, TPredicate predicate)
             where T : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<T>
-#endif
             where TPredicate : unmanaged, IRefFunc<T, bool>
             => new WhereEnumerable<NativeEnumerable<T>, NativeEnumerable<T>.Enumerator, T, DefaultTakeWhile<T, TPredicate>>(enumerable.AsRefEnumerable(), new DefaultTakeWhile<T, TPredicate>(predicate));
 
-#if UNSAFE_ARRAY_ENUMERABLE
+
         public static
             WhereEnumerable<ArrayEnumerable<TSource>, ArrayEnumerable<TSource>.Enumerator, TSource, TPredicate>
             Where<TSource, TPredicate>(this TSource[] enumerable, TPredicate predicate)
             where TSource : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<TSource>
-#endif
             where TPredicate : struct, IRefFunc<TSource, bool>
             => new WhereEnumerable<ArrayEnumerable<TSource>, ArrayEnumerable<TSource>.Enumerator, TSource, TPredicate>(enumerable.AsRefEnumerable(), predicate);
 
@@ -146,36 +113,24 @@ namespace pcysl5edgo.Collections.LINQ
             ArrayEnumerable<T>
             Skip<T>(this T[] enumerable, long count)
             where T : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<T>
-#endif
             => new ArrayEnumerable<T>(enumerable, count, enumerable.Length - count);
 
         public static
             ArrayEnumerable<T>
             Take<T>(this T[] enumerable, long count)
             where T : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<T>
-#endif
             => new ArrayEnumerable<T>(enumerable, 0, count);
 
         public static
             ArrayEnumerable<T>
             SkipLast<T>(this T[] enumerable, long count)
             where T : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<T>
-#endif
             => new ArrayEnumerable<T>(enumerable, 0, enumerable.Length - count);
 
         public static
             ArrayEnumerable<T>
             TakeLast<T>(this T[] enumerable, long count)
             where T : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<T>
-#endif
             => new ArrayEnumerable<T>(enumerable, enumerable.Length - count, count);
 
         public static WhereEnumerable<
@@ -186,9 +141,6 @@ namespace pcysl5edgo.Collections.LINQ
             >
             SkipWhile<T, TPredicate>(this T[] enumerable, TPredicate predicate)
             where T : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<T>
-#endif
             where TPredicate : unmanaged, IRefFunc<T, bool>
             => new WhereEnumerable<ArrayEnumerable<T>, ArrayEnumerable<T>.Enumerator, T, DefaultSkipWhile<T, TPredicate>>(enumerable.AsRefEnumerable(), new DefaultSkipWhile<T, TPredicate>(predicate));
 
@@ -200,12 +152,9 @@ namespace pcysl5edgo.Collections.LINQ
             >
             TakeWhile<T, TPredicate>(this T[] enumerable, TPredicate predicate)
             where T : unmanaged
-#if STRICT_EQUALITY
-            , IEquatable<T>
-#endif
             where TPredicate : unmanaged, IRefFunc<T, bool>
             => new WhereEnumerable<ArrayEnumerable<T>, ArrayEnumerable<T>.Enumerator, T, DefaultTakeWhile<T, TPredicate>>(enumerable.AsRefEnumerable(), new DefaultTakeWhile<T, TPredicate>(predicate));
-#endif
+
         public static Single Average<TPrevEnumerable, TPrevEnumerator, TPredicate>(ref this WhereEnumerable<TPrevEnumerable, TPrevEnumerator, Single, TPredicate> enumerable)
             where TPrevEnumerable : unmanaged, IRefEnumerable<TPrevEnumerator, Single>
             where TPrevEnumerator : unmanaged, IRefEnumerator<Single>
