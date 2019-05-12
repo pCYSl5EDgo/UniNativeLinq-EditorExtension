@@ -19,9 +19,11 @@ namespace Tests
                 Debug.Log(y.ToString());
             foreach (ref var item in array.Select(x => x << 1).WithIndex())
                 Assert.AreEqual(item.Item1, item.Item2 << 1);
-            var xs = array.SelectIndex((x, i) => x * i);
-            foreach (ref var x in xs)
-                Debug.Log(x.ToString());
+            var range = new RangeRepeatEnumerable<long, Int64Increment>(0, 64, default, Allocator.Temp);
+            foreach (ref var item in range.Select(x => x << 1).WithIndex())
+                Assert.AreEqual(item.Item1, item.Item2 << 1);
+            Assert.IsTrue(array.SequenceEqual(range));
+            Assert.IsTrue(range.SequenceEqual(array));
             array.Dispose();
         }
     }
