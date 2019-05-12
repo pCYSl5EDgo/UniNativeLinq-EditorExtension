@@ -10,3 +10,8 @@ Add the reference to your 'manifest.json'.
 # How to Use
 
 Include namespace 'pcysl5edgo.Collections.LINQ'.
+
+# Internal Implementation
+
+Internal Logic is separated into an DLL because I need to write logic in C#8.
+Whole source code can be achieved in [this repository](https://github.com/pCYSl5EDgo/LINQ2NativeArray_Internal).
