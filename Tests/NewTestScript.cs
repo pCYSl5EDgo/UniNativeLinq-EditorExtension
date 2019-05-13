@@ -1,5 +1,5 @@
 ﻿using NUnit.Framework;
-using pcysl5edgo.Collections.LINQ;
+using UniNativeLinq;
 using Unity.Collections;
 using UnityEngine;
 
