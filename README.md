@@ -9,7 +9,7 @@ Add the reference to your 'manifest.json'.
 
 # How to Use
 
-Include namespace 'pcysl5edgo.Collections.LINQ'.
+Include namespace 'UniNativeLinq'.
 
 # Internal Implementation
 
