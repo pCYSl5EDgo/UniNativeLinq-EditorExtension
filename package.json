@@ -1,10 +1,12 @@
 {
-    "name": "uninativelinq",
+    "name": "jp.pcysl5edgo.uninativelinq",
     "displayName": "LINQ to NativeArray",
-    "version": "0.0.2",
+    "version": "0.0.3",
     "unity": "2018.4",
     "description": "This package provides the LINQ extension to the NativeArray<T> without any allocation.",
     "keywords": [],
     "category": "Controllers",
-    "dependencies": {}
+    "dependencies": {
+        "nuget.mono-cecil": "0.1.6-preview"
+    }
 }
