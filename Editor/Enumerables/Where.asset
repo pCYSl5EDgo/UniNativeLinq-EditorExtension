@@ -13,4 +13,5 @@ MonoBehaviour:
   m_Name: Where
   m_EditorClassIdentifier: 
   Enumerable: Where
-  Enabled: 1
+  Enabled: 0
+  IsSpecial: 0

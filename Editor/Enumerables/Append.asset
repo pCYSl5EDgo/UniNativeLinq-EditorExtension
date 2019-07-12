@@ -13,4 +13,5 @@ MonoBehaviour:
   m_Name: Append
   m_EditorClassIdentifier: 
   Enumerable: Append
-  Enabled: 1
+  Enabled: 0
+  IsSpecial: 0

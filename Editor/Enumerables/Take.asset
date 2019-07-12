@@ -13,4 +13,5 @@ MonoBehaviour:
   m_Name: Take
   m_EditorClassIdentifier: 
   Enumerable: Take
-  Enabled: 1
+  Enabled: 0
+  IsSpecial: 0

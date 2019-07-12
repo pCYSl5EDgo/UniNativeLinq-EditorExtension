@@ -9,7 +9,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3c84d718a933f914a8aec21749ef0cfe, type: 3}
+  m_Script: {fileID: 11500000, guid: 6fbcd04e384274e42b36563ebcd4c4c1, type: 3}
   m_Name: Distinct___RefFunc
   m_EditorClassIdentifier: 
   Name: Distinct
@@ -99,3 +99,6 @@ MonoBehaviour:
     Enabled: 1
   - Enumerable: WhereIndex
     Enabled: 1
+  <RelatedEnumerableArray>k__BackingField:
+  - Distinct
+  <IsHided>k__BackingField: 0

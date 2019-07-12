@@ -13,4 +13,5 @@ MonoBehaviour:
   m_Name: Prepend
   m_EditorClassIdentifier: 
   Enumerable: Prepend
-  Enabled: 1
+  Enabled: 0
+  IsSpecial: 0

@@ -4,23 +4,23 @@ using UnityEditor;
 
 namespace UniNativeLinq.Editor
 {
-    sealed class DllGenerator : IDllGenerator, IDisposable
+    public sealed class DllGenerator : IDllGenerator, IDisposable
     {
-        private ModuleDefinition _mainModule;
-        private ModuleDefinition _systemModule;
-        private ModuleDefinition _unityCoreModule;
-        public void Execute(EnumerableCollectionObject setting)
+        private ModuleDefinition mainModule;
+        private ModuleDefinition systemModule;
+        private ModuleDefinition unityCoreModule;
+        public void Execute(IEnumerableCollectionProcessor processor, ISingleApi[] singleApis, IDoubleApi[] doubleApis)
         {
             var defaultAssemblyResolver = new DefaultAssemblyResolver();
-            _mainModule = AssemblyDefinition.ReadAssembly(GetDllFolderHelper.GetFolder() + "UniNativeLinq.bytes", new ReaderParameters(ReadingMode.Deferred)
+            mainModule = AssemblyDefinition.ReadAssembly(GetDllFolderHelper.GetFolder() + "UniNativeLinq.bytes", new ReaderParameters(ReadingMode.Deferred)
             {
                 AssemblyResolver = defaultAssemblyResolver
             }).MainModule;
-            _systemModule = AssemblyDefinition.ReadAssembly(GetDllFolderHelper.GetFolder() + "netstandard.bytes", new ReaderParameters(ReadingMode.Deferred)
+            systemModule = AssemblyDefinition.ReadAssembly(GetDllFolderHelper.GetFolder() + "netstandard.bytes", new ReaderParameters(ReadingMode.Deferred)
             {
                 AssemblyResolver = defaultAssemblyResolver,
             }).MainModule;
-            _unityCoreModule = AssemblyDefinition.ReadAssembly(UnityEditorInternal.InternalEditorUtility.GetEngineCoreModuleAssemblyPath(), new ReaderParameters(ReadingMode.Deferred)
+            unityCoreModule = AssemblyDefinition.ReadAssembly(UnityEditorInternal.InternalEditorUtility.GetEngineCoreModuleAssemblyPath(), new ReaderParameters(ReadingMode.Deferred)
             {
                 AssemblyResolver = defaultAssemblyResolver,
             }).MainModule;
@@ -28,7 +28,7 @@ namespace UniNativeLinq.Editor
             EditorApplication.LockReloadAssemblies();
             try
             {
-                _mainModule.Write(destination);
+                mainModule.Write(destination);
             }
             finally
             {
@@ -38,8 +38,8 @@ namespace UniNativeLinq.Editor
 
         public void Dispose()
         {
-            _mainModule?.Dispose();
-            _systemModule?.Dispose();
+            mainModule?.Dispose();
+            systemModule?.Dispose();
         }
     }
 

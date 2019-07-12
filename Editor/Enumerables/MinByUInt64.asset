@@ -13,4 +13,5 @@ MonoBehaviour:
   m_Name: MinByUInt64
   m_EditorClassIdentifier: 
   Enumerable: MinByUInt64
-  Enabled: 1
+  Enabled: 0
+  IsSpecial: 0

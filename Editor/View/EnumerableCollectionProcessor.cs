@@ -1,154 +1,77 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEditor;
 
 namespace UniNativeLinq.Editor
 {
     internal sealed class EnumerableCollectionProcessor : IEnumerableCollectionProcessor
     {
-        private SerializedObject @object;
-        private SerializedProperty specialTypeArrayProperty;
-        private SerializedProperty enumerableArrayProperty;
+        private readonly StringBoolTuple[] types;
+        private bool hasChanged;
 
-        public EnumerableCollectionProcessor()
+        public EnumerableCollectionProcessor(StringBoolTuple[] types)
         {
-            var paths = AssetDatabase.FindAssets("t:" + nameof(EnumerableCollectionObject));
-            switch (paths.Length)
-            {
-                case 1:
-                    @object = new SerializedObject(AssetDatabase.LoadAssetAtPath<EnumerableCollectionObject>(AssetDatabase.GUIDToAssetPath(paths[0])));
-                    break;
-                case 0:
-                    throw new Exception($"{nameof(EnumerableCollectionObject)}'s count is 0!");
-                default:
-                    throw new Exception($"{nameof(EnumerableCollectionObject)}'s count is greater than 1!");
-            }
-            specialTypeArrayProperty = @object.FindProperty(nameof(EnumerableCollectionObject.SpecialTypeArray));
-            enumerableArrayProperty = @object.FindProperty(nameof(EnumerableCollectionObject.EnumerableArray));
+            this.types = types ?? Array.Empty<StringBoolTuple>();
+            Array.Sort(this.types, 0, this.types.Length, new Comparer());
         }
 
-        public int Count => specialTypeArrayProperty.arraySize + enumerableArrayProperty.arraySize;
-
-        public IEnumerable<string> NameCollection
+        sealed class Comparer : IComparer<StringBoolTuple>
         {
-            get
+            public int Compare(StringBoolTuple x, StringBoolTuple y)
             {
-                @object.Update();
-
-                IEnumerable<string> Enumerable(SerializedProperty typeArrayProperty)
-                {
-                    var length = typeArrayProperty.arraySize;
-                    for (var i = 0; i < length; i++)
-                    {
-                        var element = new SerializedObject(typeArrayProperty.GetArrayElementAtIndex(i).objectReferenceValue);
-                        element.Update();
-                        yield return element.FindProperty(nameof(StringBoolTuple.Enumerable)).stringValue;
-                    }
-                }
-
-                var first = Enumerable(specialTypeArrayProperty);
-                var second = Enumerable(enumerableArrayProperty);
-                return first.Concat(second);
+                if (ReferenceEquals(x, y)) return 0;
+                if (ReferenceEquals(null, y)) return 1;
+                if (ReferenceEquals(null, x)) return -1;
+                if (x.IsSpecial && !y.IsSpecial) return -1;
+                if (!x.IsSpecial && y.IsSpecial) return 1;
+                return string.Compare(x.Enumerable, y.Enumerable, StringComparison.Ordinal);
             }
         }
+
+        public int Count => types.Length;
+
+        public IEnumerable<string> NameCollection => types.Select(Selector);
 
         public IEnumerable<(string Name, bool Enabled)> NameEnabledTupleCollection
         {
             get
             {
-                @object.Update();
-
-                IEnumerable<(string Name, bool Enabled)> Enumerable(SerializedProperty typeArrayProperty)
-                {
-                    var length = typeArrayProperty.arraySize;
-                    for (var i = 0; i < length; i++)
-                    {
-                        var element = new SerializedObject(typeArrayProperty.GetArrayElementAtIndex(i).objectReferenceValue);
-                        element.Update();
-                        yield return (element.FindProperty(nameof(StringBoolTuple.Enumerable)).stringValue, element.FindProperty(nameof(StringBoolTuple.Enabled)).boolValue);
-                    }
-                }
-
-                var first = Enumerable(specialTypeArrayProperty);
-                var second = Enumerable(enumerableArrayProperty);
-                return first.Concat(second);
+                (string Name, bool Enabled) Selector(StringBoolTuple _) => (_.Enumerable, _.Enabled);
+                return types.Select(Selector);
             }
         }
 
-        public IEnumerable<string> EnabledNameCollection
-        {
-            get
-            {
-                @object.Update();
+        public IEnumerable<string> EnabledNameCollection => types.Where(Predicate).Select(Selector);
 
-                IEnumerable<string> Enumerable(SerializedProperty typeArrayProperty)
-                {
-                    var length = typeArrayProperty.arraySize;
-                    for (var i = 0; i < length; i++)
-                    {
-                        var element = new SerializedObject(typeArrayProperty.GetArrayElementAtIndex(i).objectReferenceValue);
-                        element.Update();
-                        if (element.FindProperty(nameof(StringBoolTuple.Enabled)).boolValue)
-                            yield return element.FindProperty(nameof(StringBoolTuple.Enumerable)).stringValue;
-                    }
-                }
-
-                var first = Enumerable(specialTypeArrayProperty);
-                var second = Enumerable(enumerableArrayProperty);
-                return first.Concat(second);
-            }
-        }
+        private static bool Predicate(StringBoolTuple _) => _.Enabled;
+        private static string Selector(StringBoolTuple _) => _.Enumerable;
 
         public bool TryGetEnabled(string name, out bool value)
         {
-            bool Inner(SerializedProperty typeArrayProperty, out bool enabled)
+            foreach (var type in types)
             {
-                var length = typeArrayProperty.arraySize;
-                for (var i = 0; i < length; i++)
-                {
-                    var element = new SerializedObject(typeArrayProperty.GetArrayElementAtIndex(i).objectReferenceValue);
-                    element.Update();
-                    if (element.FindProperty(nameof(StringBoolTuple.Enumerable)).stringValue != name)
-                        continue;
-                    enabled = element.FindProperty(nameof(StringBoolTuple.Enabled)).boolValue;
-                    return true;
-                }
-                enabled = default;
-                return false;
+                if (type.Enumerable != name) continue;
+                value = type.Enabled;
+                return true;
             }
-
-            @object.Update();
-            return Inner(specialTypeArrayProperty, out value) || Inner(enumerableArrayProperty, out value);
+            value = default;
+            return false;
         }
 
         public bool TrySetEnabled(string name, bool value)
         {
-            bool Inner(SerializedProperty typeArrayProperty)
+            foreach (var type in types)
             {
-                var length = typeArrayProperty.arraySize;
-                for (var i = 0; i < length; i++)
-                {
-                    var element = new SerializedObject(typeArrayProperty.GetArrayElementAtIndex(i).objectReferenceValue);
-                    element.Update();
-                    if (element.FindProperty(nameof(StringBoolTuple.Enumerable)).stringValue != name)
-                        continue;
-                    var enabledProperty = element.FindProperty(nameof(StringBoolTuple.Enabled));
-                    if (value == enabledProperty.boolValue)
-                        return true;
-                    enabledProperty.boolValue = value;
-                    element.ApplyModifiedProperties();
-                    return true;
-                }
-                return false;
+                if (type.Enumerable != name) continue;
+                type.Enabled = value;
+                hasChanged = true;
+                return true;
             }
-            return Inner(specialTypeArrayProperty) || Inner(enumerableArrayProperty);
+            return false;
         }
 
-        public bool HasChanged => @object.hasModifiedProperties;
-        public void Apply()
-        {
-            @object.ApplyModifiedProperties();
-        }
+        public bool HasChanged => hasChanged;
+
+        public void Apply() => hasChanged = false;
     }
 }

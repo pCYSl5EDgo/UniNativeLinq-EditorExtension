@@ -13,4 +13,5 @@ MonoBehaviour:
   m_Name: TakeWhile
   m_EditorClassIdentifier: 
   Enumerable: TakeWhile
-  Enabled: 1
+  Enabled: 0
+  IsSpecial: 0

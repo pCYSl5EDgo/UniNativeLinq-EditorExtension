@@ -13,4 +13,5 @@ MonoBehaviour:
   m_Name: DefaultIfEmpty
   m_EditorClassIdentifier: 
   Enumerable: DefaultIfEmpty
-  Enabled: 1
+  Enabled: 0
+  IsSpecial: 0

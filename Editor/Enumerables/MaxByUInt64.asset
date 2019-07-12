@@ -13,4 +13,5 @@ MonoBehaviour:
   m_Name: MaxByUInt64
   m_EditorClassIdentifier: 
   Enumerable: MaxByUInt64
-  Enabled: 1
+  Enabled: 0
+  IsSpecial: 0

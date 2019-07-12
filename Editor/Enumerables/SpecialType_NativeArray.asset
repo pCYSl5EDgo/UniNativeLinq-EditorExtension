@@ -13,4 +13,5 @@ MonoBehaviour:
   m_Name: SpecialType_NativeArray
   m_EditorClassIdentifier: 
   Enumerable: NativeArray<T>
-  Enabled: 1
+  Enabled: 0
+  IsSpecial: 1

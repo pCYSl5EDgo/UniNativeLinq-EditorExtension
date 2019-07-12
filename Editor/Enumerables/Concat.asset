@@ -13,4 +13,5 @@ MonoBehaviour:
   m_Name: Concat
   m_EditorClassIdentifier: 
   Enumerable: Concat
-  Enabled: 1
+  Enabled: 0
+  IsSpecial: 0

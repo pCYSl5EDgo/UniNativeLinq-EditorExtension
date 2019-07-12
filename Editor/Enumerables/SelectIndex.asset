@@ -13,4 +13,5 @@ MonoBehaviour:
   m_Name: SelectIndex
   m_EditorClassIdentifier: 
   Enumerable: SelectIndex
-  Enabled: 1
+  Enabled: 0
+  IsSpecial: 0

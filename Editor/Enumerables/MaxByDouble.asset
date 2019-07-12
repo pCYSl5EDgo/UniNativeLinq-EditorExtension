@@ -13,4 +13,5 @@ MonoBehaviour:
   m_Name: MaxByDouble
   m_EditorClassIdentifier: 
   Enumerable: MaxByDouble
-  Enabled: 1
+  Enabled: 0
+  IsSpecial: 0

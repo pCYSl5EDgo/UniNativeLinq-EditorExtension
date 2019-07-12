@@ -13,4 +13,5 @@ MonoBehaviour:
   m_Name: Repeat
   m_EditorClassIdentifier: 
   Enumerable: Repeat
-  Enabled: 1
+  Enabled: 0
+  IsSpecial: 0

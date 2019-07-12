@@ -13,4 +13,5 @@ MonoBehaviour:
   m_Name: GroupJoin
   m_EditorClassIdentifier: 
   Enumerable: GroupJoin
-  Enabled: 1
+  Enabled: 0
+  IsSpecial: 0

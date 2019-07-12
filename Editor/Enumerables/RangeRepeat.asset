@@ -13,4 +13,5 @@ MonoBehaviour:
   m_Name: RangeRepeat
   m_EditorClassIdentifier: 
   Enumerable: RangeRepeat
-  Enabled: 1
+  Enabled: 0
+  IsSpecial: 0

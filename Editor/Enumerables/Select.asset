@@ -13,4 +13,5 @@ MonoBehaviour:
   m_Name: Select
   m_EditorClassIdentifier: 
   Enumerable: Select
-  Enabled: 1
+  Enabled: 0
+  IsSpecial: 0

@@ -1,7 +1,7 @@
 ﻿namespace UniNativeLinq.Editor
 {
-    internal interface IDllGenerator
+    public interface IDllGenerator
     {
-        void Execute(EnumerableCollectionObject setting);
+        void Execute(IEnumerableCollectionProcessor processor, ISingleApi[] singleApis, IDoubleApi[] doubleApis);
     }
 }

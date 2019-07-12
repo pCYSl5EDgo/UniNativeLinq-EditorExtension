@@ -13,4 +13,5 @@ MonoBehaviour:
   m_Name: SetOperation
   m_EditorClassIdentifier: 
   Enumerable: SetOperation
-  Enabled: 1
+  Enabled: 0
+  IsSpecial: 0
