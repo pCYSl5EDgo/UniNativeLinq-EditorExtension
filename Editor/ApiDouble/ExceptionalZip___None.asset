@@ -61,4 +61,6 @@ MonoBehaviour:
   DisplayName: Zip(Exceptional)
   <RelatedEnumerableArray>k__BackingField:
   - ExceptionalZip
+  <ExcludeEnumerableArray>k__BackingField:
+  - GroupBy
   <IsHided>k__BackingField: 0
