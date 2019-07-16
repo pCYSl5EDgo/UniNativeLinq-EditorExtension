@@ -108,7 +108,7 @@ namespace UniNativeLinq.Editor
                 const float checkboxSize = 16f;
                 const float buttonSize = 60f;
 
-                var enabledEnumerableArray = processor.EnabledNameCollection.ToArray();
+                var enabledEnumerableArray = EnumerableArray.Where(x => processor.TryGetEnabled(x, out var xe) && xe).ToArray();
                 var lastRect = GUILayoutUtility.GetRect(labelSize + indent + checkboxSize * enabledEnumerableArray.Length, labelSize + indent);
                 var pivotPoint = new Vector2(lastRect.xMin, lastRect.yMin);
 
