@@ -7,11 +7,5 @@ namespace UniNativeLinq.Editor
     {
         public string Enumerable;
         public bool Enabled;
-
-        public StringBoolValueTuple(string enumerable, bool enabled)
-        {
-            Enumerable = enumerable;
-            Enabled = enabled;
-        }
     }
 }

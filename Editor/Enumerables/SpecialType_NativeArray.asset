@@ -15,3 +15,6 @@ MonoBehaviour:
   Enumerable: NativeArray<T>
   Enabled: 0
   IsSpecial: 1
+  GenericParameterCount: 0
+  RelatedEnumerableArray: []
+  ElementType: T

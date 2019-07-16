@@ -22,6 +22,7 @@ namespace UniNativeLinq.Editor
         string ISingleApi.Description => Description;
         [field: SerializeField] public string[] RelatedEnumerableArray { get; private set; }
         [field: SerializeField] public bool IsHided { get; set; }
+        [field: SerializeField] public string[] ExcludeEnumerableArray { get; internal set; }
         public IEnumerable<string> NameCollection => EnabledArray.Select(x => x.Enumerable);
         public int Count => EnabledArray.Length;
         public IEnumerable<(string Name, bool Enabled)> NameEnabledTupleCollection => EnabledArray.Select(x => (x.Enumerable, x.Enabled));
@@ -120,16 +121,18 @@ namespace UniNativeLinq.Editor
                 }
             }
 
-            for (var i = 0; i < EnabledArray.Length; i++)
+            using (IndentScope.Create())
             {
-                ref var tuple = ref EnabledArray[i];
-                if (!processor.TryGetEnabled(tuple.Enumerable, out var targetEnabled) || !targetEnabled) continue;
-                using (IndentScope.Create())
-                using (new EditorGUILayout.HorizontalScope())
+                for (var i = 0; i < EnabledArray.Length; i++)
                 {
-                    EditorGUILayout.LabelField(new GUIContent(tuple.Enumerable, Description));
-                    var guiContent = new GUIContent(tuple.Enumerable + " : " + tuple.Enabled, Description);
-                    TrySetEnabled(tuple.Enumerable, EditorGUILayout.ToggleLeft(guiContent, tuple.Enabled, GUI.skin.button));
+                    ref var tuple = ref EnabledArray[i];
+                    if (!processor.TryGetEnabled(tuple.Enumerable, out var targetEnabled) || !targetEnabled) continue;
+                    using (new EditorGUILayout.HorizontalScope())
+                    {
+                        EditorGUILayout.LabelField(new GUIContent(tuple.Enumerable, Description));
+                        var guiContent = new GUIContent(tuple.Enumerable + " : " + tuple.Enabled, Description);
+                        TrySetEnabled(tuple.Enumerable, EditorGUILayout.ToggleLeft(guiContent, tuple.Enabled, GUI.skin.button));
+                    }
                 }
             }
         }

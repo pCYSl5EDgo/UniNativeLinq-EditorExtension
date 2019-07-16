@@ -15,3 +15,6 @@ MonoBehaviour:
   Enumerable: Take
   Enabled: 0
   IsSpecial: 0
+  GenericParameterCount: 3
+  RelatedEnumerableArray: []
+  ElementType: T

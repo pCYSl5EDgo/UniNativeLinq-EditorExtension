@@ -16,6 +16,7 @@ namespace UniNativeLinq.Editor
         string ISingleApi.Description => Description;
         [field: SerializeField] public bool IsHided { get; set; }
         public string[] RelatedEnumerableArray => Array.Empty<string>();
+        [field: SerializeField] public string[] ExcludeEnumerableArray { get; internal set; }
         public IEnumerable<string> NameCollection => EnabledArray.Select(x => x.Enumerable);
         public int Count => EnabledArray.Length;
         public IEnumerable<(string Name, bool Enabled)> NameEnabledTupleCollection => EnabledArray.Select(x => (x.Enumerable, x.Enabled));
@@ -44,6 +45,70 @@ namespace UniNativeLinq.Editor
             }
             return false;
         }
+
+        //[MenuItem("UniNativeLinq/Convert")]
+        public static void Convert()
+        {
+            var n0 = AssetDatabase.FindAssets("t:" + nameof(DifferentNameEnumerableDoubleApi));
+            var n1 = AssetDatabase.FindAssets("t:" + nameof(SimpleEnumerableDoubleApi));
+            var n2 = AssetDatabase.FindAssets("t:" + nameof(WithFuncEnumerableDoubleApi));
+            var a0 = n0.Select(_ => AssetDatabase.LoadAssetAtPath<DifferentNameEnumerableDoubleApi>(AssetDatabase.GUIDToAssetPath(_)));
+            var a1 = n1.Select(_ => AssetDatabase.LoadAssetAtPath<SimpleEnumerableDoubleApi>(AssetDatabase.GUIDToAssetPath(_)));
+            var a2 = n2.Select(_ => AssetDatabase.LoadAssetAtPath<WithFuncEnumerableDoubleApi>(AssetDatabase.GUIDToAssetPath(_)));
+            T0[] Gets0<T0>() where T0 : UnityEngine.Object
+            {
+                var paths = AssetDatabase.FindAssets("t:" + typeof(T0).Name);
+                var answer = paths.Length == 0 ? Array.Empty<T0>() : new T0[paths.Length];
+                for (var i = 0; i < paths.Length; i++)
+                    answer[i] = AssetDatabase.LoadAssetAtPath<T0>(AssetDatabase.GUIDToAssetPath(paths[i]));
+                return answer;
+            }
+            var c = new Comparer { Processor = new EnumerableCollectionProcessor(Gets0<StringBoolTuple>()) };
+            //foreach (var api in a0)
+            //{
+            //    if ((api.ExcludeEnumerableArray?.Length ?? 0) != 0) continue;
+            //    api.ExcludeEnumerableArray = Array.Empty<string>();
+            //    var old = api.EnabledArray;
+            //    api.EnabledArray = new StringBoolValueTuple[old.Length + 1];
+            //    Array.Copy(old, api.EnabledArray, old.Length);
+            //    api.EnabledArray[old.Length] = new StringBoolValueTuple { Enabled = true, Enumerable = "GroupBy" };
+            //    Array.Sort(api.EnabledArray, c);
+            //}
+            //foreach (var api in a1)
+            //{
+            //    if ((api.ExcludeEnumerableArray?.Length ?? 0) != 0) continue;
+            //    api.ExcludeEnumerableArray = Array.Empty<string>();
+            //    var old = api.EnabledArray;
+            //    api.EnabledArray = new StringBoolValueTuple[old.Length + 1];
+            //    Array.Copy(old, api.EnabledArray, old.Length);
+            //    api.EnabledArray[old.Length] = new StringBoolValueTuple { Enabled = true, Enumerable = "GroupBy" };
+            //    Array.Sort(api.EnabledArray, c);
+            //}
+            //foreach (var api in a2)
+            //{
+            //    if ((api.ExcludeEnumerableArray?.Length ?? 0) != 0) continue;
+            //    api.ExcludeEnumerableArray = Array.Empty<string>();
+            //    var old = api.EnabledArray;
+            //    api.EnabledArray = new StringBoolValueTuple[old.Length + 1];
+            //    Array.Copy(old, api.EnabledArray, old.Length);
+            //    api.EnabledArray[old.Length] = new StringBoolValueTuple { Enabled = true, Enumerable = "GroupBy" };
+            //    Array.Sort(api.EnabledArray, c);
+            //}
+        }
+
+        private sealed class Comparer : IComparer<StringBoolValueTuple>
+        {
+            public IEnumerableCollectionProcessor Processor;
+            public int Compare(StringBoolValueTuple x, StringBoolValueTuple y)
+            {
+                var xn = x.Enumerable;
+                var yn = y.Enumerable;
+                Processor.IsSpecialType(xn, out var xs);
+                Processor.IsSpecialType(yn, out var ys);
+                return xs ? !ys ? -1 : string.Compare(xn, yn, StringComparison.Ordinal) : ys ? 1 : string.Compare(xn, yn, StringComparison.Ordinal);
+            }
+        }
+
         //[MenuItem("UniNativeLinq/Create Single Apis &#e")]
         public static void Create()
         {
@@ -120,7 +185,8 @@ namespace UniNativeLinq.Editor
             for (var i = 0; i < EnabledArray.Length; i++)
             {
                 ref var tuple = ref EnabledArray[i];
-                if (!processor.TryGetEnabled(tuple.Enumerable, out var targetEnabled) || !targetEnabled) continue;
+                if (!processor.TryGetEnabled(tuple.Enumerable, out var targetEnabled) || !targetEnabled || (ExcludeEnumerableArray?.Contains(tuple.Enumerable) ?? false)) continue;
+
                 using (IndentScope.Create())
                 using (new EditorGUILayout.HorizontalScope())
                 {

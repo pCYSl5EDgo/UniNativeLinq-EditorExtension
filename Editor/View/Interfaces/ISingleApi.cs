@@ -8,6 +8,7 @@ namespace UniNativeLinq.Editor
         string Name { get; set; }
         string Description { get; }
         string[] RelatedEnumerableArray { get; }
+        string[] ExcludeEnumerableArray { get; }
 
         IEnumerable<string> NameCollection { get; }
         int Count { get; }

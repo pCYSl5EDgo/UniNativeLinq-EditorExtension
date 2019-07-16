@@ -28,6 +28,7 @@ namespace UniNativeLinq.Editor
 
         string IDoubleApi.Description => Description;
         [field: SerializeField] public string[] RelatedEnumerableArray { get; private set; }
+        [field: SerializeField] public string[] ExcludeEnumerableArray { get; private set; }
 
         public IEnumerable<string> NameCollection => EnumerableArray;
 

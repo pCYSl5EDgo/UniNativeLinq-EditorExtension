@@ -7,12 +7,14 @@ namespace UniNativeLinq.Editor
     internal sealed class EnumerableCollectionProcessor : IEnumerableCollectionProcessor
     {
         private readonly StringBoolTuple[] types;
+        private readonly Dictionary<string, StringBoolTuple> dictionary;
         private bool hasChanged;
 
         public EnumerableCollectionProcessor(StringBoolTuple[] types)
         {
             this.types = types ?? Array.Empty<StringBoolTuple>();
             Array.Sort(this.types, 0, this.types.Length, new Comparer());
+            dictionary = this.types.ToDictionary(x => x.Enumerable, x => x);
         }
 
         sealed class Comparer : IComparer<StringBoolTuple>
@@ -48,27 +50,30 @@ namespace UniNativeLinq.Editor
 
         public bool TryGetEnabled(string name, out bool value)
         {
-            foreach (var type in types)
-            {
-                if (type.Enumerable != name) continue;
-                value = type.Enabled;
-                return true;
-            }
-            value = default;
-            return false;
+            if (!dictionary.TryGetValue(name, out var tuple)) return value = false;
+            value = tuple.Enabled;
+            return true;
         }
 
         public bool TrySetEnabled(string name, bool value)
         {
-            foreach (var type in types)
-            {
-                if (type.Enumerable != name) continue;
-                type.Enabled = value;
-                hasChanged = true;
-                return true;
-            }
-            return false;
+            if (!dictionary.TryGetValue(name, out var tuple)) return false;
+            hasChanged = true;
+            tuple.Enabled = value;
+            return true;
         }
+
+        public bool IsSpecialType(string name, out bool value)
+        {
+            if (!dictionary.TryGetValue(name, out var tuple)) return value = false;
+            value = tuple.IsSpecial;
+            return true;
+        }
+
+        public uint GetGenericParameterCount(string name) => dictionary[name].GenericParameterCount;
+
+        public IEnumerable<string> GetRelatedEnumerable(string name) => dictionary[name].RelatedEnumerableArray;
+        public string GetElementType(string name) => dictionary[name].ElementType;
 
         public bool HasChanged => hasChanged;
 

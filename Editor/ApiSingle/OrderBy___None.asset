@@ -102,3 +102,5 @@ MonoBehaviour:
   <RelatedEnumerableArray>k__BackingField:
   - OrderBy
   <IsHided>k__BackingField: 0
+  <ExcludeEnumerableArray>k__BackingField:
+  - GroupBy

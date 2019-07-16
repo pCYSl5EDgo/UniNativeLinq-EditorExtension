@@ -5,13 +5,24 @@ using Object = UnityEngine.Object;
 
 namespace UniNativeLinq.Editor
 {
-    public class SettingWindow : EditorWindow
+    public sealed class SettingWindow : EditorWindow
     {
         private IEnumerableCollectionProcessor enumerableCollectionProcessor;
         private IDrawable whetherToIncludeEnumerableOrNotView;
         private IDrawable whetherToUseApiOrNotView;
         private Vector2 scrollPosition;
         private IDllGenerator dllGenerator;
+        private ISingleApi[] singleApis;
+        private IDoubleApi[] doubleApis;
+        private IDependency[] dependencies;
+
+        private bool AnyNull
+            => enumerableCollectionProcessor is null ||
+               dllGenerator is null ||
+               singleApis is null ||
+               doubleApis is null ||
+               whetherToUseApiOrNotView is null ||
+               whetherToIncludeEnumerableOrNotView is null;
 
         [MenuItem("UniNativeLinq/Open Settings &#c")]
         static void Open()
@@ -39,19 +50,32 @@ namespace UniNativeLinq.Editor
                 return answer;
             }
 
-            if (enumerableCollectionProcessor == null)
+            if (enumerableCollectionProcessor is null)
                 enumerableCollectionProcessor = new EnumerableCollectionProcessor(Gets0<StringBoolTuple>());
-            if (whetherToIncludeEnumerableOrNotView == null)
+            if (whetherToIncludeEnumerableOrNotView is null)
                 whetherToIncludeEnumerableOrNotView = new DrawableImplWhetherToIncludeEnumerable(enumerableCollectionProcessor);
-            if (whetherToUseApiOrNotView == null)
-                whetherToUseApiOrNotView = new DrawableImplWhetherToUseApiOrNot(enumerableCollectionProcessor, Gets<String2BoolArrayTuple, ISingleApi>(), Gets<String2BoolMatrixTuple, IDoubleApi>());
+            if (singleApis is null)
+                singleApis = Gets<String2BoolArrayTuple, ISingleApi>();
+            if (doubleApis is null)
+                doubleApis = Gets<String2BoolMatrixTuple, IDoubleApi>();
+            if (dependencies is null)
+                dependencies = Gets<DependencyObject, IDependency>();
+            if (whetherToUseApiOrNotView is null)
+                whetherToUseApiOrNotView = new DrawableImplWhetherToUseApiOrNot(enumerableCollectionProcessor, singleApis, doubleApis);
+            dllGenerator?.Dispose();
+            dllGenerator = new DllGenerator();
         }
 
         void OnGUI()
         {
-            if (whetherToIncludeEnumerableOrNotView is null || enumerableCollectionProcessor is null)
+            if (AnyNull)
                 Initialize();
             scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition, GUI.skin.box);
+            if (GUILayout.Button("Generate DLL"))
+            {
+                dllGenerator.Execute(enumerableCollectionProcessor, singleApis, doubleApis, dependencies);
+                Close();
+            }
             whetherToIncludeEnumerableOrNotView.Draw(ref scrollPosition);
             whetherToUseApiOrNotView.Draw(ref scrollPosition);
             EditorGUILayout.EndScrollView();

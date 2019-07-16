@@ -13,5 +13,8 @@ MonoBehaviour:
   m_Name: Where
   m_EditorClassIdentifier: 
   Enumerable: Where
-  Enabled: 0
+  Enabled: 1
   IsSpecial: 0
+  GenericParameterCount: 4
+  RelatedEnumerableArray: []
+  ElementType: T

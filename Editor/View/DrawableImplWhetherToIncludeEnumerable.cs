@@ -1,4 +1,5 @@
-﻿using UnityEditor;
+﻿using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 namespace UniNativeLinq.Editor
@@ -23,7 +24,7 @@ namespace UniNativeLinq.Editor
                 {
                     foreach (var name in processor.NameCollection)
                     {
-                        if (name == "Native") continue;
+                        if (name == "Native" || name == "Array") continue;
                         processor.TrySetEnabled(name, true);
                     }
                 }
@@ -31,7 +32,7 @@ namespace UniNativeLinq.Editor
                 {
                     foreach (var name in processor.NameCollection)
                     {
-                        if (name == "Native") continue;
+                        if (name == "Native" || name == "Array") continue;
                         processor.TrySetEnabled(name, false);
                     }
                 }
@@ -39,13 +40,22 @@ namespace UniNativeLinq.Editor
 
             foreach (var (name, enabled) in processor.NameEnabledTupleCollection)
             {
+                foreach (var related in processor.GetRelatedEnumerable(name))
+                {
+                    if (!processor.TryGetEnabled(related, out var relatedEnabled)) throw new KeyNotFoundException();
+                    if (relatedEnabled) continue;
+                    if (enabled)
+                        processor.TrySetEnabled(name, false);
+                    goto NEXT;
+                }
                 using (IndentScope.Create())
                 using (new EditorGUILayout.HorizontalScope())
-                using (new EditorGUI.DisabledScope(name == "Native"))
+                using (new EditorGUI.DisabledScope(name == "Native" || name == "Array"))
                 {
                     EditorGUILayout.LabelField(name);
                     processor.TrySetEnabled(name, EditorGUILayout.ToggleLeft(name + " : " + enabled, enabled, (GUIStyle)"button"));
                 }
+            NEXT:;
             }
         }
     }

@@ -13,5 +13,8 @@ MonoBehaviour:
   m_Name: SelectMany
   m_EditorClassIdentifier: 
   Enumerable: SelectMany
-  Enabled: 0
+  Enabled: 1
   IsSpecial: 0
+  GenericParameterCount: 7
+  RelatedEnumerableArray: []
+  ElementType: T

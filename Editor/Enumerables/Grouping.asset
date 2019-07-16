@@ -13,5 +13,8 @@ MonoBehaviour:
   m_Name: Grouping
   m_EditorClassIdentifier: 
   Enumerable: Grouping
-  Enabled: 0
+  Enabled: 1
   IsSpecial: 0
+  GenericParameterCount: 2
+  RelatedEnumerableArray: []
+  ElementType: T

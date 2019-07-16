@@ -15,3 +15,6 @@ MonoBehaviour:
   Enumerable: MaxByUInt64
   Enabled: 0
   IsSpecial: 0
+  GenericParameterCount: 4
+  RelatedEnumerableArray: []
+  ElementType: T

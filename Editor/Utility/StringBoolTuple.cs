@@ -8,11 +8,8 @@ namespace UniNativeLinq.Editor
         public string Enumerable;
         public bool Enabled;
         public bool IsSpecial;
-
-        public StringBoolTuple(string enumerable, bool enabled)
-        {
-            Enumerable = enumerable;
-            Enabled = enabled;
-        }
+        public uint GenericParameterCount;
+        public string[] RelatedEnumerableArray;
+        public string ElementType;
     }
 }

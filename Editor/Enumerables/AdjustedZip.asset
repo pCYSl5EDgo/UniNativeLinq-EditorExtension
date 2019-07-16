@@ -15,3 +15,6 @@ MonoBehaviour:
   Enumerable: AdjustedZip
   Enabled: 0
   IsSpecial: 0
+  GenericParameterCount: 8
+  RelatedEnumerableArray: []
+  ElementType: T

@@ -26,6 +26,7 @@ namespace UniNativeLinq.Editor
 
         string IDoubleApi.Description => Description;
         [field: SerializeField] public string[] RelatedEnumerableArray { get; private set; }
+        [field: SerializeField] public string[] ExcludeEnumerableArray { get; private set; }
 
         public IEnumerable<string> NameCollection => EnumerableArray;
 
@@ -77,18 +78,51 @@ namespace UniNativeLinq.Editor
             return true;
         }
 
-        [MenuItem("UniNativeLinq/Create Double Api &#d")]
-        public static void Create()
-        {
-            var three = new[] { "Func", "RefFunc", "Operator" };
-            var four = new[] { "None", "Func", "RefFunc", "Operator" };
+        //[MenuItem("UniNativeLinq/Create Double Api &#d")]
+        //public static void Create()
+        //{
+        //    var three = new[] { "Func", "RefFunc", "Operator" };
+        //    var four = new[] { "None", "Func", "RefFunc", "Operator" };
 
-            //Create(processor, "GroupJoin", "GroupJoin", new[] { "GroupJoin", "Grouping" }, three);
-            //Create(processor, "AdjustedZip", "Zip(Adjusted)", new[] { "AdjustedZip" }, four);
-            //Create(processor, "ExceptionalZip", "Zip(Exceptional)", new[] { "ExceptionalZip" }, four);
-            //Create(processor, "Except", "Except", new[] { "SetOperation" }, four);
-            //Create(processor, "Intersect", "Intersect", new[] { "SetOperation" }, four);
-        }
+        //    //Create(processor, "GroupJoin", "GroupJoin", new[] { "GroupJoin", "Grouping" }, three);
+        //    //Create(processor, "AdjustedZip", "Zip(Adjusted)", new[] { "AdjustedZip" }, four);
+        //    //Create(processor, "ExceptionalZip", "Zip(Exceptional)", new[] { "ExceptionalZip" }, four);
+        //    //Create(processor, "Except", "Except", new[] { "SetOperation" }, four);
+        //    //Create(processor, "Intersect", "Intersect", new[] { "SetOperation" }, four);
+        //}
+
+        //[MenuItem("UniNativeLinq/Convert")]
+        //public static void Convert()
+        //{
+        //    Convert<DifferentNameEnumerableDoubleApi>();
+        //    Convert<SimpleEnumerableDoubleApi>();
+        //    Convert<WithFuncEnumerableDoubleApi>();
+        //}
+
+        //private static void Convert<T>() where T : String2BoolMatrixTuple, IDoubleApi
+        //{
+        //    var a = AssetDatabase.FindAssets("t:" + typeof(T).Name).Select(_ => AssetDatabase.LoadAssetAtPath<T>(AssetDatabase.GUIDToAssetPath(_)));
+        //    foreach (var api in a)
+
+        //    {
+
+        //        if ((api.ExcludeEnumerableArray?.Length ?? 0) != 0) continue;
+        //        var old = api.EnumerableArray;
+        //        api.EnabledArray = new bool[(old.Length + 1) * (old.Length + 1)];
+        //        for (int i = 0; i < api.EnabledArray.Length; i++)
+        //        {
+        //            api.EnabledArray[i] = true;
+        //        }
+        //        api.EnumerableArray = new string[old.Length + 1];
+        //        Array.Copy(old, api.EnumerableArray, old.Length);
+        //        api.EnumerableArray[old.Length] = "GroupBy";
+        //        for (var i = old.Length - 1; i >= 0; i--)
+        //        {
+        //            if (string.CompareOrdinal("GroupBy", api.EnumerableArray[i]) >= 0) break;
+        //            (api.EnumerableArray[i], api.EnumerableArray[i + 1]) = (api.EnumerableArray[i + 1], api.EnumerableArray[i]);
+        //        }
+        //    }
+        //}
 
         private static DifferentNameEnumerableDoubleApi[] Create(IEnumerableCollectionProcessor processor, string name, string displayName, string[] relatedEnumerableArray, string[] descriptions)
         {
@@ -142,7 +176,7 @@ namespace UniNativeLinq.Editor
                 const float checkboxSize = 16f;
                 const float buttonSize = 60f;
 
-                var enabledEnumerableArray = processor.EnabledNameCollection.ToArray();
+                var enabledEnumerableArray = this.EnumerableArray.Where(x => processor.TryGetEnabled(x, out var xe) && xe).ToArray();
                 var lastRect = GUILayoutUtility.GetRect(labelSize + indent + checkboxSize * enabledEnumerableArray.Length, labelSize + indent);
                 var pivotPoint = new Vector2(lastRect.xMin, lastRect.yMin);
 
@@ -160,56 +194,69 @@ namespace UniNativeLinq.Editor
                     IsHided = true;
                     Array.Clear(EnabledArray, 0, EnabledArray.Length);
                 }
-                Rotate(pivotPoint, enabledEnumerableArray.Length, checkboxSize, lastRect, indent + labelSize + scrollPosition.y);
-                var typeLength = processor.Count;
-                for (var displayColumn = 0; displayColumn < enabledEnumerableArray.Length; displayColumn++)
-                {
-                    var enumerable = enabledEnumerableArray[displayColumn];
-                    GUI.Label(new Rect(checkboxSize * 0.5f, displayColumn * checkboxSize + scrollPosition.y, labelSize + indent - checkboxSize, checkboxSize), enumerable, "RightLabel");
-                    if (GUI.Button(new Rect(labelSize + enabledEnumerableArray.Length * checkboxSize + indent * 2, displayColumn * checkboxSize + scrollPosition.y, buttonSize, checkboxSize), new GUIContent("Select All", enumerable), "minibutton"))
-                    {
-                        var column = FindIndex(enumerable);
-                        if (column == -1) throw new KeyNotFoundException();
-                        for (var row = typeLength; --row >= 0;)
-                            this[row, column] = true;
-                    }
-                    else if (GUI.Button(new Rect(labelSize + enabledEnumerableArray.Length * checkboxSize + indent * 2 + buttonSize, displayColumn * checkboxSize + scrollPosition.y, buttonSize, checkboxSize), new GUIContent("Deselect All", enumerable), "minibutton"))
-                    {
-                        var column = FindIndex(enumerable);
-                        if (column == -1) throw new KeyNotFoundException();
-                        for (var row = typeLength; --row >= 0;)
-                            this[row, column] = false;
-                    }
-                }
-                GUI.matrix = Matrix4x4.identity;
-                foreach (var rowEnumerable in enabledEnumerableArray)
-                {
-                    var row = FindIndex(rowEnumerable);
-                    var r = GUILayoutUtility.GetRect(indent + checkboxSize * enabledEnumerableArray.Length + labelSize * 3 + checkboxSize, checkboxSize);
-                    GUI.Label(new Rect(r.xMin, r.yMin, labelSize, checkboxSize), rowEnumerable, "Label");
-                    var x = 0;
-                    for (var j = enabledEnumerableArray.Length; --j >= 0;)
-                    {
-                        var columnEnumerable = enabledEnumerableArray[j];
-                        var tooltip = new GUIContent("", rowEnumerable + " :: " + columnEnumerable);
-                        ref var flag = ref this[row, FindIndex(columnEnumerable)];
-                        flag = GUI.Toggle(new Rect(labelSize + indent + r.x + x * checkboxSize, r.y, checkboxSize, checkboxSize), flag, tooltip);
-                        x++;
-                    }
-                    var restWidth = (r.xMax - (labelSize + indent + r.x + enabledEnumerableArray.Length * checkboxSize)) * 0.5f;
-                    if (GUI.Button(new Rect(r.xMin + labelSize + indent + r.x + x * checkboxSize, r.yMin, restWidth, checkboxSize), new GUIContent("Select All", EnumerableArray[row])))
-                    {
-                        for (var column = EnumerableArray.Length; --column >= 0;)
-                            this[row, column] = true;
-                    }
-                    else if (GUI.Button(new Rect(r.xMin + labelSize + indent + r.x + x * checkboxSize + restWidth, r.yMin, restWidth, checkboxSize), new GUIContent("Deselect All", EnumerableArray[row])))
-                    {
-                        for (var column = EnumerableArray.Length; --column >= 0;)
-                            this[row, column] = false;
-                    }
-                }
-                GUILayout.Space(indent + buttonSize * 2);
+                DrawRotatedColumnLabels(processor, scrollPosition, pivotPoint, enabledEnumerableArray, checkboxSize, lastRect, labelSize, buttonSize);
+                DrawCheckBoxMatrix(enabledEnumerableArray, indent, checkboxSize, labelSize);
             }
+        }
+
+        private void DrawRotatedColumnLabels(IEnumerableCollectionProcessor processor, Vector2 scrollPosition, Vector2 pivotPoint, string[] enabledEnumerableArray, float checkboxSize, Rect lastRect, float labelSize, float buttonSize)
+        {
+            const float indent = 30f;
+
+            Rotate(pivotPoint, enabledEnumerableArray.Length, checkboxSize, lastRect, indent + labelSize + scrollPosition.y);
+            var typeLength = processor.Count;
+            for (var displayColumn = 0; displayColumn < enabledEnumerableArray.Length; displayColumn++)
+            {
+                var enumerable = enabledEnumerableArray[displayColumn];
+                GUI.Label(new Rect(checkboxSize * 0.5f, displayColumn * checkboxSize + scrollPosition.y, labelSize + indent - checkboxSize, checkboxSize), enumerable, "RightLabel");
+                if (GUI.Button(new Rect(labelSize + enabledEnumerableArray.Length * checkboxSize + indent * 2, displayColumn * checkboxSize + scrollPosition.y, buttonSize, checkboxSize), new GUIContent("Select All", enumerable), "minibutton"))
+                {
+                    var column = FindIndex(enumerable);
+                    if (column == -1) throw new KeyNotFoundException();
+                    for (var row = typeLength; --row >= 0;)
+                        this[row, column] = true;
+                }
+                else if (GUI.Button(new Rect(labelSize + enabledEnumerableArray.Length * checkboxSize + indent * 2 + buttonSize, displayColumn * checkboxSize + scrollPosition.y, buttonSize, checkboxSize), new GUIContent("Deselect All", enumerable), "minibutton"))
+                {
+                    var column = FindIndex(enumerable);
+                    if (column == -1) throw new KeyNotFoundException();
+                    for (var row = typeLength; --row >= 0;)
+                        this[row, column] = false;
+                }
+            }
+            GUI.matrix = Matrix4x4.identity;
+        }
+
+        private void DrawCheckBoxMatrix(string[] enabledEnumerableArray, float indent, float checkboxSize, float labelSize)
+        {
+            const float buttonSize = 60f;
+            foreach (var rowEnumerable in enabledEnumerableArray)
+            {
+                var row = FindIndex(rowEnumerable);
+                var r = GUILayoutUtility.GetRect(indent + checkboxSize * enabledEnumerableArray.Length + labelSize * 3 + checkboxSize, checkboxSize);
+                GUI.Label(new Rect(r.xMin, r.yMin, labelSize, checkboxSize), rowEnumerable, "Label");
+                var x = 0;
+                for (var j = enabledEnumerableArray.Length; --j >= 0;)
+                {
+                    var columnEnumerable = enabledEnumerableArray[j];
+                    var tooltip = new GUIContent("", rowEnumerable + " :: " + columnEnumerable);
+                    ref var flag = ref this[row, FindIndex(columnEnumerable)];
+                    flag = GUI.Toggle(new Rect(labelSize + indent + r.x + x * checkboxSize, r.y, checkboxSize, checkboxSize), flag, tooltip);
+                    x++;
+                }
+                var restWidth = (r.xMax - (labelSize + indent + r.x + enabledEnumerableArray.Length * checkboxSize)) * 0.5f;
+                if (GUI.Button(new Rect(r.xMin + labelSize + indent + r.x + x * checkboxSize, r.yMin, restWidth, checkboxSize), new GUIContent("Select All", EnumerableArray[row])))
+                {
+                    for (var column = EnumerableArray.Length; --column >= 0;)
+                        this[row, column] = true;
+                }
+                else if (GUI.Button(new Rect(r.xMin + labelSize + indent + r.x + x * checkboxSize + restWidth, r.yMin, restWidth, checkboxSize), new GUIContent("Deselect All", EnumerableArray[row])))
+                {
+                    for (var column = EnumerableArray.Length; --column >= 0;)
+                        this[row, column] = false;
+                }
+            }
+            GUILayout.Space(indent + buttonSize * 2);
         }
 
         private static void Rotate(Vector2 pivotPoint, int enabledCount, float checkboxSize, Rect lastRect, float offset)
