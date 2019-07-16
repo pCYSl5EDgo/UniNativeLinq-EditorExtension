@@ -52,35 +52,6 @@ namespace UniNativeLinq.Editor
             return false;
         }
 
-        //[MenuItem("UniNativeLinq/Create Single Apis &#e")]
-        public static void Create()
-        {
-            var three = new[] { "Operator", "Func", "RefFunc" };
-            var four = new[] { "None", "Operator", "Func", "RefFunc" };
-            var numbers = new[]
-            {
-                "Int32",
-                "UInt32",
-                "Int64",
-                "UInt64",
-                "Single",
-                "Double",
-            };
-            //foreach (var number in numbers)
-            //{
-            //    Create<WithFuncEnumerableSingleApi>(obj, "MinBy" + number, three);
-            //    Create<WithFuncEnumerableSingleApi>(obj, "MaxBy" + number, three);
-            //}
-            //Create<WithFuncEnumerableSingleApi>(obj, "SelectIndex", three);
-            //Create<WithFuncEnumerableSingleApi>(obj, "Select", three);
-            //Create<WithFuncEnumerableSingleApi>(obj, "WhereIndex", three);
-            //Create<WithFuncEnumerableSingleApi>(obj, "Where", three);
-            //Create<WithFuncEnumerableSingleApi>(obj, "Distinct", four);
-            //Create<WithFuncEnumerableSingleApi>(obj, "OrderBy", four);
-            //Create<WithFuncEnumerableSingleApi>(obj, "SkipWhile", three);
-            //Create<WithFuncEnumerableSingleApi>(obj, "TakeWhile", three);
-        }
-
         private bool fold;
         public void Draw(IEnumerableCollectionProcessor processor)
         {

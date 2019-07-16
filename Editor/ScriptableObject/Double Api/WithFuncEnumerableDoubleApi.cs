@@ -80,14 +80,6 @@ namespace UniNativeLinq.Editor
             return true;
         }
 
-        //[MenuItem("UniNativeLinq/Create Double Api &#d")]
-        public static void Create()
-        {
-            var three = new[] { "Func", "RefFunc", "Operator" };
-
-            //Create<WithFuncEnumerableDoubleApi>(obj, "Join", three);
-        }
-
         [field: SerializeField] public bool IsHided { get; set; }
         [NonSerialized] private bool fold;
         public void Draw(IEnumerableCollectionProcessor processor, ref Vector2 scrollPosition)

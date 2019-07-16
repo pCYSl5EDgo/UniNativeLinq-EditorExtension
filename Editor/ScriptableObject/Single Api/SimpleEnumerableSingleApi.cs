@@ -52,20 +52,6 @@ namespace UniNativeLinq.Editor
             return false;
         }
 
-        //[MenuItem("UniNativeLinq/Create Single Apis &#e")]
-        public static void Create()
-        {   
-            //Create<SimpleEnumerableSingleApi>(obj, "Append");
-            //Create<SimpleEnumerableSingleApi>(obj, "Prepend");
-            //Create<SimpleEnumerableSingleApi>(obj, "DefaultIfEmpty");
-            //Create<SimpleEnumerableSingleApi>(obj, "Skip");
-            //Create<SimpleEnumerableSingleApi>(obj, "Take");
-            //Create<SimpleEnumerableSingleApi>(obj, "SkipLast");
-            //Create<SimpleEnumerableSingleApi>(obj, "TakeLast");
-            //Create<SimpleEnumerableSingleApi>(obj, "Repeat");
-            //Create<SimpleEnumerableSingleApi>(obj, "Reverse");
-        }
-
         private bool fold;
         public void Draw(IEnumerableCollectionProcessor processor)
         {
