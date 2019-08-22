@@ -82,6 +82,14 @@ namespace UniNativeLinq.Editor
                     case "Concat":
                         list.Add(new Concat(api));
                         break;
+                    case "Join":
+                        switch (api.Description)
+                        {
+                            case "Operator":
+                                list.Add(new JoinOperator(api));
+                                break;
+                        }
+                        break;
                 }
             }
             extensionMethodGenerators = list.ToArray();

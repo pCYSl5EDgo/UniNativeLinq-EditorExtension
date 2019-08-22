@@ -13,6 +13,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
         internal static CustomAttribute ExtensionAttribute;
         internal static CustomAttribute IsReadOnlyAttribute;
         internal static CustomAttribute UnManagedAttribute;
+        internal static TypeReference Allocator;
         internal static ModuleDefinition MainModule;
         internal static ModuleDefinition SystemModule;
         internal static ModuleDefinition UnityCoreModule;
@@ -35,7 +36,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             return MainModule.GetType("UniNativeLinq.NegatePredicate`2").GetConstructors().First().Parameters.First().CustomAttributes.First();
         }
 
-        public static (TypeReference BaseTypeReference, GenericInstanceType EnumerableTypeReference, GenericInstanceType enumeratorTypeReference) MakeSpecialTypePair(this GenericParameter genericParameter, string specialName)
+        public static (TypeReference baseEnumerable, GenericInstanceType specialEnumerable, GenericInstanceType specialEnumerator) MakeSpecialTypePair(this GenericParameter genericParameter, string specialName)
         {
             TypeDefinition typeDefinition;
             switch (specialName)
@@ -103,6 +104,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 {"T[]", (MainModule.GetType("UniNativeLinq", "ArrayEnumerable`1"),
                     tx => tx.MakeArrayType())}
             };
+            Allocator = nativeEnumerable1.Methods.First(x => x.Name == "ToNativeArray").Parameters[0].ParameterType;
         }
 
         public static GenericInstanceType MakeGenericInstanceType(this TypeReference self, IEnumerable<TypeReference> arguments)
