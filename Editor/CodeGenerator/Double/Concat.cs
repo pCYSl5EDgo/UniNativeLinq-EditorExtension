@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Mono.Cecil;
+using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
 using UnityEngine;
 
@@ -35,12 +36,12 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
                     if (!Api.TryGetEnabled(rowName, columnName, out var apiEnabled) || !apiEnabled) continue;
 
-                    GenerateEachPair(rowName, isRowSpecial, columnName, isColumnSpecial, @static, mainModule, systemModule);
+                    GenerateEachPair(rowName, isRowSpecial, columnName, isColumnSpecial, @static, mainModule);
                 }
             }
         }
 
-        private void GenerateEachPair(string rowName, bool isRowSpecial, string columnName, bool isColumnSpecial, TypeDefinition @static, ModuleDefinition mainModule, ModuleDefinition systemModule)
+        private void GenerateEachPair(string rowName, bool isRowSpecial, string columnName, bool isColumnSpecial, TypeDefinition @static, ModuleDefinition mainModule)
         {
             var method = new MethodDefinition(nameof(Concat), Helper.StaticMethodAttributes, mainModule.TypeSystem.Boolean)
             {
@@ -51,25 +52,137 @@ namespace UniNativeLinq.Editor.CodeGenerator
             @static.Methods.Add(method);
             if (isRowSpecial && isColumnSpecial)
             {
-                //GenerateSpecialSpecial(rowName, columnName, @static, mainModule, method);
+                GenerateSpecialSpecial(rowName, columnName, @static, mainModule, method);
             }
             else if (isRowSpecial)
             {
-                //GenerateSpecialNormal(rowName, Dictionary[columnName], @static, mainModule, method, specialIndex 0);
+                GenerateSpecialNormal(rowName, Dictionary[columnName], @static, mainModule, method, 0);
             }
             else if (isColumnSpecial)
             {
-                //GenerateSpecialNormal(columnName, Dictionary[rowName], @static, mainModule, method, 1);
+                GenerateSpecialNormal(columnName, Dictionary[rowName], @static, mainModule, method, 1);
             }
             else
             {
-                GenerateNormalNormal(Dictionary[rowName], Dictionary[columnName], @static, mainModule, method, systemModule);
+                GenerateNormalNormal(Dictionary[rowName], Dictionary[columnName], @static, mainModule, method);
             }
         }
 
-        private void GenerateNormalNormal(TypeDefinition type0, TypeDefinition type1, TypeDefinition @static, ModuleDefinition mainModule, MethodDefinition method, ModuleDefinition systemModule)
+        private void GenerateSpecialSpecial(string rowName, string columnName, TypeDefinition @static, ModuleDefinition mainModule, MethodDefinition method)
         {
-            Prepare(type0, mainModule, method, out GenericParameter T, out GenericInstanceType Enumerable0, out TypeReference Enumerator0, out TypeReference Element0);
+            GenericParameter T = new GenericParameter(nameof(T), method) { HasNotNullableValueTypeConstraint = true };
+            T.CustomAttributes.Add(Helper.GetSystemRuntimeInteropServicesUnmanagedTypeConstraintTypeReference());
+            method.GenericParameters.Add(T);
+
+            var (baseSpecialTypeReference0, enumerableTypeReference0, enumeratorTypeReference0) = T.MakeSpecialTypePair(rowName);
+            var (baseSpecialTypeReference1, enumerableTypeReference1, enumeratorTypeReference1) = T.MakeSpecialTypePair(columnName);
+
+            var @return = mainModule.GetType("UniNativeLinq", "ConcatEnumerable`5").MakeGenericInstanceType(new TypeReference[]
+            {
+                enumerableTypeReference0,
+                enumeratorTypeReference0,
+                enumerableTypeReference1,
+                enumeratorTypeReference1,
+                T
+            });
+            method.ReturnType = @return;
+
+            var thisParam = new ParameterDefinition("@this", ParameterAttributes.None, baseSpecialTypeReference0);
+            method.Parameters.Add(thisParam);
+
+            var secondParam = new ParameterDefinition("second", ParameterAttributes.None, baseSpecialTypeReference1);
+            method.Parameters.Add(secondParam);
+
+            method.Body.Variables.Add(new VariableDefinition(enumerableTypeReference0));
+            method.Body.Variables.Add(new VariableDefinition(enumerableTypeReference1));
+
+            var constructor0 = enumerableTypeReference0.FindMethod(".ctor", x => x.Parameters.Count == 1);
+            var constructor1 = enumerableTypeReference1.FindMethod(".ctor", x => x.Parameters.Count == 1);
+
+            method.Body.GetILProcessor()
+                .LdLocA(0)
+                .Dup()
+                .LdArg(0)
+                .Call(constructor0)
+                .LdLocA(1)
+                .Dup()
+                .LdArg(1)
+                .Call(constructor1)
+                .NewObj(@return.FindMethod(".ctor"))
+                .Ret();
+        }
+
+        private void GenerateSpecialNormal(string columnName, TypeDefinition type0, TypeDefinition @static, ModuleDefinition mainModule, MethodDefinition method, int specialIndex)
+        {
+            Prepare(type0, method, out GenericParameter T, out GenericInstanceType Enumerable0, out TypeReference Enumerator0, out TypeReference Element0);
+
+            if (!Element0.Equals(T))
+            {
+                Debug.LogWarning(Element0.FullName + "  is different from " + nameof(T));
+                @static.Methods.Remove(method);
+                return;
+            }
+
+            var (baseSpecialTypeReference, enumerableTypeReference, enumeratorTypeReference) = T.MakeSpecialTypePair(columnName);
+
+            var types = new TypeReference[5]
+            {
+                Enumerable0,
+                Enumerator0,
+                Enumerable0,
+                Enumerator0,
+                T,
+            };
+            types[specialIndex << 1] = enumerableTypeReference;
+            types[(specialIndex << 1) + 1] = enumeratorTypeReference;
+            var @return = mainModule.GetType("UniNativeLinq", "ConcatEnumerable`5").MakeGenericInstanceType(types);
+            method.ReturnType = @return;
+
+            var paramNormal = new ParameterDefinition("@this", ParameterAttributes.In, Enumerable0.MakeByReferenceType());
+            var systemRuntimeCompilerServicesReadonlyAttributeTypeReference = Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference();
+            paramNormal.CustomAttributes.Add(systemRuntimeCompilerServicesReadonlyAttributeTypeReference);
+
+            var paramSpecial = new ParameterDefinition("second", ParameterAttributes.None, baseSpecialTypeReference);
+
+            var processor = method.Body.GetILProcessor();
+
+            var constructor = enumerableTypeReference.FindMethod(".ctor", x => x.Parameters.Count == 1);
+
+            method.Body.Variables.Add(new VariableDefinition(enumerableTypeReference));
+
+            if (specialIndex == 0)
+            {
+                method.Parameters.Add(paramSpecial);
+                method.Parameters.Add(paramNormal);
+
+                processor
+                    .LdLocA(0)
+                    .Dup()
+                    .LdArg(specialIndex)
+                    .Call(constructor)
+                    .LdArg(1);
+            }
+            else
+            {
+                method.Parameters.Add(paramNormal);
+                method.Parameters.Add(paramSpecial);
+
+                processor
+                    .LdLocA(0)
+                    .LdArg(specialIndex)
+                    .Call(constructor)
+                    .LdArg(0)
+                    .LdLocA(0);
+            }
+
+            processor
+                .NewObj(@return.FindMethod(".ctor"))
+                .Ret();
+        }
+
+        private void GenerateNormalNormal(TypeDefinition type0, TypeDefinition type1, TypeDefinition @static, ModuleDefinition mainModule, MethodDefinition method)
+        {
+            Prepare(type0, method, out GenericParameter T, out GenericInstanceType Enumerable0, out TypeReference Enumerator0, out TypeReference Element0);
 
             const string suffix1 = "1";
 
@@ -101,7 +214,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             method.ReturnType = @return;
 
             var thisParam = new ParameterDefinition("@this", ParameterAttributes.In, Enumerable0.MakeByReferenceType());
-            var systemRuntimeCompilerServicesReadonlyAttributeTypeReference = mainModule.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference();
+            var systemRuntimeCompilerServicesReadonlyAttributeTypeReference = Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference();
             thisParam.CustomAttributes.Add(systemRuntimeCompilerServicesReadonlyAttributeTypeReference);
             method.Parameters.Add(thisParam);
 
@@ -117,10 +230,10 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .Ret();
         }
 
-        private void Prepare(TypeDefinition type0, ModuleDefinition mainModule, MethodDefinition method, out GenericParameter T, out GenericInstanceType Enumerable0, out TypeReference Enumerator0, out TypeReference Element0)
+        private void Prepare(TypeDefinition type0, MethodDefinition method, out GenericParameter T, out GenericInstanceType Enumerable0, out TypeReference Enumerator0, out TypeReference Element0)
         {
             T = new GenericParameter(nameof(T), method) { HasNotNullableValueTypeConstraint = true };
-            T.CustomAttributes.Add(mainModule.GetSystemRuntimeInteropServicesUnmanagedTypeConstraintTypeReference());
+            T.CustomAttributes.Add(Helper.GetSystemRuntimeInteropServicesUnmanagedTypeConstraintTypeReference());
             method.GenericParameters.Add(T);
 
             const string suffix0 = "0";

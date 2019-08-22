@@ -162,6 +162,9 @@ namespace UniNativeLinq.Editor.CodeGenerator
             return processor.Add(Instruction.Create(index <= 255 ? OpCodes.Ldloc_S : OpCodes.Ldloc, processor.Body.Variables[index]));
         }
 
+        public static ILProcessor LdLocA(this ILProcessor processor, int index)
+            => processor.Add(Instruction.Create(index < 256 ? OpCodes.Ldloca_S : OpCodes.Ldloca, processor.Body.Variables[index]));
+
         public static ILProcessor LdNull(this ILProcessor processor) => processor.Add(Instruction.Create(OpCodes.Ldnull));
         public static ILProcessor LdStr(this ILProcessor processor, string value) => processor.Add(Instruction.Create(OpCodes.Ldstr, value));
 
@@ -218,6 +221,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
         public static ILProcessor NewArr(this ILProcessor processor, TypeReference elementTypeReference) => processor.Add(Instruction.Create(OpCodes.Newarr, elementTypeReference));
         public static ILProcessor NewObj(this ILProcessor processor, MethodReference constructor) => processor.Add(Instruction.Create(OpCodes.Newobj, constructor));
+        public static ILProcessor InitObj(this ILProcessor processor, TypeReference structTypeReference) => processor.Add(Instruction.Create(OpCodes.Initobj, structTypeReference));
 
         public static ILProcessor Ret(this ILProcessor processor) => processor.Add(Instruction.Create(OpCodes.Ret));
     }

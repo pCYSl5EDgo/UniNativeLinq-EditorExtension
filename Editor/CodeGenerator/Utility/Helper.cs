@@ -5,7 +5,6 @@ using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Rocks;
 using Mono.Collections.Generic;
-using UnityEngine;
 
 namespace UniNativeLinq.Editor.CodeGenerator
 {
@@ -26,14 +25,52 @@ namespace UniNativeLinq.Editor.CodeGenerator
             Initialize();
         }
 
-        public static CustomAttribute GetSystemRuntimeInteropServicesUnmanagedTypeConstraintTypeReference(this ModuleDefinition mainModuleDefinition)
+        public static CustomAttribute GetSystemRuntimeInteropServicesUnmanagedTypeConstraintTypeReference()
         {
-            return mainModuleDefinition.GetType("UniNativeLinq", "NativeEnumerable`1").GenericParameters.First().CustomAttributes[0];
+            return MainModule.GetType("UniNativeLinq", "NativeEnumerable`1").GenericParameters.First().CustomAttributes[0];
         }
 
-        public static CustomAttribute GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference(this ModuleDefinition mainModuleDefinition)
+        public static CustomAttribute GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference()
         {
-            return mainModuleDefinition.GetType("UniNativeLinq.NegatePredicate`2").GetConstructors().First().Parameters.First().CustomAttributes.First();
+            return MainModule.GetType("UniNativeLinq.NegatePredicate`2").GetConstructors().First().Parameters.First().CustomAttributes.First();
+        }
+
+        public static (TypeReference BaseTypeReference, GenericInstanceType EnumerableTypeReference, GenericInstanceType enumeratorTypeReference) MakeSpecialTypePair(this GenericParameter genericParameter, string specialName)
+        {
+            TypeDefinition typeDefinition;
+            switch (specialName)
+            {
+                case "T[]":
+                    typeDefinition = MainModule.GetType("UniNativeLinq", "ArrayEnumerable`1");
+                    return (
+                        new ArrayType(genericParameter),
+                        new GenericInstanceType(typeDefinition)
+                        {
+                            GenericArguments = { genericParameter }
+                        },
+                        new GenericInstanceType(typeDefinition.NestedTypes.First(x => x.Name == "Enumerator"))
+                        {
+                            GenericArguments = { genericParameter }
+                        }
+                    );
+                case "NativeArray<T>":
+                    typeDefinition = MainModule.GetType("UniNativeLinq", "NativeEnumerable`1");
+                    return (
+                        new GenericInstanceType(MainModule.ImportReference(UnityCoreModule.GetType("Unity.Collections", "NativeArray`1")))
+                        {
+                            GenericArguments = { genericParameter }
+                        },
+                        new GenericInstanceType(typeDefinition)
+                        {
+                            GenericArguments = { genericParameter }
+                        },
+                        new GenericInstanceType(typeDefinition.NestedTypes.First(x => x.Name == "Enumerator"))
+                        {
+                            GenericArguments = { genericParameter }
+                        }
+                    );
+                default: throw new ArgumentException(specialName);
+            }
         }
 
         internal static void Initialize()
