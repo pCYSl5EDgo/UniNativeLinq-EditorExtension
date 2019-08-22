@@ -96,6 +96,18 @@ namespace UniNativeLinq.Editor
                                 break;
                         }
                         break;
+                    case "GroupJoin":
+                        switch (api.Description)
+                        {
+                            case "Operator":
+                                list.Add(new GroupJoinOperator(api));
+                                break;
+                            case "Func":
+                                break;
+                            case "RefFunc":
+                                break;
+                        }
+                        break;
                 }
             }
             extensionMethodGenerators = list.ToArray();
