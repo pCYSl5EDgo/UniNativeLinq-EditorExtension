@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using UniNativeLinq.Editor.CodeGenerator;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -15,6 +17,7 @@ namespace UniNativeLinq.Editor
         private ISingleApi[] singleApis;
         private IDoubleApi[] doubleApis;
         private IDependency[] dependencies;
+        private IApiExtensionMethodGenerator[] extensionMethodGenerators;
 
         private bool AnyNull
             => enumerableCollectionProcessor is null ||
@@ -33,6 +36,7 @@ namespace UniNativeLinq.Editor
 
         private void Initialize()
         {
+            Helper.Initialize();
             T1[] Gets<T0, T1>() where T0 : Object where T1 : class
             {
                 var paths = AssetDatabase.FindAssets("t:" + typeof(T0).Name);
@@ -63,7 +67,24 @@ namespace UniNativeLinq.Editor
             if (whetherToUseApiOrNotView is null)
                 whetherToUseApiOrNotView = new DrawableImplWhetherToUseApiOrNot(enumerableCollectionProcessor, singleApis, doubleApis);
             dllGenerator?.Dispose();
-            dllGenerator = new DllGenerator();
+            dllGenerator = new DllGenerator(Helper.MainModule, Helper.SystemModule, Helper.UnityCoreModule);
+
+            InitializeExtensionMethodsGenerator();
+        }
+
+        private void InitializeExtensionMethodsGenerator()
+        {
+            var list = new List<IApiExtensionMethodGenerator>();
+            foreach (var api in doubleApis)
+            {
+                switch (api.Name)
+                {
+                    case "Concat":
+                        list.Add(new Concat(api));
+                        break;
+                }
+            }
+            extensionMethodGenerators = list.ToArray();
         }
 
         void OnGUI()
@@ -74,7 +95,7 @@ namespace UniNativeLinq.Editor
             if (GUILayout.Button("Generate DLL"))
             {
                 AssetDatabase.Refresh();
-                dllGenerator.Execute(enumerableCollectionProcessor, singleApis, doubleApis, dependencies);
+                dllGenerator.Execute(enumerableCollectionProcessor, extensionMethodGenerators, dependencies);
                 Close();
             }
             whetherToIncludeEnumerableOrNotView.Draw(ref scrollPosition);

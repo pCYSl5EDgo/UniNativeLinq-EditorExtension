@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace UniNativeLinq.Editor
 {
-    public sealed class WithFuncEnumerableDoubleApi : String2BoolMatrixTuple, IDoubleApi
+    public sealed class WithFuncEnumerableDoubleApi : String2BoolMatrixTuple, IDoubleApi, IDrawableWithEnumerableAndScrollPosition
     {
         public int CompareTo(IDoubleApi other)
         {
@@ -30,13 +30,18 @@ namespace UniNativeLinq.Editor
         [field: SerializeField] public string[] RelatedEnumerableArray { get; private set; }
         [field: SerializeField] public string[] ExcludeEnumerableArray { get; private set; }
 
-        public IEnumerable<string> NameCollection => EnumerableArray;
+        public string[] NameCollection => EnumerableArray;
 
         public int Count => EnumerableArray.Length;
 
         public bool TryGetEnabled(string name0, string name1, out bool value)
         {
             if (string.IsNullOrWhiteSpace(name0) || string.IsNullOrWhiteSpace(name1))
+            {
+                value = false;
+                return false;
+            }
+            if (!processor.TryGetEnabled(name0, out var enumerableEnabled) || !enumerableEnabled || !processor.TryGetEnabled(name1, out enumerableEnabled) || !enumerableEnabled)
             {
                 value = false;
                 return false;
@@ -82,7 +87,11 @@ namespace UniNativeLinq.Editor
 
         [field: SerializeField] public bool IsHided { get; set; }
         [NonSerialized] private bool fold;
-        public void Draw(IEnumerableCollectionProcessor processor, ref Vector2 scrollPosition)
+
+        [NonSerialized] private IEnumerableCollectionProcessor processor;
+        public void RegisterEnumerableCollectionProcessor(IEnumerableCollectionProcessor enumerableCollectionProcessor) => processor = enumerableCollectionProcessor ?? throw new ArgumentNullException();
+
+        public void Draw(ref Vector2 scrollPosition)
         {
             if (IsHided) return;
             foreach (var relatedEnumerable in RelatedEnumerableArray)
@@ -95,10 +104,10 @@ namespace UniNativeLinq.Editor
                 if (!enabled) return;
             }
             if (!FoldoutUtility.Draw(ref fold, Name + "\t\t" + Description)) return;
-            ShowMatrix(processor, ref scrollPosition);
+            ShowMatrix(ref scrollPosition);
         }
 
-        private void ShowMatrix(IEnumerableCollectionProcessor processor, ref Vector2 scrollPosition)
+        private void ShowMatrix(ref Vector2 scrollPosition)
         {
             using (IndentScope.Create())
             using (new EditorGUILayout.VerticalScope())

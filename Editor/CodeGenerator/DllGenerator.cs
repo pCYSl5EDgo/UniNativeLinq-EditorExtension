@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.IO;
 using System.Linq;
 using Mono.Cecil;
-using Mono.Cecil.Rocks;
+using UniNativeLinq.Editor.CodeGenerator;
 using UnityEditor;
 using UnityEngine;
 
@@ -16,27 +15,28 @@ namespace UniNativeLinq.Editor
         private readonly ModuleDefinition systemModule;
         private readonly ModuleDefinition unityCoreModule;
 
-        public DllGenerator()
+        public DllGenerator(ModuleDefinition mainModule, ModuleDefinition systemModule, ModuleDefinition unityCoreModule)
         {
-            var defaultAssemblyResolver = new DefaultAssemblyResolver();
-            mainModule = AssemblyDefinition.ReadAssembly(GetDllFolderHelper.GetFolder() + "UniNativeLinq.bytes", new ReaderParameters(ReadingMode.Deferred)
-            {
-                AssemblyResolver = defaultAssemblyResolver
-            }).MainModule;
-            systemModule = AssemblyDefinition.ReadAssembly(GetDllFolderHelper.GetFolder() + "netstandard.bytes", new ReaderParameters(ReadingMode.Deferred)
-            {
-                AssemblyResolver = defaultAssemblyResolver,
-            }).MainModule;
-            unityCoreModule = AssemblyDefinition.ReadAssembly(UnityEditorInternal.InternalEditorUtility.GetEngineCoreModuleAssemblyPath(), new ReaderParameters(ReadingMode.Deferred)
-            {
-                AssemblyResolver = defaultAssemblyResolver,
-            }).MainModule;
+            this.mainModule = mainModule;
+            this.systemModule = systemModule;
+            this.unityCoreModule = unityCoreModule;
         }
 
-        public void Execute(IEnumerableCollectionProcessor processor, ISingleApi[] singleApis, IDoubleApi[] doubleApis, IDependency[] dependencies)
+        public void Execute(IEnumerableCollectionProcessor processor, IApiExtensionMethodGenerator[] generators, IDependency[] dependencies)
         {
             RemoveUnnecessaryEnumerable(processor, dependencies, out var enumerableDefinitionDictionary, out var dependencyDictionary);
+            GenerateExtensionMethods(processor, generators, enumerableDefinitionDictionary);
             Write();
+        }
+
+        private void GenerateExtensionMethods(IEnumerableCollectionProcessor processor, IApiExtensionMethodGenerator[] generators, Dictionary<string, TypeDefinition> definitions)
+        {
+            foreach (var generator in generators)
+            {
+                if (generator is ITypeDictionaryHolder holder)
+                    holder.Dictionary = definitions;
+                generator.Generate(processor, mainModule, systemModule, unityCoreModule);
+            }
         }
 
         private void RemoveUnnecessaryEnumerable(IEnumerableCollectionProcessor processor, IDependency[] dependencies, out Dictionary<string, TypeDefinition> enumerableDefinitionDictionary, out Dictionary<string, IDependency> dependencyDictionary)

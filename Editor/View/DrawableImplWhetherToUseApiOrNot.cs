@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -13,6 +12,7 @@ namespace UniNativeLinq.Editor
         private readonly IEnumerableCollectionProcessor processor;
         private readonly ISingleApi[] singleApis;
         private readonly IDoubleApi[] doubleApis;
+
         public DrawableImplWhetherToUseApiOrNot(IEnumerableCollectionProcessor processor, ISingleApi[] singleApis, IDoubleApi[] doubleApis)
         {
             this.processor = processor;
@@ -20,6 +20,10 @@ namespace UniNativeLinq.Editor
             Array.Sort(this.singleApis);
             this.doubleApis = doubleApis ?? Array.Empty<IDoubleApi>();
             Array.Sort(this.doubleApis);
+            foreach (var api in doubleApis)
+            {
+                ((IDrawableWithEnumerableAndScrollPosition)api).RegisterEnumerableCollectionProcessor(processor);
+            }
         }
 
         public void Draw(ref Vector2 scrollPosition)
@@ -66,7 +70,7 @@ namespace UniNativeLinq.Editor
             {
                 foreach (var api in doubleApis)
                 {
-                    api.Draw(processor, ref scrollPosition);
+                    ((IDrawableWithEnumerableAndScrollPosition)api).Draw(ref scrollPosition);
                 }
             }
         }

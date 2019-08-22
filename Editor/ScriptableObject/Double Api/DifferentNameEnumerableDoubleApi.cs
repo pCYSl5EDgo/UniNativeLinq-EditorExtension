@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace UniNativeLinq.Editor
 {
-    public sealed class DifferentNameEnumerableDoubleApi : String2BoolMatrixTuple, IDoubleApi
+    public sealed class DifferentNameEnumerableDoubleApi : String2BoolMatrixTuple, IDoubleApi, IDrawableWithEnumerableAndScrollPosition
     {
         public int CompareTo(IDoubleApi other)
         {
@@ -28,13 +28,18 @@ namespace UniNativeLinq.Editor
         [field: SerializeField] public string[] RelatedEnumerableArray { get; private set; }
         [field: SerializeField] public string[] ExcludeEnumerableArray { get; private set; }
 
-        public IEnumerable<string> NameCollection => EnumerableArray;
+        public string[] NameCollection => EnumerableArray;
 
         public int Count => EnumerableArray.Length;
 
         public bool TryGetEnabled(string name0, string name1, out bool value)
         {
             if (string.IsNullOrWhiteSpace(name0) || string.IsNullOrWhiteSpace(name1))
+            {
+                value = false;
+                return false;
+            }
+            if (!processor.TryGetEnabled(name0, out var enumerableEnabled) || !enumerableEnabled || !processor.TryGetEnabled(name1, out enumerableEnabled) || !enumerableEnabled)
             {
                 value = false;
                 return false;
@@ -80,7 +85,11 @@ namespace UniNativeLinq.Editor
 
         [field: SerializeField] public bool IsHided { get; set; }
         [NonSerialized] private bool fold;
-        public void Draw(IEnumerableCollectionProcessor processor, ref Vector2 scrollPosition)
+
+        [NonSerialized] private IEnumerableCollectionProcessor processor;
+        public void RegisterEnumerableCollectionProcessor(IEnumerableCollectionProcessor enumerableCollectionProcessor) => processor = enumerableCollectionProcessor ?? throw new ArgumentNullException();
+
+        public void Draw(ref Vector2 scrollPosition)
         {
             if (IsHided) return;
             foreach (var relatedEnumerable in RelatedEnumerableArray)
@@ -93,10 +102,10 @@ namespace UniNativeLinq.Editor
                 if (!enabled) return;
             }
             if (!FoldoutUtility.Draw(ref fold, Name + "\t\t" + Description)) return;
-            ShowMatrix(processor, ref scrollPosition);
+            ShowMatrix(ref scrollPosition);
         }
 
-        private void ShowMatrix(IEnumerableCollectionProcessor processor, ref Vector2 scrollPosition)
+        private void ShowMatrix(ref Vector2 scrollPosition)
         {
             using (IndentScope.Create())
             using (new EditorGUILayout.VerticalScope())
@@ -124,12 +133,12 @@ namespace UniNativeLinq.Editor
                     IsHided = true;
                     Array.Clear(EnabledArray, 0, EnabledArray.Length);
                 }
-                DrawRotatedColumnLabels(processor, scrollPosition, pivotPoint, enabledEnumerableArray, checkboxSize, lastRect, labelSize, buttonSize);
+                DrawRotatedColumnLabels(scrollPosition, pivotPoint, enabledEnumerableArray, checkboxSize, lastRect, labelSize, buttonSize);
                 DrawCheckBoxMatrix(enabledEnumerableArray, indent, checkboxSize, labelSize);
             }
         }
 
-        private void DrawRotatedColumnLabels(IEnumerableCollectionProcessor processor, Vector2 scrollPosition, Vector2 pivotPoint, string[] enabledEnumerableArray, float checkboxSize, Rect lastRect, float labelSize, float buttonSize)
+        private void DrawRotatedColumnLabels(Vector2 scrollPosition, Vector2 pivotPoint, string[] enabledEnumerableArray, float checkboxSize, Rect lastRect, float labelSize, float buttonSize)
         {
             const float indent = 30f;
 
