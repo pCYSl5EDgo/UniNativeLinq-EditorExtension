@@ -88,6 +88,12 @@ namespace UniNativeLinq.Editor
                             case "Operator":
                                 list.Add(new JoinOperator(api));
                                 break;
+                            case "Func":
+                                list.Add(new JoinFunc(api));
+                                break;
+                            case "RefFunc":
+                                list.Add(new JoinRefFunc(api));
+                                break;
                         }
                         break;
                 }

@@ -864,6 +864,33 @@ namespace UniNativeLinq.Editor.CodeGenerator
         public static ILProcessor LdLocA(this ILProcessor processor, int index)
             => processor.Add(Instruction.Create(index < 256 ? OpCodes.Ldloca_S : OpCodes.Ldloca, processor.Body.Variables[index]));
 
+        public static ILProcessor LdLocAs(this ILProcessor processor, int length)
+        {
+            for (var i = 0; i < length; i++)
+            {
+                processor.LdLocA(i);
+            }
+            return processor;
+        }
+        public static ILProcessor LdLocAs(this ILProcessor processor, int start, int length)
+        {
+            if (length > 0)
+            {
+                for (var i = 0; i < length; i++)
+                {
+                    processor.LdLocA(start + i);
+                }
+            }
+            else
+            {
+                for (var i = 0; i > length; --i)
+                {
+                    processor.LdLocA(start + i);
+                }
+            }
+            return processor;
+        }
+
         public static ILProcessor LdNull(this ILProcessor processor) => processor.Add(Instruction.Create(OpCodes.Ldnull));
         public static ILProcessor LdStr(this ILProcessor processor, string value) => processor.Add(Instruction.Create(OpCodes.Ldstr, value));
 
@@ -886,9 +913,19 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
         public static ILProcessor LdArgs(this ILProcessor processor, int start, int length)
         {
-            for (var i = 0; i < length; i++)
+            if (length > 0)
             {
-                processor.LdArg(start + i);
+                for (var i = 0; i < length; i++)
+                {
+                    processor.LdArg(start + i);
+                }
+            }
+            else
+            {
+                for (var i = 0; i > length; --i)
+                {
+                    processor.LdArg(start + i);
+                }
             }
             return processor;
         }
@@ -903,6 +940,25 @@ namespace UniNativeLinq.Editor.CodeGenerator
         }
 
         public static ILProcessor StLoc(this ILProcessor processor, VariableDefinition variableDefinition) => processor.StLoc(processor.Body.Variables.IndexOf(variableDefinition));
+
+        public static ILProcessor StLocs(this ILProcessor processor, int start, int length)
+        {
+            if (length > 0)
+            {
+                for (var i = 0; i < length; i++)
+                {
+                    processor.StLoc(start + i);
+                }
+            }
+            else
+            {
+                for (var i = 0; i > length; --i)
+                {
+                    processor.StLoc(start + i);
+                }
+            }
+            return processor;
+        }
         public static ILProcessor StLoc(this ILProcessor processor, int index)
         {
             switch (index)
