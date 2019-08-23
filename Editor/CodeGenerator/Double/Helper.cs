@@ -25,5 +25,14 @@ namespace UniNativeLinq.Editor.CodeGenerator
             {
                 CustomAttributes = { Helper.ExtensionAttribute }
             };
+
+        public static (TypeReference element, TypeReference enumerable, TypeReference enumerator) MakeGenericInstanceVariant(this TypeDefinition type, string suffix, MethodDefinition method)
+        {
+            var added0 = method.FromTypeToMethodParam(type.GenericParameters, suffix);
+            var enumerable = type.MakeGenericInstanceType(added0);
+            var enumerator = enumerable.GetEnumeratorTypeOfCollectionType().Replace(added0, suffix);
+            var element = enumerable.GetElementTypeOfCollectionType().Replace(added0, suffix);
+            return (element, enumerable, enumerator);
+        }
     }
 }

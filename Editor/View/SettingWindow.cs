@@ -77,40 +77,75 @@ namespace UniNativeLinq.Editor
             var list = new List<IApiExtensionMethodGenerator>();
             foreach (var api in doubleApis)
             {
-                switch (api.Name)
-                {
-                    case "Concat":
-                        list.Add(new Concat(api));
-                        break;
-                    case "Join":
-                        switch (api.Description)
-                        {
-                            case "Operator":
-                                list.Add(new JoinOperator(api));
-                                break;
-                            case "Func":
-                                list.Add(new JoinFunc(api));
-                                break;
-                            case "RefFunc":
-                                list.Add(new JoinRefFunc(api));
-                                break;
-                        }
-                        break;
-                    case "GroupJoin":
-                        switch (api.Description)
-                        {
-                            case "Operator":
-                                list.Add(new GroupJoinOperator(api));
-                                break;
-                            case "Func":
-                                break;
-                            case "RefFunc":
-                                break;
-                        }
-                        break;
-                }
+                RegisterEachDoubleApi(api, list);
             }
             extensionMethodGenerators = list.ToArray();
+        }
+
+        private static void RegisterEachDoubleApi(IDoubleApi api, List<IApiExtensionMethodGenerator> list)
+        {
+            switch (api.Name)
+            {
+                case "Concat":
+                    list.Add(new Concat(api));
+                    break;
+                case "Join":
+                    switch (api.Description)
+                    {
+                        case "Operator":
+                            list.Add(new JoinOperator(api));
+                            break;
+                        case "Func":
+                            list.Add(new JoinFunc(api));
+                            break;
+                        case "RefFunc":
+                            list.Add(new JoinRefFunc(api));
+                            break;
+                    }
+                    break;
+                case "GroupJoin":
+                    switch (api.Description)
+                    {
+                        case "Operator":
+                            list.Add(new GroupJoinOperator(api));
+                            break;
+                        case "Func":
+                            list.Add(new GroupJoinFunc(api));
+                            break;
+                        case "RefFunc":
+                            list.Add(new GroupJoinRefFunc(api));
+                            break;
+                    }
+                    break;
+                case "AdjustedZip":
+                    switch (api.Description)
+                    {
+                        case "None":
+                            list.Add(new AdjustedZipNone(api));
+                            break;
+                        case "Operator":
+                            break;
+                        case "Func":
+                            break;
+                        case "RefFunc":
+                            break;
+                    }
+                    break;
+                case "ExceptionalZip":
+                    switch (api.Description)
+                    {
+                        case "None":
+                            list.Add(new ExceptionalZipNone(api));
+                            break;
+                        case "Operator":
+                            break;
+                        case "Func":
+                            break;
+                        case "RefFunc":
+                            break;
+                    }
+                    break;
+            }
         }
 
         void OnGUI()

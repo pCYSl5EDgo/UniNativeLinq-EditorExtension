@@ -133,12 +133,12 @@ namespace UniNativeLinq.Editor.CodeGenerator
         public static FieldReference MakeHostInstanceGeneric(this FieldReference self, IEnumerable<TypeReference> arguments)
             => new FieldReference(self.Name, self.FieldType, self.DeclaringType.MakeGenericInstanceType(arguments));
 
-        public static MethodReference FindMethod(this GenericInstanceType type, string name)
+        public static MethodReference FindMethod(this TypeReference type, string name)
         {
             var typeDefinition = type.ToDefinition();
             var methodDefinition = typeDefinition.Methods.Single(x => x.Name == name);
             var imported = type.Module.ImportReference(methodDefinition);
-            return imported.MakeHostInstanceGeneric(type.GenericArguments);
+            return type is GenericInstanceType genericInstanceType ? imported.MakeHostInstanceGeneric(genericInstanceType.GenericArguments) : imported;
         }
 
         public static FieldReference FindField(this GenericInstanceType type, string name)
@@ -148,11 +148,12 @@ namespace UniNativeLinq.Editor.CodeGenerator
             return definition.MakeHostInstanceGeneric(type.GenericArguments);
         }
 
-        public static MethodReference FindMethod(this GenericInstanceType type, string name, Func<MethodDefinition, bool> predicate)
+        public static MethodReference FindMethod(this TypeReference type, string name, Func<MethodDefinition, bool> predicate)
         {
             var methodDefinitions = type.ToDefinition().Methods;
             var methodDefinition = methodDefinitions.Single(x => x.Name == name && predicate(x));
-            return methodDefinition.MakeHostInstanceGeneric(type.GenericArguments);
+            var imported = type.Module.ImportReference(methodDefinition);
+            return type is GenericInstanceType genericInstanceType ? imported.MakeHostInstanceGeneric(genericInstanceType.GenericArguments) : imported;
         }
 
         public static GenericInstanceType FindNested(this GenericInstanceType type, string name)

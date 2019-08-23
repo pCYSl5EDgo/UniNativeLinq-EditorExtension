@@ -5,7 +5,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
 {
     public static class SpecialArgumentProcessorHelper
     {
-        public static ILProcessor LdConvArg(this ILProcessor processor, GenericInstanceType enumerableGenericInstanceType, int specialArgumentIndex)
+        public static ILProcessor LdConvArg(this ILProcessor processor, TypeReference enumerableGenericInstanceType, int specialArgumentIndex)
         {
             var variables = processor.Body.Variables;
             var variableIndex = variables.Count;

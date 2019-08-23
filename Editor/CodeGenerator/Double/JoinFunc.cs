@@ -94,7 +94,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .Ret();
         }
 
-        private static void DefineVariables(MethodBody body, GenericInstanceType keySelector0, GenericInstanceType keySelector1, GenericInstanceType keyEqualityComparer, GenericInstanceType tSelector)
+        private static void DefineVariables(MethodBody body, TypeReference keySelector0, TypeReference keySelector1, TypeReference keyEqualityComparer, TypeReference tSelector)
         {
             var variableDefinitions = body.Variables;
             variableDefinitions.Add(new VariableDefinition(keySelector0));
@@ -107,15 +107,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
         {
             var (key, keyEqualityComparer, T) = Prepare(method, mainModule, systemModule);
 
-            GenericInstanceType enumerable0;
-            TypeReference enumerator0;
-            TypeReference element0;
-            GenericInstanceType keySelector0;
-            TypeReference element1;
-            TypeReference baseEnumerable;
-            GenericInstanceType enumerable1;
-            TypeReference enumerator1;
-            GenericInstanceType keySelector1;
+            TypeReference enumerable0, enumerator0, element0, keySelector0, element1, baseEnumerable, enumerable1, enumerator1, keySelector1;
 
             if (specialIndex == 0)
             {
@@ -215,7 +207,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .Ret();
         }
 
-        private static void DefineOuterInner(MethodDefinition method, GenericInstanceType enumerable0, GenericInstanceType enumerable1)
+        private static void DefineOuterInner(MethodDefinition method, TypeReference enumerable0, TypeReference enumerable1)
         {
             ParameterDefinition outer = new ParameterDefinition(nameof(outer), ParameterAttributes.In, new ByReferenceType(enumerable0));
             outer.CustomAttributes.Add(Helper.IsReadOnlyAttribute);
@@ -247,12 +239,9 @@ namespace UniNativeLinq.Editor.CodeGenerator
             return (TKey, TKeyEqualityComparer, T);
         }
 
-        private static void Routine(TypeReference type, MethodDefinition method, string suffix, GenericParameter key, out GenericInstanceType enumerable, out TypeReference enumerator, out TypeReference element, out GenericInstanceType keySelector)
+        private static void Routine(TypeDefinition type, MethodDefinition method, string suffix, TypeReference key, out TypeReference enumerable, out TypeReference enumerator, out TypeReference element, out TypeReference keySelector)
         {
-            var added0 = method.FromTypeToMethodParam(type.GenericParameters, suffix);
-            enumerable = type.MakeGenericInstanceType(added0);
-            enumerator = enumerable.GetEnumeratorTypeOfCollectionType().Replace(added0, suffix);
-            element = enumerable.GetElementTypeOfCollectionType().Replace(added0, suffix);
+            (element, enumerable, enumerator) = type.MakeGenericInstanceVariant(suffix, method);
 
             keySelector = new GenericInstanceType(method.Module.GetType("UniNativeLinq", "DelegateFuncToStructOperatorFunc`2"))
             {
@@ -265,9 +254,9 @@ namespace UniNativeLinq.Editor.CodeGenerator
         }
 
         private static void Epilogue(MethodDefinition method, ModuleDefinition mainModule, ModuleDefinition systemModule,
-            TypeReference element0, TypeReference element1, GenericParameter T, GenericInstanceType enumerable0,
-            TypeReference enumerator0, GenericInstanceType enumerable1, TypeReference enumerator1, GenericParameter key,
-            GenericInstanceType tKeySelector0, GenericInstanceType tKeySelector1, TypeReference tKeyEqualityComparer,
+            TypeReference element0, TypeReference element1, TypeReference T, TypeReference enumerable0,
+            TypeReference enumerator0, TypeReference enumerable1, TypeReference enumerator1, TypeReference key,
+            TypeReference tKeySelector0, TypeReference tKeySelector1, TypeReference tKeyEqualityComparer,
             out GenericInstanceType @return, out GenericInstanceType tSelector)
         {
             tSelector = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "DelegateFuncToStructOperatorFunc`3"))

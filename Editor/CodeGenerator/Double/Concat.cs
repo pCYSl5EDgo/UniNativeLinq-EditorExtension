@@ -249,7 +249,6 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 parameter.RewriteConstraints(nameof(T), T);
             }
             enumerable0 = type0.MakeGenericInstanceType(added0.Append(T));
-
             enumerator0 = enumerable0.GetEnumeratorTypeOfCollectionType().Replace(added0, nameof(T), T, suffix0);
             element0 = enumerable0.GetElementTypeOfCollectionType().Replace(added0, nameof(T), T, suffix0);
         }
