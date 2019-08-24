@@ -162,6 +162,7 @@ namespace UniNativeLinq.Editor
                             list.Add(new ExceptOperator(api));
                             break;
                         case "Func":
+                            list.Add(new ExceptFunc(api));
                             break;
                         case "RefFunc":
                             break;
@@ -174,8 +175,10 @@ namespace UniNativeLinq.Editor
                             list.Add(new IntersectNone(api));
                             break;
                         case "Operator":
+                            list.Add(new IntersectOperator(api));
                             break;
                         case "Func":
+                            list.Add(new IntersectFunc(api));
                             break;
                         case "RefFunc":
                             break;
