@@ -24,7 +24,7 @@ namespace UniNativeLinq.Editor
 
         public void Execute(IEnumerableCollectionProcessor processor, IApiExtensionMethodGenerator[] generators, IDependency[] dependencies)
         {
-            RemoveUnnecessaryEnumerable(processor, dependencies, out var enumerableDefinitionDictionary, out var dependencyDictionary);
+            RemoveUnnecessaryEnumerable(processor, dependencies, out var enumerableDefinitionDictionary, out _);
             GenerateExtensionMethods(processor, generators, enumerableDefinitionDictionary);
             Write();
         }

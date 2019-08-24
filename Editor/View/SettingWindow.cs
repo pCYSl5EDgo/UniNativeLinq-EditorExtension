@@ -28,7 +28,8 @@ namespace UniNativeLinq.Editor
                whetherToIncludeEnumerableOrNotView is null;
 
         [MenuItem("UniNativeLinq/Open Settings &#c")]
-        static void Open()
+        // ReSharper disable once UnusedMember.Local
+        private static void Open()
         {
             var window = GetWindow<SettingWindow>(typeof(SceneView));
             window.Initialize();
@@ -124,10 +125,13 @@ namespace UniNativeLinq.Editor
                             list.Add(new AdjustedZipNone(api));
                             break;
                         case "Operator":
+                            list.Add(new AdjustedZipOperator(api));
                             break;
                         case "Func":
+                            list.Add(new AdjustedZipFunc(api));
                             break;
                         case "RefFunc":
+                            list.Add(new AdjustedZipRefFunc(api));
                             break;
                     }
                     break;
@@ -136,6 +140,37 @@ namespace UniNativeLinq.Editor
                     {
                         case "None":
                             list.Add(new ExceptionalZipNone(api));
+                            break;
+                        case "Operator":
+                            list.Add(new ExceptionalZipOperator(api));
+                            break;
+                        case "Func":
+                            list.Add(new ExceptionalZipFunc(api));
+                            break;
+                        case "RefFunc":
+                            list.Add(new ExceptionalZipRefFunc(api));
+                            break;
+                    }
+                    break;
+                case "Except":
+                    switch (api.Description)
+                    {
+                        case "None":
+                            list.Add(new ExceptNone(api));
+                            break;
+                        case "Operator":
+                            break;
+                        case "Func":
+                            break;
+                        case "RefFunc":
+                            break;
+                    }
+                    break;
+                case "Intersect":
+                    switch (api.Description)
+                    {
+                        case "None":
+                            list.Add(new IntersectNone(api));
                             break;
                         case "Operator":
                             break;
@@ -148,7 +183,9 @@ namespace UniNativeLinq.Editor
             }
         }
 
-        void OnGUI()
+        // ReSharper disable once UnusedMember.Local
+        // ReSharper disable once InconsistentNaming
+        private void OnGUI()
         {
             if (AnyNull)
                 Initialize();

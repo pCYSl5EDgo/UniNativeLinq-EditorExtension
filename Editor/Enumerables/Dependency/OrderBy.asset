@@ -16,7 +16,6 @@ MonoBehaviour:
   <Types>k__BackingField:
   - IRefOrderedEnumerable`5
   - CompoundOrderBy`3
-  - DefaultOrderByAscending`1
   - DefaultOrderByAscendingByte
   - DefaultOrderByAscendingSByte
   - DefaultOrderByAscendingUInt16

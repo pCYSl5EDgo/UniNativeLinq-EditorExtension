@@ -186,17 +186,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
         {
             Prepare(type0, method, out var T, out var enumerable0, out var enumerator0, out var element0);
 
-            const string suffix1 = "1";
-
-            var added1 = method.FromTypeToMethodParam(type1.GenericParameters, nameof(T), T, suffix1);
-            foreach (var parameter in added1)
-            {
-                parameter.RewriteConstraints(nameof(T), T);
-            }
-            var enumerable1 = type1.MakeGenericInstanceType(added1.Append(T));
-
-            var enumerator1 = enumerable1.GetEnumeratorTypeOfCollectionType().Replace(added1, nameof(T), T, suffix1);
-            var element1 = enumerable1.GetElementTypeOfCollectionType().Replace(added1, nameof(T), T, suffix1);
+            var (enumerable1, enumerator1, element1) = T.MakeFromCommonType(method, type1, "1");
 
             if (!element0.Equals(element1))
             {
@@ -235,22 +225,16 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .Ret();
         }
 
-        private void Prepare(TypeDefinition type0, MethodDefinition method, out GenericParameter T, out GenericInstanceType enumerable0, out TypeReference enumerator0, out TypeReference element0)
+        private void Prepare(TypeDefinition type0, MethodDefinition method, out GenericParameter T, out TypeReference enumerable0, out TypeReference enumerator0, out TypeReference element0)
         {
-            T = new GenericParameter(nameof(T), method) { HasNotNullableValueTypeConstraint = true };
-            T.CustomAttributes.Add(Helper.GetSystemRuntimeInteropServicesUnmanagedTypeConstraintTypeReference());
+            T = new GenericParameter(nameof(T), method)
+            {
+                HasNotNullableValueTypeConstraint = true,
+                CustomAttributes = { Helper.GetSystemRuntimeInteropServicesUnmanagedTypeConstraintTypeReference() }
+            };
             method.GenericParameters.Add(T);
 
-            const string suffix0 = "0";
-
-            var added0 = method.FromTypeToMethodParam(type0.GenericParameters, nameof(T), T, suffix0);
-            foreach (var parameter in added0)
-            {
-                parameter.RewriteConstraints(nameof(T), T);
-            }
-            enumerable0 = type0.MakeGenericInstanceType(added0.Append(T));
-            enumerator0 = enumerable0.GetEnumeratorTypeOfCollectionType().Replace(added0, nameof(T), T, suffix0);
-            element0 = enumerable0.GetElementTypeOfCollectionType().Replace(added0, nameof(T), T, suffix0);
+            (enumerable0, enumerator0, element0) = T.MakeFromCommonType(method, type0, "0");
         }
     }
 }
