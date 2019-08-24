@@ -89,7 +89,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .StLoc(0)
                 .LdLocA(0)
                 .LdArg(3)
-                .NewObj(@return.FindMethod(".ctor"))
+                .NewObj(@return.FindMethod(".ctor", x => x.Parameters.Count == 4))
                 .Ret();
         }
 
@@ -121,7 +121,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                     .StLoc(0)
                     .LdLocA(0)
                     .LdArg(3)
-                    .NewObj(@return.FindMethod(".ctor"))
+                    .NewObj(@return.FindMethod(".ctor", x => x.Parameters.Count == 4))
                     .Ret();
             }
             else
@@ -146,7 +146,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                     .StLoc(0)
                     .LdLocA(0)
                     .LdArg(3)
-                    .NewObj(@return.FindMethod(".ctor"))
+                    .NewObj(@return.FindMethod(".ctor", x => x.Parameters.Count == 4))
                     .Ret();
             }
         }
@@ -204,7 +204,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .StLoc(0)
                 .LdLocA(0)
                 .LdArg(3)
-                .NewObj(@return.FindMethod(".ctor"))
+                .NewObj(@return.FindMethod(".ctor", x => x.Parameters.Count == 4))
                 .Ret();
         }
 

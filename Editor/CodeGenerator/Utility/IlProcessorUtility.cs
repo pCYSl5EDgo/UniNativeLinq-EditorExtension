@@ -894,6 +894,9 @@ namespace UniNativeLinq.Editor.CodeGenerator
         public static ILProcessor LdNull(this ILProcessor processor) => processor.Add(Instruction.Create(OpCodes.Ldnull));
         public static ILProcessor LdStr(this ILProcessor processor, string value) => processor.Add(Instruction.Create(OpCodes.Ldstr, value));
 
+        public static ILProcessor LdFld(this ILProcessor processor, FieldReference fieldReference) => processor.Add(Instruction.Create(OpCodes.Ldfld, fieldReference));
+        public static ILProcessor LdFldA(this ILProcessor processor, FieldReference fieldReference) => processor.Add(Instruction.Create(OpCodes.Ldflda, fieldReference));
+
         public static ILProcessor LdArg(this ILProcessor processor, int index)
         {
             switch (index)

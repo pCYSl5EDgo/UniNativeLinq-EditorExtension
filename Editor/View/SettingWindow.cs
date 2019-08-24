@@ -165,6 +165,7 @@ namespace UniNativeLinq.Editor
                             list.Add(new ExceptFunc(api));
                             break;
                         case "RefFunc":
+                            list.Add(new ExceptRefFunc(api));
                             break;
                     }
                     break;
@@ -179,6 +180,21 @@ namespace UniNativeLinq.Editor
                             break;
                         case "Func":
                             list.Add(new IntersectFunc(api));
+                            break;
+                        case "RefFunc":
+                            list.Add(new IntersectRefFunc(api));
+                            break;
+                    }
+                    break;
+                case "Union":
+                    switch (api.Description)
+                    {
+                        case "None":
+                            list.Add(new UnionNone(api));
+                            break;
+                        case "Operator":
+                            break;
+                        case "Func":
                             break;
                         case "RefFunc":
                             break;

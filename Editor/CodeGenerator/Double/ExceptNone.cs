@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Mono.Cecil;
-using Mono.Cecil.Cil;
 
 // ReSharper disable InconsistentNaming
 namespace UniNativeLinq.Editor.CodeGenerator
@@ -73,7 +72,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             {
                 GenericArguments = { T }
             };
-            var (TSetOperation, @return) = Epilogue(mainModule, method, enumerable0, enumerator0, enumerable1, enumerator1, T, TComparer);
+            var @return = Epilogue(mainModule, method, enumerable0, enumerator0, enumerable1, enumerator1, T, TComparer);
 
             var param0 = new ParameterDefinition("@this", ParameterAttributes.None, baseEnumerable0);
             method.Parameters.Add(param0);
@@ -83,14 +82,11 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
             var body = method.Body;
 
-            body.Variables.Add(new VariableDefinition(TSetOperation));
-
             body.GetILProcessor()
                 .LdConvArg(enumerable0, 0)
                 .LdConvArg(enumerable1, 1)
-                .LdLocA(0)
                 .LdArg(2)
-                .NewObj(@return.FindMethod(".ctor"))
+                .NewObj(@return.FindMethod(".ctor", x => x.Parameters.Count == 3))
                 .Ret();
         }
 
@@ -107,7 +103,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             {
                 var (baseEnumerable, enumerable0, enumerator0) = T.MakeSpecialTypePair(specialName);
                 var (enumerable1, enumerator1, _) = T.MakeFromCommonType(method, type, "1");
-                var (TSetOperation, @return) = Epilogue(mainModule, method, enumerable0, enumerator0, enumerable1, enumerator1, T, TComparer);
+                var @return = Epilogue(mainModule, method, enumerable0, enumerator0, enumerable1, enumerator1, T, TComparer);
 
                 var param0 = new ParameterDefinition("@this", ParameterAttributes.None, baseEnumerable);
                 method.Parameters.Add(param0);
@@ -116,21 +112,17 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 method.Parameters.Add(param1);
                 DefineAllocator(method);
 
-                body.Variables.Add(new VariableDefinition(TSetOperation));
-
                 body.GetILProcessor()
                     .LdConvArg(enumerable0, 0)
-                    .LdArg(1)
-                    .LdLocA(0)
-                    .LdArg(2)
-                    .NewObj(@return.FindMethod(".ctor"))
+                    .LdArgs(1, 2)
+                    .NewObj(@return.FindMethod(".ctor", x => x.Parameters.Count == 3))
                     .Ret();
             }
             else
             {
                 var (enumerable0, enumerator0, _) = T.MakeFromCommonType(method, type, "0");
                 var (baseEnumerable, enumerable1, enumerator1) = T.MakeSpecialTypePair(specialName);
-                var (TSetOperation, @return) = Epilogue(mainModule, method, enumerable0, enumerator0, enumerable1, enumerator1, T, TComparer);
+                var @return = Epilogue(mainModule, method, enumerable0, enumerator0, enumerable1, enumerator1, T, TComparer);
 
                 var param0 = new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(enumerable0));
                 param0.CustomAttributes.Add(Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference());
@@ -139,14 +131,11 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 method.Parameters.Add(param1);
                 DefineAllocator(method);
 
-                body.Variables.Add(new VariableDefinition(TSetOperation));
-
                 body.GetILProcessor()
                     .LdArg(0)
                     .LdConvArg(enumerable1, 1)
-                    .LdLocA(0)
                     .LdArg(2)
-                    .NewObj(@return.FindMethod(".ctor"))
+                    .NewObj(@return.FindMethod(".ctor", x => x.Parameters.Count == 3))
                     .Ret();
             }
         }
@@ -171,7 +160,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             {
                 GenericArguments = { T }
             };
-            var (TSetOperation, @return) = Epilogue(mainModule, method, enumerable0, enumerator0, enumerable1, enumerator1, T, TComparer);
+            var @return = Epilogue(mainModule, method, enumerable0, enumerator0, enumerable1, enumerator1, T, TComparer);
             var systemRuntimeCompilerServicesReadonlyAttributeTypeReference = Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference();
             var param0 = new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(enumerable0));
             param0.CustomAttributes.Add(systemRuntimeCompilerServicesReadonlyAttributeTypeReference);
@@ -183,17 +172,13 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
             var body = method.Body;
 
-            body.Variables.Add(new VariableDefinition(TSetOperation));
-
             body.GetILProcessor()
-                .LdArgs(0, 2)
-                .LdLocA(0)
-                .LdArg(2)
-                .NewObj(@return.FindMethod(".ctor"))
+                .LdArgs(0, 3)
+                .NewObj(@return.FindMethod(".ctor", x => x.Parameters.Count == 3))
                 .Ret();
         }
 
-        private static (GenericInstanceType TSetOperation, GenericInstanceType @return) Epilogue(ModuleDefinition mainModule, MethodDefinition method, TypeReference enumerable0, TypeReference enumerator0, TypeReference enumerable1, TypeReference enumerator1, TypeReference T, TypeReference TComparer)
+        private static TypeReference Epilogue(ModuleDefinition mainModule, MethodDefinition method, TypeReference enumerable0, TypeReference enumerator0, TypeReference enumerable1, TypeReference enumerator1, TypeReference T, TypeReference TComparer)
         {
             var TSetOperation = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "ExceptOperation`6"))
             {
@@ -219,8 +204,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                     TSetOperation,
                 }
             };
-            method.ReturnType = @return;
-            return (TSetOperation, @return);
+            return method.ReturnType = @return;
         }
 
         private static GenericParameter DefineT(ModuleDefinition mainModule, ModuleDefinition systemModule, MethodDefinition method)
