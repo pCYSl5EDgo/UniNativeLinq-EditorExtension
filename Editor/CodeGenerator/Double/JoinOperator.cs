@@ -65,7 +65,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
         private void GenerateSpecialSpecial(string rowName, string columnName, ModuleDefinition mainModule, ModuleDefinition systemModule, MethodDefinition method)
         {
-            var (key, keyEqualityComparer, T, refFunc2) = Prepare(method, mainModule, systemModule);
+            var (key, keyEqualityComparer, T, refFunc2) = Prepare(method, mainModule);
 
             var (element0, baseEnumerable0, enumerable0, enumerator0, keySelector0) = DefineWithSpecial(rowName, method, refFunc2, key, 0);
             var (element1, baseEnumerable1, enumerable1, enumerator1, keySelector1) = DefineWithSpecial(columnName, method, refFunc2, key, 1);
@@ -88,7 +88,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
         private void GenerateSpecialNormal(string specialName, TypeDefinition type0, ModuleDefinition mainModule, ModuleDefinition systemModule, MethodDefinition method, int specialIndex)
         {
-            var (key, keyEqualityComparer, T, refFunc2) = Prepare(method, mainModule, systemModule);
+            var (key, keyEqualityComparer, T, refFunc2) = Prepare(method, mainModule);
 
             GenericInstanceType enumerable0;
             TypeReference enumerator0;
@@ -163,7 +163,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
         private void GenerateNormalNormal(TypeDefinition type0, TypeDefinition type1, ModuleDefinition mainModule, ModuleDefinition systemModule, MethodDefinition method)
         {
-            var (key, keyEqualityComparer, T, refFunc2) = Prepare(method, mainModule, systemModule);
+            var (key, keyEqualityComparer, T, refFunc2) = Prepare(method, mainModule);
 
             Routine(type0, method, "0", refFunc2, key, out var enumerable0, out var enumerator0, out var element0, out var keySelector0);
 
@@ -190,16 +190,26 @@ namespace UniNativeLinq.Editor.CodeGenerator
             method.Parameters.Add(inner);
         }
 
-        private static (GenericParameter TKey, GenericParameter TKeyEqualityComparer, GenericParameter T, TypeDefinition IRefFunc2) Prepare(MethodDefinition method, ModuleDefinition mainModule, ModuleDefinition systemModule)
+        private static (GenericParameter TKey, GenericParameter TKeyEqualityComparer, GenericParameter T, TypeDefinition IRefFunc2) Prepare(MethodDefinition method, ModuleDefinition mainModule)
         {
-            GenericParameter TKey = new GenericParameter(nameof(TKey), method) { HasNotNullableValueTypeConstraint = true };
-            TKey.CustomAttributes.Add(Helper.UnManagedAttribute);
-
-            GenericParameter TKeyEqualityComparer = new GenericParameter(nameof(TKeyEqualityComparer), method) { HasNotNullableValueTypeConstraint = true };
-            TKeyEqualityComparer.Constraints.Add(new GenericInstanceType(mainModule.GetType("UniNativeLinq", "IRefFunc`3"))
+            GenericParameter TKey = new GenericParameter(nameof(TKey), method)
             {
-                GenericArguments = { TKey, TKey, mainModule.TypeSystem.Boolean }
-            });
+                HasNotNullableValueTypeConstraint = true,
+                CustomAttributes = { Helper.UnManagedAttribute }
+            };
+            method.GenericParameters.Add(TKey);
+
+            GenericParameter TKeyEqualityComparer = new GenericParameter(nameof(TKeyEqualityComparer), method)
+            {
+                HasNotNullableValueTypeConstraint = true,
+                Constraints =
+                {
+                    new GenericInstanceType(mainModule.GetType("UniNativeLinq", "IRefFunc`3"))
+                    {
+                        GenericArguments = { TKey, TKey, mainModule.TypeSystem.Boolean }
+                    }
+                }
+            };
             method.GenericParameters.Add(TKeyEqualityComparer);
 
             GenericParameter T = new GenericParameter(nameof(T), method) { HasNotNullableValueTypeConstraint = true };
