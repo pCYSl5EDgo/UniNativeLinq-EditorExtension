@@ -71,121 +71,77 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
         private void GenerateSpecialSpecial(string rowName, string columnName, ModuleDefinition mainModule, MethodDefinition method)
         {
-            GenericParameter T = new GenericParameter(nameof(T), method) { HasNotNullableValueTypeConstraint = true };
-            T.CustomAttributes.Add(Helper.GetSystemRuntimeInteropServicesUnmanagedTypeConstraintTypeReference());
-            method.GenericParameters.Add(T);
+            DefineT(method, out var T);
 
-            var (baseSpecialTypeReference0, enumerableTypeReference0, enumeratorTypeReference0) = T.MakeSpecialTypePair(rowName);
-            var (baseSpecialTypeReference1, enumerableTypeReference1, enumeratorTypeReference1) = T.MakeSpecialTypePair(columnName);
+            var (baseSpecialTypeReference0, enumerable0, enumerator0) = T.MakeSpecialTypePair(rowName);
+            var (baseSpecialTypeReference1, enumerable1, enumerator1) = T.MakeSpecialTypePair(columnName);
 
-            var @return = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "ConcatEnumerable`5"))
-            {
-                GenericArguments = {
-                    enumerableTypeReference0,
-                    enumeratorTypeReference0,
-                    enumerableTypeReference1,
-                    enumeratorTypeReference1,
-                    T
-                }
-            };
-            method.ReturnType = @return;
+            var @return = DefineReturn(mainModule, method, enumerable0, enumerator0, enumerable1, enumerator1, T);
 
-            var thisParam = new ParameterDefinition("@this", ParameterAttributes.None, baseSpecialTypeReference0);
-            method.Parameters.Add(thisParam);
-
-            var secondParam = new ParameterDefinition("second", ParameterAttributes.None, baseSpecialTypeReference1);
-            method.Parameters.Add(secondParam);
-
-            method.Body.Variables.Add(new VariableDefinition(enumerableTypeReference0));
-            method.Body.Variables.Add(new VariableDefinition(enumerableTypeReference1));
-
-            var constructor0 = enumerableTypeReference0.FindMethod(".ctor", x => x.Parameters.Count == 1);
-            var constructor1 = enumerableTypeReference1.FindMethod(".ctor", x => x.Parameters.Count == 1);
+            method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.None, baseSpecialTypeReference0));
+            method.Parameters.Add(new ParameterDefinition("second", ParameterAttributes.None, baseSpecialTypeReference1));
 
             method.Body.GetILProcessor()
-                .LdLocA(0)
-                .Dup()
-                .LdArg(0)
-                .Call(constructor0)
-                .LdLocA(1)
-                .Dup()
-                .LdArg(1)
-                .Call(constructor1)
+                .LdConvArg(enumerable0, 0)
+                .LdConvArg(enumerable1, 1)
                 .NewObj(@return.FindMethod(".ctor"))
                 .Ret();
         }
 
-        private void GenerateSpecialNormal(string columnName, TypeDefinition type0, TypeDefinition @static, ModuleDefinition mainModule, MethodDefinition method, int specialIndex)
+        private void GenerateSpecialNormal(string columnName, TypeDefinition type, TypeDefinition @static, ModuleDefinition mainModule, MethodDefinition method, int specialIndex)
         {
-            Prepare(type0, method, out var T, out var enumerable0, out var enumerator0, out var element0);
+            DefineT(method, out var T);
 
-            if (!element0.Equals(T))
-            {
-                Debug.LogWarning(element0.FullName + "  is different from " + nameof(T));
-                @static.Methods.Remove(method);
-                return;
-            }
-
-            var (baseSpecialTypeReference, enumerableTypeReference, enumeratorTypeReference) = T.MakeSpecialTypePair(columnName);
-
-            var types = new[]
-            {
-                enumerable0,
-                enumerator0,
-                enumerable0,
-                enumerator0,
-                T,
-            };
-            types[specialIndex << 1] = enumerableTypeReference;
-            types[(specialIndex << 1) + 1] = enumeratorTypeReference;
-            var @return = mainModule.GetType("UniNativeLinq", "ConcatEnumerable`5").MakeGenericInstanceType(types);
-            method.ReturnType = @return;
-
-            var paramNormal = new ParameterDefinition("@this", ParameterAttributes.In, enumerable0.MakeByReferenceType());
-            var systemRuntimeCompilerServicesReadonlyAttributeTypeReference = Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference();
-            paramNormal.CustomAttributes.Add(systemRuntimeCompilerServicesReadonlyAttributeTypeReference);
-
-            var paramSpecial = new ParameterDefinition("second", ParameterAttributes.None, baseSpecialTypeReference);
-
-            var processor = method.Body.GetILProcessor();
-
-            var constructor = enumerableTypeReference.FindMethod(".ctor", x => x.Parameters.Count == 1);
-
-            method.Body.Variables.Add(new VariableDefinition(enumerableTypeReference));
-
+            var body = method.Body;
             if (specialIndex == 0)
             {
-                method.Parameters.Add(paramSpecial);
-                method.Parameters.Add(paramNormal);
+                var (specialType, enumerable0, enumerator0) = T.MakeSpecialTypePair(columnName);
+                var (enumerable1, enumerator1, _) = T.MakeFromCommonType(method, type, "1");
 
-                processor
-                    .LdLocA(0)
-                    .Dup()
-                    .LdArg(specialIndex)
-                    .Call(constructor)
-                    .LdArg(1);
+                var @return = DefineReturn(mainModule, method, enumerable0, enumerator0, enumerable1, enumerator1, T);
+
+                method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.None, specialType));
+                method.Parameters.Add(new ParameterDefinition("second", ParameterAttributes.In, new ByReferenceType(enumerable1))
+                {
+                    CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference() }
+                });
+
+                body.Variables.Add(new VariableDefinition(enumerable0));
+
+                body.GetILProcessor()
+                    .LdConvArg(enumerable0, 0)
+                    .LdArg(1)
+                    .NewObj(@return.FindMethod(".ctor"))
+                    .Ret();
             }
             else
             {
-                method.Parameters.Add(paramNormal);
-                method.Parameters.Add(paramSpecial);
+                var (enumerable0, enumerator0, _) = T.MakeFromCommonType(method, type, "0");
+                var (specialType, enumerable1, enumerator1) = T.MakeSpecialTypePair(columnName);
 
-                processor
-                    .LdLocA(0)
-                    .LdArg(specialIndex)
-                    .Call(constructor)
+                var @return = DefineReturn(mainModule, method, enumerable0, enumerator0, enumerable1, enumerator1, T);
+
+                method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(enumerable0))
+                {
+                    CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference() }
+                });
+                method.Parameters.Add(new ParameterDefinition("second", ParameterAttributes.None, specialType));
+
+                body.Variables.Add(new VariableDefinition(enumerable0));
+
+                body.GetILProcessor()
                     .LdArg(0)
-                    .LdLocA(0);
+                    .LdConvArg(enumerable1, 1)
+                    .NewObj(@return.FindMethod(".ctor"))
+                    .Ret();
             }
-
-            processor
-                .NewObj(@return.FindMethod(".ctor"))
-                .Ret();
         }
 
         private void GenerateNormalNormal(TypeDefinition type0, TypeDefinition type1, TypeDefinition @static, ModuleDefinition mainModule, MethodDefinition method)
         {
-            Prepare(type0, method, out var T, out var enumerable0, out var enumerator0, out var element0);
+            DefineT(method, out var T);
+
+            var (enumerable0, enumerator0, element0) = T.MakeFromCommonType(method, type0, "0");
 
             var (enumerable1, enumerator1, element1) = T.MakeFromCommonType(method, type1, "1");
 
@@ -196,7 +152,29 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 return;
             }
 
-            var @return = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "ConcatEnumerable`5"))
+            var @return = DefineReturn(mainModule, method, enumerable0, enumerator0, enumerable1, enumerator1, T);
+
+            var systemRuntimeCompilerServicesReadonlyAttributeTypeReference = Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference();
+
+            method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(enumerable0))
+            {
+                CustomAttributes = { systemRuntimeCompilerServicesReadonlyAttributeTypeReference }
+            });
+
+            method.Parameters.Add(new ParameterDefinition("second", ParameterAttributes.In, new ByReferenceType(enumerable1))
+            {
+                CustomAttributes = { systemRuntimeCompilerServicesReadonlyAttributeTypeReference }
+            });
+
+            method.Body.GetILProcessor()
+                .LdArgs(0, 2)
+                .NewObj(@return.FindMethod(".ctor"))
+                .Ret();
+        }
+
+        private static TypeReference DefineReturn(ModuleDefinition mainModule, MethodDefinition method, TypeReference enumerable0, TypeReference enumerator0, TypeReference enumerable1, TypeReference enumerator1, GenericParameter T)
+        {
+            return method.ReturnType = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "ConcatEnumerable`5"))
             {
                 GenericArguments =
                 {
@@ -207,26 +185,9 @@ namespace UniNativeLinq.Editor.CodeGenerator
                     T
                 }
             };
-            method.ReturnType = @return;
-
-            var thisParam = new ParameterDefinition("@this", ParameterAttributes.In, enumerable0.MakeByReferenceType());
-            var systemRuntimeCompilerServicesReadonlyAttributeTypeReference = Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference();
-            thisParam.CustomAttributes.Add(systemRuntimeCompilerServicesReadonlyAttributeTypeReference);
-            method.Parameters.Add(thisParam);
-
-            var secondParam = new ParameterDefinition("second", ParameterAttributes.In, enumerable1.MakeByReferenceType());
-            secondParam.CustomAttributes.Add(systemRuntimeCompilerServicesReadonlyAttributeTypeReference);
-            method.Parameters.Add(secondParam);
-
-            var processor = method.Body.GetILProcessor();
-            processor
-                .LdArg(0)
-                .LdArg(1)
-                .NewObj(@return.FindMethod(".ctor"))
-                .Ret();
         }
 
-        private void Prepare(TypeDefinition type0, MethodDefinition method, out GenericParameter T, out TypeReference enumerable0, out TypeReference enumerator0, out TypeReference element0)
+        private static void DefineT(MethodDefinition method, out GenericParameter T)
         {
             T = new GenericParameter(nameof(T), method)
             {
@@ -234,8 +195,6 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 CustomAttributes = { Helper.GetSystemRuntimeInteropServicesUnmanagedTypeConstraintTypeReference() }
             };
             method.GenericParameters.Add(T);
-
-            (enumerable0, enumerator0, element0) = T.MakeFromCommonType(method, type0, "0");
         }
     }
 }
