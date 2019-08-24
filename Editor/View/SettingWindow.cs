@@ -159,6 +159,7 @@ namespace UniNativeLinq.Editor
                             list.Add(new ExceptNone(api));
                             break;
                         case "Operator":
+                            list.Add(new ExceptOperator(api));
                             break;
                         case "Func":
                             break;

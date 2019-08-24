@@ -6,10 +6,10 @@ using Mono.Cecil.Cil;
 // ReSharper disable InconsistentNaming
 namespace UniNativeLinq.Editor.CodeGenerator
 {
-    public sealed class ExceptNone : IApiExtensionMethodGenerator, ITypeDictionaryHolder
+    public sealed class ExceptOperator : IApiExtensionMethodGenerator, ITypeDictionaryHolder
     {
         public readonly IDoubleApi Api;
-        public ExceptNone(IDoubleApi api) => Api = api;
+        public ExceptOperator(IDoubleApi api) => Api = api;
         public Dictionary<string, TypeDefinition> Dictionary { private get; set; }
 
         public void Generate(IEnumerableCollectionProcessor processor, ModuleDefinition mainModule, ModuleDefinition systemModule, ModuleDefinition unityModule)
@@ -18,7 +18,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             var array = processor.EnabledNameCollection.Intersect(Api.NameCollection).ToArray();
             if (!Api.ShouldDefine(array)) return;
             TypeDefinition @static;
-            mainModule.Types.Add(@static = mainModule.DefineStatic(nameof(ExceptNone) + "Helper"));
+            mainModule.Types.Add(@static = mainModule.DefineStatic(nameof(ExceptOperator) + "Helper"));
             var count = Api.Count;
             for (var row = 0; row < count; row++)
             {
@@ -32,12 +32,12 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
                     if (!Api.TryGetEnabled(rowName, columnName, out var apiEnabled) || !apiEnabled) continue;
 
-                    GenerateEachPair(rowName, isRowSpecial, columnName, isColumnSpecial, @static, mainModule, systemModule);
+                    GenerateEachPair(rowName, isRowSpecial, columnName, isColumnSpecial, @static, mainModule);
                 }
             }
         }
 
-        private void GenerateEachPair(string rowName, bool isRowSpecial, string columnName, bool isColumnSpecial, TypeDefinition @static, ModuleDefinition mainModule, ModuleDefinition systemModule)
+        private void GenerateEachPair(string rowName, bool isRowSpecial, string columnName, bool isColumnSpecial, TypeDefinition @static, ModuleDefinition mainModule)
         {
             var method = new MethodDefinition("Except", Helper.StaticMethodAttributes, mainModule.TypeSystem.Boolean)
             {
@@ -48,59 +48,55 @@ namespace UniNativeLinq.Editor.CodeGenerator
             @static.Methods.Add(method);
             if (isRowSpecial && isColumnSpecial)
             {
-                GenerateSpecialSpecial(rowName, columnName, mainModule, systemModule, method);
+                GenerateSpecialSpecial(rowName, columnName, mainModule, method);
             }
             else if (isRowSpecial)
             {
-                GenerateSpecialNormal(specialName: rowName, type: Dictionary[columnName], mainModule, systemModule, method, specialIndex: 0);
+                GenerateSpecialNormal(specialName: rowName, type: Dictionary[columnName], mainModule, method, specialIndex: 0);
             }
             else if (isColumnSpecial)
             {
-                GenerateSpecialNormal(specialName: columnName, type: Dictionary[rowName], mainModule, systemModule, method, specialIndex: 1);
+                GenerateSpecialNormal(specialName: columnName, type: Dictionary[rowName], mainModule, method, specialIndex: 1);
             }
             else
             {
-                GenerateNormalNormal(Dictionary[rowName], Dictionary[columnName], mainModule, systemModule, method);
+                GenerateNormalNormal(Dictionary[rowName], Dictionary[columnName], mainModule, method);
             }
         }
 
-        private void GenerateSpecialSpecial(string rowName, string columnName, ModuleDefinition mainModule, ModuleDefinition systemModule, MethodDefinition method)
+        private void GenerateSpecialSpecial(string rowName, string columnName, ModuleDefinition mainModule, MethodDefinition method)
         {
-            var T = DefineT(mainModule, systemModule, method);
+            var T = DefineT(method);
             var (baseEnumerable0, enumerable0, enumerator0) = T.MakeSpecialTypePair(rowName);
             var (baseEnumerable1, enumerable1, enumerator1) = T.MakeSpecialTypePair(columnName);
-            var TComparer = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "DefaultOrderByAscending`1"))
-            {
-                GenericArguments = { T }
-            };
+            var TComparer = DefineTComparer(mainModule, method, T);
             var (TSetOperation, @return) = Epilogue(mainModule, method, enumerable0, enumerator0, enumerable1, enumerator1, T, TComparer);
 
             var param0 = new ParameterDefinition("@this", ParameterAttributes.None, baseEnumerable0);
             method.Parameters.Add(param0);
             var param1 = new ParameterDefinition("second", ParameterAttributes.None, baseEnumerable1);
             method.Parameters.Add(param1);
+            DefineComparer(method, TComparer);
             DefineAllocator(method);
 
             var body = method.Body;
-
             body.Variables.Add(new VariableDefinition(TSetOperation));
 
             body.GetILProcessor()
                 .LdConvArg(enumerable0, 0)
                 .LdConvArg(enumerable1, 1)
-                .LdLocA(0)
                 .LdArg(2)
+                .StLoc(0)
+                .LdLocA(0)
+                .LdArg(3)
                 .NewObj(@return.FindMethod(".ctor"))
                 .Ret();
         }
 
-        private void GenerateSpecialNormal(string specialName, TypeDefinition type, ModuleDefinition mainModule, ModuleDefinition systemModule, MethodDefinition method, int specialIndex)
+        private void GenerateSpecialNormal(string specialName, TypeDefinition type, ModuleDefinition mainModule, MethodDefinition method, int specialIndex)
         {
-            var T = DefineT(mainModule, systemModule, method);
-            var TComparer = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "DefaultOrderByAscending`1"))
-            {
-                GenericArguments = { T }
-            };
+            var T = DefineT(method);
+            var TComparer = DefineTComparer(mainModule, method, T);
             var body = method.Body;
 
             if (specialIndex == 0)
@@ -114,15 +110,17 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 var param1 = new ParameterDefinition("second", ParameterAttributes.In, new ByReferenceType(enumerable1));
                 param1.CustomAttributes.Add(Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference());
                 method.Parameters.Add(param1);
+                DefineComparer(method, TComparer);
                 DefineAllocator(method);
-
                 body.Variables.Add(new VariableDefinition(TSetOperation));
 
                 body.GetILProcessor()
                     .LdConvArg(enumerable0, 0)
                     .LdArg(1)
-                    .LdLocA(0)
                     .LdArg(2)
+                    .StLoc(0)
+                    .LdLocA(0)
+                    .LdArg(3)
                     .NewObj(@return.FindMethod(".ctor"))
                     .Ret();
             }
@@ -137,18 +135,37 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 method.Parameters.Add(param0);
                 var param1 = new ParameterDefinition("second", ParameterAttributes.None, baseEnumerable);
                 method.Parameters.Add(param1);
+                DefineComparer(method, TComparer);
                 DefineAllocator(method);
-
                 body.Variables.Add(new VariableDefinition(TSetOperation));
 
                 body.GetILProcessor()
                     .LdArg(0)
                     .LdConvArg(enumerable1, 1)
-                    .LdLocA(0)
                     .LdArg(2)
+                    .StLoc(0)
+                    .LdLocA(0)
+                    .LdArg(3)
                     .NewObj(@return.FindMethod(".ctor"))
                     .Ret();
             }
+        }
+
+        private static GenericParameter DefineTComparer(ModuleDefinition mainModule, MethodDefinition method, GenericParameter T)
+        {
+            var TComparer = new GenericParameter("TComparer", method)
+            {
+                HasNotNullableValueTypeConstraint = true,
+                Constraints =
+                {
+                    new GenericInstanceType(mainModule.GetType("UniNativeLinq", "IRefFunc`3"))
+                    {
+                        GenericArguments = {T, T, mainModule.TypeSystem.Int32}
+                    }
+                }
+            };
+            method.GenericParameters.Add(TComparer);
+            return TComparer;
         }
 
         private static void DefineAllocator(MethodDefinition method)
@@ -160,17 +177,13 @@ namespace UniNativeLinq.Editor.CodeGenerator
             method.Parameters.Add(allocator);
         }
 
-        private void GenerateNormalNormal(TypeDefinition type0, TypeDefinition type1, ModuleDefinition mainModule, ModuleDefinition systemModule, MethodDefinition method)
+        private void GenerateNormalNormal(TypeDefinition type0, TypeDefinition type1, ModuleDefinition mainModule, MethodDefinition method)
         {
-            var T = DefineT(mainModule, systemModule, method);
+            var T = DefineT(method);
 
             var (enumerable0, enumerator0, _) = T.MakeFromCommonType(method, type0, "0");
             var (enumerable1, enumerator1, _) = T.MakeFromCommonType(method, type1, "1");
-
-            var TComparer = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "DefaultOrderByAscending`1"))
-            {
-                GenericArguments = { T }
-            };
+            var TComparer = DefineTComparer(mainModule, method, T);
             var (TSetOperation, @return) = Epilogue(mainModule, method, enumerable0, enumerator0, enumerable1, enumerator1, T, TComparer);
             var systemRuntimeCompilerServicesReadonlyAttributeTypeReference = Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference();
             var param0 = new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(enumerable0));
@@ -179,18 +192,25 @@ namespace UniNativeLinq.Editor.CodeGenerator
             var param1 = new ParameterDefinition("second", ParameterAttributes.In, new ByReferenceType(enumerable1));
             param1.CustomAttributes.Add(systemRuntimeCompilerServicesReadonlyAttributeTypeReference);
             method.Parameters.Add(param1);
+            DefineComparer(method, TComparer);
             DefineAllocator(method);
 
             var body = method.Body;
-
             body.Variables.Add(new VariableDefinition(TSetOperation));
 
             body.GetILProcessor()
                 .LdArgs(0, 2)
-                .LdLocA(0)
                 .LdArg(2)
+                .StLoc(0)
+                .LdLocA(0)
+                .LdArg(3)
                 .NewObj(@return.FindMethod(".ctor"))
                 .Ret();
+        }
+
+        private static void DefineComparer(MethodDefinition method, GenericParameter TComparer)
+        {
+            method.Parameters.Add(new ParameterDefinition("comparer", ParameterAttributes.None, TComparer));
         }
 
         private static (GenericInstanceType TSetOperation, GenericInstanceType @return) Epilogue(ModuleDefinition mainModule, MethodDefinition method, TypeReference enumerable0, TypeReference enumerator0, TypeReference enumerable1, TypeReference enumerator1, TypeReference T, TypeReference TComparer)
@@ -223,21 +243,13 @@ namespace UniNativeLinq.Editor.CodeGenerator
             return (TSetOperation, @return);
         }
 
-        private static GenericParameter DefineT(ModuleDefinition mainModule, ModuleDefinition systemModule, MethodDefinition method)
+        private static GenericParameter DefineT(MethodDefinition method)
         {
             var T = new GenericParameter("T", method)
             {
                 HasNotNullableValueTypeConstraint = true,
                 CustomAttributes = { Helper.GetSystemRuntimeInteropServicesUnmanagedTypeConstraintTypeReference() },
-                Constraints =
-                {
-                    new GenericInstanceType(mainModule.ImportReference(systemModule.GetType("System", "IComparable`1")))
-                    {
-                        GenericArguments = {mainModule.TypeSystem.Boolean}
-                    }
-                }
             };
-            ((GenericInstanceType)T.Constraints[0]).GenericArguments[0] = T;
             method.GenericParameters.Add(T);
             return T;
         }

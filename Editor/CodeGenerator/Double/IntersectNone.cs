@@ -2,6 +2,7 @@
 using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+
 // ReSharper disable InconsistentNaming
 
 namespace UniNativeLinq.Editor.CodeGenerator
@@ -97,30 +98,29 @@ namespace UniNativeLinq.Editor.CodeGenerator
         private void GenerateSpecialNormal(string specialName, TypeDefinition type, ModuleDefinition mainModule, ModuleDefinition systemModule, MethodDefinition method, int specialIndex)
         {
             var T = DefineT(mainModule, systemModule, method);
-            var (enumerable0, enumerator0, _) = T.MakeFromCommonType(method, type, "0");
-            var (baseEnumerable, enumerable1, enumerator1) = T.MakeSpecialTypePair(specialName);
-
             var TComparer = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "DefaultOrderByAscending`1"))
             {
                 GenericArguments = { T }
             };
-            var (TSetOperation, @return) = Epilogue(mainModule, method, enumerable0, enumerator0, enumerable1, enumerator1, T, TComparer);
+            var body = method.Body;
 
             if (specialIndex == 0)
             {
+                var (baseEnumerable, enumerable0, enumerator0) = T.MakeSpecialTypePair(specialName);
+                var (enumerable1, enumerator1, _) = T.MakeFromCommonType(method, type, "1");
+                var (TSetOperation, @return) = Epilogue(mainModule, method, enumerable0, enumerator0, enumerable1, enumerator1, T, TComparer);
+
                 var param0 = new ParameterDefinition("@this", ParameterAttributes.None, baseEnumerable);
                 method.Parameters.Add(param0);
-                var param1 = new ParameterDefinition("second", ParameterAttributes.In, new ByReferenceType(type));
+                var param1 = new ParameterDefinition("second", ParameterAttributes.In, new ByReferenceType(enumerable1));
                 param1.CustomAttributes.Add(Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference());
                 method.Parameters.Add(param1);
                 DefineAllocator(method);
 
-                var body = method.Body;
-
                 body.Variables.Add(new VariableDefinition(TSetOperation));
 
                 body.GetILProcessor()
-                    .LdConvArg(enumerable1, 0)
+                    .LdConvArg(enumerable0, 0)
                     .LdArg(1)
                     .LdLocA(0)
                     .LdArg(2)
@@ -129,14 +129,16 @@ namespace UniNativeLinq.Editor.CodeGenerator
             }
             else
             {
-                var param0 = new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(type));
+                var (enumerable0, enumerator0, _) = T.MakeFromCommonType(method, type, "0");
+                var (baseEnumerable, enumerable1, enumerator1) = T.MakeSpecialTypePair(specialName);
+                var (TSetOperation, @return) = Epilogue(mainModule, method, enumerable0, enumerator0, enumerable1, enumerator1, T, TComparer);
+
+                var param0 = new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(enumerable0));
                 param0.CustomAttributes.Add(Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference());
                 method.Parameters.Add(param0);
                 var param1 = new ParameterDefinition("second", ParameterAttributes.None, baseEnumerable);
                 method.Parameters.Add(param1);
                 DefineAllocator(method);
-
-                var body = method.Body;
 
                 body.Variables.Add(new VariableDefinition(TSetOperation));
 
@@ -172,10 +174,10 @@ namespace UniNativeLinq.Editor.CodeGenerator
             };
             var (TSetOperation, @return) = Epilogue(mainModule, method, enumerable0, enumerator0, enumerable1, enumerator1, T, TComparer);
             var systemRuntimeCompilerServicesReadonlyAttributeTypeReference = Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference();
-            var param0 = new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(type0));
+            var param0 = new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(enumerable0));
             param0.CustomAttributes.Add(systemRuntimeCompilerServicesReadonlyAttributeTypeReference);
             method.Parameters.Add(param0);
-            var param1 = new ParameterDefinition("second", ParameterAttributes.In, new ByReferenceType(type1));
+            var param1 = new ParameterDefinition("second", ParameterAttributes.In, new ByReferenceType(enumerable1));
             param1.CustomAttributes.Add(systemRuntimeCompilerServicesReadonlyAttributeTypeReference);
             method.Parameters.Add(param1);
             DefineAllocator(method);
