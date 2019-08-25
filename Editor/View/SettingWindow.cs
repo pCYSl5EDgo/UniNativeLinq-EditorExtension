@@ -193,10 +193,13 @@ namespace UniNativeLinq.Editor
                             list.Add(new UnionNone(api));
                             break;
                         case "Operator":
+                            list.Add(new UnionOperator(api));
                             break;
                         case "Func":
+                            list.Add(new UnionFunc(api));
                             break;
                         case "RefFunc":
+                            list.Add(new UnionRefFunc(api));
                             break;
                     }
                     break;
