@@ -80,7 +80,41 @@ namespace UniNativeLinq.Editor
             {
                 RegisterEachDoubleApi(api, list);
             }
+            foreach (var api in singleApis)
+            {
+                RegisterEachSingleApi(api, list);
+            }
             extensionMethodGenerators = list.ToArray();
+        }
+
+        private void RegisterEachSingleApi(ISingleApi api, List<IApiExtensionMethodGenerator> list)
+        {
+            switch (api.Name)
+            {
+                case "Sum":
+                    switch (api.Description)
+                    {
+                        case "Double":
+                            list.Add(new SumDouble(api));
+                            break;
+                        case "Single":
+                            list.Add(new SumSingle(api));
+                            break;
+                        case "Int32":
+                            list.Add(new SumInt32(api));
+                            break;
+                        case "UInt32":
+                            list.Add(new SumUInt32(api));
+                            break;
+                        case "Int64":
+                            list.Add(new SumInt64(api));
+                            break;
+                        case "UInt64":
+                            list.Add(new SumUInt64(api));
+                            break;
+                    }
+                    break;
+            }
         }
 
         private static void RegisterEachDoubleApi(IDoubleApi api, List<IApiExtensionMethodGenerator> list)

@@ -46,8 +46,8 @@ namespace UniNativeLinq.Editor.CodeGenerator
             {
                 DeclaringType = @static,
                 AggressiveInlining = true,
+                CustomAttributes = { Helper.ExtensionAttribute }
             };
-            method.CustomAttributes.Add(Helper.ExtensionAttribute);
             @static.Methods.Add(method);
             if (isRowSpecial && isColumnSpecial)
             {

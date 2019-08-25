@@ -37,7 +37,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             return (element, enumerable, enumerator);
         }
 
-        public static (TypeReference enumerable, TypeReference enumerator, TypeReference element) MakeFromCommonType(this GenericParameter T, MethodDefinition method, TypeReference type, string suffix)
+        public static (TypeReference enumerable, TypeReference enumerator, TypeReference element) MakeFromCommonType(this TypeReference T, MethodDefinition method, TypeReference type, string suffix)
         {
             var added0 = method.FromTypeToMethodParam(type.GenericParameters, nameof(T), T, suffix);
             foreach (var parameter in added0)

@@ -36,7 +36,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             return MainModule.GetType("UniNativeLinq.NegatePredicate`2").GetConstructors().First().Parameters.First().CustomAttributes.First();
         }
 
-        public static (TypeReference baseEnumerable, GenericInstanceType specialEnumerable, GenericInstanceType specialEnumerator) MakeSpecialTypePair(this GenericParameter genericParameter, string specialName)
+        public static (TypeReference baseEnumerable, GenericInstanceType specialEnumerable, GenericInstanceType specialEnumerator) MakeSpecialTypePair(this TypeReference type, string specialName)
         {
             TypeDefinition typeDefinition;
             switch (specialName)
@@ -44,14 +44,14 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 case "T[]":
                     typeDefinition = MainModule.GetType("UniNativeLinq", "ArrayEnumerable`1");
                     return (
-                        new ArrayType(genericParameter),
+                        new ArrayType(type),
                         new GenericInstanceType(typeDefinition)
                         {
-                            GenericArguments = { genericParameter }
+                            GenericArguments = { type }
                         },
                         new GenericInstanceType(typeDefinition.NestedTypes.First(x => x.Name == "Enumerator"))
                         {
-                            GenericArguments = { genericParameter }
+                            GenericArguments = { type }
                         }
                     );
                 case "NativeArray<T>":
@@ -59,15 +59,15 @@ namespace UniNativeLinq.Editor.CodeGenerator
                     return (
                         new GenericInstanceType(MainModule.ImportReference(UnityCoreModule.GetType("Unity.Collections", "NativeArray`1")))
                         {
-                            GenericArguments = { genericParameter }
+                            GenericArguments = { type }
                         },
                         new GenericInstanceType(typeDefinition)
                         {
-                            GenericArguments = { genericParameter }
+                            GenericArguments = { type }
                         },
                         new GenericInstanceType(typeDefinition.NestedTypes.First(x => x.Name == "Enumerator"))
                         {
-                            GenericArguments = { genericParameter }
+                            GenericArguments = { type }
                         }
                     );
                 default: throw new ArgumentException(specialName);

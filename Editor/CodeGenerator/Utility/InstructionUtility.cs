@@ -737,6 +737,8 @@ namespace UniNativeLinq.Editor.CodeGenerator
             }
         }
 
+        public static Instruction LoadLocalA(this Collection<VariableDefinition> variables, int index) => Instruction.Create(index <= 255 ? OpCodes.Ldloca_S : OpCodes.Ldloca, variables[index]);
+
         public static Instruction LoadLocal(this Collection<VariableDefinition> variables, int index)
         {
             switch (index)
