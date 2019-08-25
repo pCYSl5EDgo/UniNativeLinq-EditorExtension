@@ -82,7 +82,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .LdConvArg(enumerable0, 0)
                 .LdConvArg(enumerable1, 1)
                 .LdArg(2)
-                .NewObj(@return.FindMethod(".ctor"))
+                .NewObj(@return.FindMethod(".ctor", 3))
                 .Ret();
         }
 
@@ -126,7 +126,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                     .LdConvArg(enumerable0, 0)
                     .LdArg(1)
                     .LdArg(2)
-                    .NewObj(@return.FindMethod(".ctor"))
+                    .NewObj(@return.FindMethod(".ctor", 3))
                     .Ret();
             }
             else
@@ -146,7 +146,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                     .LdArg(0)
                     .LdConvArg(enumerable1, 1)
                     .LdArg(2)
-                    .NewObj(@return.FindMethod(".ctor"))
+                    .NewObj(@return.FindMethod(".ctor", 3))
                     .Ret();
             }
         }
@@ -189,7 +189,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             method.Body.GetILProcessor()
                 .LdArgs(0, 2)
                 .LdArg(2)
-                .NewObj(@return.FindMethod(".ctor"))
+                .NewObj(@return.FindMethod(".ctor", 3))
                 .Ret();
         }
 

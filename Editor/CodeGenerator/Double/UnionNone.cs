@@ -83,7 +83,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .LdConvArg(enumerable1, 1)
                 .Call(concatEnumerable.FindMethod(".ctor"))
                 .LdArg(2)
-                .NewObj(@return.FindMethod(".ctor", x => x.Parameters.Count == 2))
+                .NewObj(@return.FindMethod(".ctor", 2))
                 .Ret();
         }
 
@@ -113,7 +113,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                     .LdArg(1)
                     .Call(concatEnumerable.FindMethod(".ctor"))
                     .LdArg(2)
-                    .NewObj(@return.FindMethod(".ctor", x => x.Parameters.Count == 2))
+                    .NewObj(@return.FindMethod(".ctor", 2))
                     .Ret();
             }
             else
@@ -136,7 +136,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                     .LdConvArg(enumerable1, 1)
                     .Call(concatEnumerable.FindMethod(".ctor"))
                     .LdArg(2)
-                    .NewObj(@return.FindMethod(".ctor", x => x.Parameters.Count == 2))
+                    .NewObj(@return.FindMethod(".ctor", 2))
                     .Ret();
             }
         }
@@ -170,7 +170,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .LdArgs(0, 2)
                 .Call(concatEnumerable.FindMethod(".ctor"))
                 .LdArg(2)
-                .NewObj(@return.FindMethod(".ctor", x => x.Parameters.Count == 2))
+                .NewObj(@return.FindMethod(".ctor", 2))
                 .Ret();
         }
         private static GenericInstanceType DefineDefaultEqualityComparer(ModuleDefinition mainModule, GenericParameter T)

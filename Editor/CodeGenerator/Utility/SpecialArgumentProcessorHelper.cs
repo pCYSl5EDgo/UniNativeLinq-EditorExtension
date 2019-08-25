@@ -10,7 +10,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             var variables = processor.Body.Variables;
             var variableIndex = variables.Count;
             variables.Add(new VariableDefinition(enumerableGenericInstanceType));
-            var constructor = enumerableGenericInstanceType.FindMethod(".ctor", x => x.Parameters.Count == 1);
+            var constructor = enumerableGenericInstanceType.FindMethod(".ctor", 1);
             return processor
                 .LdLocA(variableIndex)
                 .Dup()

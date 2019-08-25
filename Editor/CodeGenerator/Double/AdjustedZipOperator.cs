@@ -74,15 +74,17 @@ namespace UniNativeLinq.Editor.CodeGenerator
             method.Parameters.Add(param0);
             var param1 = new ParameterDefinition("second", ParameterAttributes.None, baseTypeReference1);
             method.Parameters.Add(param1);
-            var param2 = new ParameterDefinition("action", ParameterAttributes.In, new ByReferenceType(TAction));
-            param2.CustomAttributes.Add(Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference());
+            var param2 = new ParameterDefinition("action", ParameterAttributes.In, new ByReferenceType(TAction))
+            {
+                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference() }
+            };
             method.Parameters.Add(param2);
 
             method.Body.GetILProcessor()
                 .LdConvArg(enumerable0, 0)
                 .LdConvArg(enumerable1, 1)
                 .LdArg(2)
-                .NewObj(@return.FindMethod(".ctor"))
+                .NewObj(@return.FindMethod(".ctor", 3))
                 .Ret();
         }
 
@@ -109,44 +111,53 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
             var @return = DefineReturn(mainModule, method, enumerable0, enumerator0, element0, enumerable1, enumerator1, element1, T, TAction);
 
+            var systemRuntimeCompilerServicesReadonlyAttributeTypeReference = Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference();
             if (specialIndex == 0)
             {
                 var param0 = new ParameterDefinition("@this", ParameterAttributes.None, baseTypeReference);
                 method.Parameters.Add(param0);
 
-                var param1 = new ParameterDefinition("second", ParameterAttributes.In, new ByReferenceType(enumerable1));
-                param1.CustomAttributes.Add(Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference());
+                var param1 = new ParameterDefinition("second", ParameterAttributes.In, new ByReferenceType(enumerable1))
+                {
+                    CustomAttributes = { systemRuntimeCompilerServicesReadonlyAttributeTypeReference }
+                };
                 method.Parameters.Add(param1);
 
-                var param2 = new ParameterDefinition("action", ParameterAttributes.In, new ByReferenceType(TAction));
-                param2.CustomAttributes.Add(Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference());
+                var param2 = new ParameterDefinition("action", ParameterAttributes.In, new ByReferenceType(TAction))
+                {
+                    CustomAttributes = { systemRuntimeCompilerServicesReadonlyAttributeTypeReference }
+                };
                 method.Parameters.Add(param2);
 
                 method.Body.GetILProcessor()
                     .LdConvArg(enumerable0, 0)
                     .LdArg(1)
                     .LdArg(2)
-                    .NewObj(@return.FindMethod(".ctor"))
+                    .NewObj(@return.FindMethod(".ctor", 3))
                     .Ret();
             }
             else
             {
-                var param0 = new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(enumerable0));
-                param0.CustomAttributes.Add(Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference());
+                var param0 = new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(enumerable0))
+                {
+                    CustomAttributes = { systemRuntimeCompilerServicesReadonlyAttributeTypeReference }
+                };
                 method.Parameters.Add(param0);
 
                 var param1 = new ParameterDefinition("second", ParameterAttributes.None, baseTypeReference);
                 method.Parameters.Add(param1);
 
-                var param2 = new ParameterDefinition("action", ParameterAttributes.In, new ByReferenceType(TAction));
-                param2.CustomAttributes.Add(Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference());
+                var param2 = new ParameterDefinition("action", ParameterAttributes.In, new ByReferenceType(TAction))
+                {
+                    CustomAttributes = { systemRuntimeCompilerServicesReadonlyAttributeTypeReference }
+                };
                 method.Parameters.Add(param2);
 
                 method.Body.GetILProcessor()
                     .LdArg(0)
                     .LdConvArg(enumerable1, 1)
                     .LdArg(2)
-                    .NewObj(@return.FindMethod(".ctor"))
+                    .NewObj(@return.FindMethod(".ctor", 3))
                     .Ret();
             }
         }
@@ -174,22 +185,28 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
             var systemRuntimeCompilerServicesReadonlyAttributeTypeReference = Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference();
 
-            var param0 = new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(enumerable0));
-            param0.CustomAttributes.Add(systemRuntimeCompilerServicesReadonlyAttributeTypeReference);
+            var param0 = new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(enumerable0))
+            {
+                CustomAttributes = { systemRuntimeCompilerServicesReadonlyAttributeTypeReference }
+            };
             method.Parameters.Add(param0);
 
-            var param1 = new ParameterDefinition("second", ParameterAttributes.In, new ByReferenceType(enumerable1));
-            param1.CustomAttributes.Add(systemRuntimeCompilerServicesReadonlyAttributeTypeReference);
+            var param1 = new ParameterDefinition("second", ParameterAttributes.In, new ByReferenceType(enumerable1))
+            {
+                CustomAttributes = { systemRuntimeCompilerServicesReadonlyAttributeTypeReference }
+            };
             method.Parameters.Add(param1);
 
-            var param2 = new ParameterDefinition("action", ParameterAttributes.In, new ByReferenceType(TAction));
-            param2.CustomAttributes.Add(Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference());
+            var param2 = new ParameterDefinition("action", ParameterAttributes.In, new ByReferenceType(TAction))
+            {
+                CustomAttributes = { systemRuntimeCompilerServicesReadonlyAttributeTypeReference }
+            };
             method.Parameters.Add(param2);
 
             method.Body.GetILProcessor()
                 .LdArgs(0, 2)
                 .LdArg(2)
-                .NewObj(@return.FindMethod(".ctor"))
+                .NewObj(@return.FindMethod(".ctor", 3))
                 .Ret();
         }
 

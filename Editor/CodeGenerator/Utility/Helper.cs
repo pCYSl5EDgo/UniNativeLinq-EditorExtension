@@ -141,6 +141,14 @@ namespace UniNativeLinq.Editor.CodeGenerator
             return type is GenericInstanceType genericInstanceType ? imported.MakeHostInstanceGeneric(genericInstanceType.GenericArguments) : imported;
         }
 
+        public static MethodReference FindMethod(this TypeReference type, string name, int parameterCount)
+        {
+            var typeDefinition = type.ToDefinition();
+            var methodDefinition = typeDefinition.Methods.Single(x => x.Name == name && x.Parameters.Count == parameterCount);
+            var imported = type.Module.ImportReference(methodDefinition);
+            return type is GenericInstanceType genericInstanceType ? imported.MakeHostInstanceGeneric(genericInstanceType.GenericArguments) : imported;
+        }
+
         public static FieldReference FindField(this GenericInstanceType type, string name)
         {
             var typeDefinition = type.ToDefinition();

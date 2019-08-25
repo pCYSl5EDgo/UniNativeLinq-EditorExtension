@@ -85,7 +85,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .LdArg(2)
                 .StLoc(0)
                 .LdLocA(0)
-                .NewObj(@return.FindMethod(".ctor"))
+                .NewObj(@return.FindMethod(".ctor", 3))
                 .Ret();
         }
 
@@ -112,13 +112,16 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
             var @return = DefineReturn(mainModule, method, enumerable0, enumerator0, element0, enumerable1, enumerator1, element1, T, TAction);
 
+            var systemRuntimeCompilerServicesReadonlyAttributeTypeReference = Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference();
             if (specialIndex == 0)
             {
                 var param0 = new ParameterDefinition("@this", ParameterAttributes.None, baseTypeReference);
                 method.Parameters.Add(param0);
 
-                var param1 = new ParameterDefinition("second", ParameterAttributes.In, new ByReferenceType(enumerable1));
-                param1.CustomAttributes.Add(Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference());
+                var param1 = new ParameterDefinition("second", ParameterAttributes.In, new ByReferenceType(enumerable1))
+                {
+                    CustomAttributes = { systemRuntimeCompilerServicesReadonlyAttributeTypeReference }
+                };
                 method.Parameters.Add(param1);
 
                 var param2 = new ParameterDefinition("action", ParameterAttributes.None, Func);
@@ -132,13 +135,15 @@ namespace UniNativeLinq.Editor.CodeGenerator
                     .LdArg(2)
                     .StLoc(0)
                     .LdLocA(0)
-                    .NewObj(@return.FindMethod(".ctor"))
+                    .NewObj(@return.FindMethod(".ctor", 3))
                     .Ret();
             }
             else
             {
-                var param0 = new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(enumerable0));
-                param0.CustomAttributes.Add(Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference());
+                var param0 = new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(enumerable0))
+                {
+                    CustomAttributes = { systemRuntimeCompilerServicesReadonlyAttributeTypeReference }
+                };
                 method.Parameters.Add(param0);
 
                 var param1 = new ParameterDefinition("second", ParameterAttributes.None, baseTypeReference);
@@ -155,7 +160,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                     .LdArg(2)
                     .StLoc(0)
                     .LdLocA(0)
-                    .NewObj(@return.FindMethod(".ctor"))
+                    .NewObj(@return.FindMethod(".ctor", 3))
                     .Ret();
             }
         }
@@ -183,12 +188,16 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
             var systemRuntimeCompilerServicesReadonlyAttributeTypeReference = Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference();
 
-            var param0 = new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(enumerable0));
-            param0.CustomAttributes.Add(systemRuntimeCompilerServicesReadonlyAttributeTypeReference);
+            var param0 = new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(enumerable0))
+            {
+                CustomAttributes = { systemRuntimeCompilerServicesReadonlyAttributeTypeReference }
+            };
             method.Parameters.Add(param0);
 
-            var param1 = new ParameterDefinition("second", ParameterAttributes.In, new ByReferenceType(enumerable1));
-            param1.CustomAttributes.Add(systemRuntimeCompilerServicesReadonlyAttributeTypeReference);
+            var param1 = new ParameterDefinition("second", ParameterAttributes.In, new ByReferenceType(enumerable1))
+            {
+                CustomAttributes = { systemRuntimeCompilerServicesReadonlyAttributeTypeReference }
+            };
             method.Parameters.Add(param1);
 
             var param2 = new ParameterDefinition("action", ParameterAttributes.None, Func);
@@ -201,13 +210,13 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .LdArg(2)
                 .StLoc(0)
                 .LdLocA(0)
-                .NewObj(@return.FindMethod(".ctor"))
+                .NewObj(@return.FindMethod(".ctor", 3))
                 .Ret();
         }
 
-        private static GenericInstanceType DefineReturn(ModuleDefinition mainModule, MethodDefinition method, TypeReference enumerable0, TypeReference enumerator0, TypeReference element0, TypeReference enumerable1, TypeReference enumerator1, TypeReference element1, TypeReference T, TypeReference TAction)
+        private static TypeReference DefineReturn(ModuleDefinition mainModule, MethodDefinition method, TypeReference enumerable0, TypeReference enumerator0, TypeReference element0, TypeReference enumerable1, TypeReference enumerator1, TypeReference element1, TypeReference T, TypeReference TAction)
         {
-            var @return = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "AdjustedZipEnumerable`8"))
+            return method.ReturnType = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "AdjustedZipEnumerable`8"))
             {
                 GenericArguments =
                 {
@@ -221,8 +230,6 @@ namespace UniNativeLinq.Editor.CodeGenerator
                     TAction,
                 }
             };
-            method.ReturnType = @return;
-            return @return;
         }
 
         private (TypeReference, TypeReference, TypeReference) Prepare(TypeReference element0, TypeReference element1, ModuleDefinition mainModule, ModuleDefinition systemModule, MethodDefinition method)

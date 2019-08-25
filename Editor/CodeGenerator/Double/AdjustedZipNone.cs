@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Mono.Cecil;
-using Mono.Cecil.Cil;
 
 // ReSharper disable InconsistentNaming
 
@@ -76,13 +75,11 @@ namespace UniNativeLinq.Editor.CodeGenerator
             var param1 = new ParameterDefinition("second", ParameterAttributes.None, baseTypeReference1);
             method.Parameters.Add(param1);
 
-            var body = method.Body;
-            body.Variables.Add(new VariableDefinition(TAction));
-            body.GetILProcessor()
+            method.Body
+                .GetILProcessor()
                 .LdConvArg(enumerable0, 0)
                 .LdConvArg(enumerable1, 1)
-                .LdLocA(0)
-                .NewObj(@return.FindMethod(".ctor"))
+                .NewObj(@return.FindMethod(".ctor", 2))
                 .Ret();
         }
 
@@ -118,14 +115,11 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 param1.CustomAttributes.Add(Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference());
                 method.Parameters.Add(param1);
 
-                var body = method.Body;
-                body.Variables.Add(new VariableDefinition(TAction));
-
-                body.GetILProcessor()
+                method.Body
+                    .GetILProcessor()
                     .LdConvArg(enumerable0, 0)
                     .LdArg(1)
-                    .LdLocA(0)
-                    .NewObj(@return.FindMethod(".ctor"))
+                    .NewObj(@return.FindMethod(".ctor", 2))
                     .Ret();
             }
             else
@@ -137,14 +131,11 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 var param1 = new ParameterDefinition("second", ParameterAttributes.None, baseTypeReference);
                 method.Parameters.Add(param1);
 
-                var body = method.Body;
-                body.Variables.Add(new VariableDefinition(TAction));
-
-                body.GetILProcessor()
+                method.Body
+                    .GetILProcessor()
                     .LdArg(0)
                     .LdConvArg(enumerable1, 1)
-                    .LdLocA(0)
-                    .NewObj(@return.FindMethod(".ctor"))
+                    .NewObj(@return.FindMethod(".ctor", 2))
                     .Ret();
             }
         }
@@ -180,19 +171,16 @@ namespace UniNativeLinq.Editor.CodeGenerator
             param1.CustomAttributes.Add(systemRuntimeCompilerServicesReadonlyAttributeTypeReference);
             method.Parameters.Add(param1);
 
-            var body = method.Body;
-            body.Variables.Add(new VariableDefinition(TAction));
-
-            body.GetILProcessor()
+            method.Body
+                .GetILProcessor()
                 .LdArgs(0, 2)
-                .LdLocA(0)
-                .NewObj(@return.FindMethod(".ctor"))
+                .NewObj(@return.FindMethod(".ctor", 2))
                 .Ret();
         }
 
-        private static GenericInstanceType DefineReturn(ModuleDefinition mainModule, MethodDefinition method, TypeReference enumerable0, TypeReference enumerator0, TypeReference element0, TypeReference enumerable1, TypeReference enumerator1, TypeReference element1, TypeReference T, TypeReference TAction)
+        private static TypeReference DefineReturn(ModuleDefinition mainModule, MethodDefinition method, TypeReference enumerable0, TypeReference enumerator0, TypeReference element0, TypeReference enumerable1, TypeReference enumerator1, TypeReference element1, TypeReference T, TypeReference TAction)
         {
-            var @return = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "AdjustedZipEnumerable`8"))
+            return method.ReturnType = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "AdjustedZipEnumerable`8"))
             {
                 GenericArguments =
                 {
@@ -206,8 +194,6 @@ namespace UniNativeLinq.Editor.CodeGenerator
                     TAction,
                 }
             };
-            method.ReturnType = @return;
-            return @return;
         }
 
         private (TypeReference, TypeReference) Prepare(TypeReference element0, TypeReference element1, ModuleDefinition mainModule, ModuleDefinition systemModule)
