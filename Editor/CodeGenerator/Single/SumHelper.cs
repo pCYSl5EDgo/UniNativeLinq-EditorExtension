@@ -86,10 +86,11 @@ namespace UniNativeLinq.Editor.CodeGenerator
             var body = method.Body;
             body.InitLocals = true;
             body.Variables.Add(new VariableDefinition(returnType));
-            body.Variables.Add(new VariableDefinition(enumerator));
+            var enumeratorVariable = new VariableDefinition(enumerator);
+            body.Variables.Add(enumeratorVariable);
             body.Variables.Add(new VariableDefinition(returnType));
 
-            var @return = Instruction.Create(OpCodes.Ldloc_0);
+            var @return = Instruction.Create(OpCodes.Ldloca_S, enumeratorVariable);
             var loopStart = body.Variables.LoadLocalA(1);
 
             body.GetILProcessor()
@@ -106,6 +107,8 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .StLoc(0)
                 .BrS(loopStart)
                 .Add(@return)
+                .Call(enumerator.FindMethod("Dispose", 0))
+                .LdLoc(0)
                 .Ret();
         }
     }
