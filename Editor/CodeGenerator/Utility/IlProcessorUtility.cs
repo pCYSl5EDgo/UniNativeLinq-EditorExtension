@@ -785,6 +785,15 @@ namespace UniNativeLinq.Editor.CodeGenerator
         public static ILProcessor And(this ILProcessor processor) => processor.Add(Instruction.Create(OpCodes.And));
 
         public static ILProcessor Dup(this ILProcessor processor) => processor.Add(Instruction.Create(OpCodes.Dup));
+        public static ILProcessor Dup(this ILProcessor processor, uint count)
+        {
+            for (var i = 0u; i < count; i++)
+            {
+                processor.Append(Instruction.Create(OpCodes.Dup));
+            }
+            return processor;
+        }
+
         public static ILProcessor Pop(this ILProcessor processor) => processor.Add(Instruction.Create(OpCodes.Pop));
 
         public static ILProcessor LdC<T>(this ILProcessor processor, T value) where T : unmanaged
@@ -897,6 +906,8 @@ namespace UniNativeLinq.Editor.CodeGenerator
         public static ILProcessor LdFld(this ILProcessor processor, FieldReference fieldReference) => processor.Add(Instruction.Create(OpCodes.Ldfld, fieldReference));
         public static ILProcessor LdFldA(this ILProcessor processor, FieldReference fieldReference) => processor.Add(Instruction.Create(OpCodes.Ldflda, fieldReference));
 
+        public static ILProcessor LdArg(this ILProcessor processor, VariableDefinition variable)
+            => processor.LdArg(processor.Body.Variables.IndexOf(variable));
         public static ILProcessor LdArg(this ILProcessor processor, int index)
         {
             switch (index)
@@ -944,6 +955,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
         public static ILProcessor StLoc(this ILProcessor processor, VariableDefinition variableDefinition) => processor.StLoc(processor.Body.Variables.IndexOf(variableDefinition));
 
+        // ReSharper disable once IdentifierTypo
         public static ILProcessor StLocs(this ILProcessor processor, int start, int length)
         {
             if (length > 0)
@@ -998,6 +1010,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
         public static ILProcessor NewArr(this ILProcessor processor, TypeReference elementTypeReference) => processor.Add(Instruction.Create(OpCodes.Newarr, elementTypeReference));
         public static ILProcessor NewObj(this ILProcessor processor, MethodReference constructor) => processor.Add(Instruction.Create(OpCodes.Newobj, constructor));
         public static ILProcessor InitObj(this ILProcessor processor, TypeReference structTypeReference) => processor.Add(Instruction.Create(OpCodes.Initobj, structTypeReference));
+        public static ILProcessor CpObj(this ILProcessor processor, TypeReference typeReference) => processor.Add(Instruction.Create(OpCodes.Cpobj, typeReference));
 
         public static ILProcessor Ret(this ILProcessor processor) => processor.Add(Instruction.Create(OpCodes.Ret));
     }

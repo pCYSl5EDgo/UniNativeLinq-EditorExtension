@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using Mono.Cecil;
+using Mono.Cecil.Cil;
 
 namespace UniNativeLinq.Editor.CodeGenerator
 {
@@ -48,6 +49,14 @@ namespace UniNativeLinq.Editor.CodeGenerator
             var element = enumerable.GetElementTypeOfCollectionType().Replace(added0, nameof(T), T, suffix);
 
             return (enumerable, enumerator, element);
+        }
+
+        public static ILProcessor CpObjFromArgumentToField(this ILProcessor processor, TypeReference type, int variableIndex, FieldReference to)
+        {
+            return processor
+                .LdFldA(to)
+                .LdArg(variableIndex)
+                .CpObj(type);
         }
     }
 }

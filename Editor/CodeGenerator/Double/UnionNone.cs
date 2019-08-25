@@ -11,6 +11,8 @@ namespace UniNativeLinq.Editor.CodeGenerator
         public readonly IDoubleApi Api;
         public UnionNone(IDoubleApi api) => Api = api;
         public Dictionary<string, TypeDefinition> Dictionary { private get; set; }
+        const string ConcatFirstEnumerable = "FirstEnumerable";
+        const string ConcatSecondEnumerable = "SecondEnumerable";
 
         public void Generate(IEnumerableCollectionProcessor processor, ModuleDefinition mainModule, ModuleDefinition systemModule, ModuleDefinition unityModule)
         {
@@ -79,9 +81,13 @@ namespace UniNativeLinq.Editor.CodeGenerator
             body.GetILProcessor()
                 .LdLocA(0)
                 .Dup()
-                .LdConvArg(enumerable0, 0)
-                .LdConvArg(enumerable1, 1)
-                .Call(concatEnumerable.FindMethod(".ctor"))
+                .Dup()
+                .LdFldA(concatEnumerable.FindField(ConcatFirstEnumerable))
+                .LdArg(0)
+                .Call(enumerable0.FindMethod(".ctor"))
+                .LdFldA(concatEnumerable.FindField(ConcatSecondEnumerable))
+                .LdArg(1)
+                .Call(enumerable1.FindMethod(".ctor"))
                 .LdArg(2)
                 .NewObj(@return.FindMethod(".ctor", 2))
                 .Ret();
@@ -108,10 +114,11 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
                 processor
                     .LdLocA(0)
-                    .Dup()
-                    .LdConvArg(enumerable0, 0)
-                    .LdArg(1)
-                    .Call(concatEnumerable.FindMethod(".ctor"))
+                    .Dup(2)
+                    .LdFldA(concatEnumerable.FindField(ConcatFirstEnumerable))
+                    .LdArg(0)
+                    .Call(enumerable0.FindMethod(".ctor"))
+                    .CpObjFromArgumentToField(enumerable1, 1, concatEnumerable.FindField(ConcatSecondEnumerable))
                     .LdArg(2)
                     .NewObj(@return.FindMethod(".ctor", 2))
                     .Ret();
@@ -131,10 +138,11 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
                 processor
                     .LdLocA(0)
-                    .Dup()
-                    .LdArg(0)
-                    .LdConvArg(enumerable1, 1)
-                    .Call(concatEnumerable.FindMethod(".ctor"))
+                    .Dup(2)
+                    .CpObjFromArgumentToField(enumerable0, 0, concatEnumerable.FindField(ConcatFirstEnumerable))
+                    .LdFldA(concatEnumerable.FindField(ConcatSecondEnumerable))
+                    .LdArg(1)
+                    .Call(enumerable1.FindMethod(".ctor"))
                     .LdArg(2)
                     .NewObj(@return.FindMethod(".ctor", 2))
                     .Ret();
@@ -166,9 +174,9 @@ namespace UniNativeLinq.Editor.CodeGenerator
             body.Variables.Add(new VariableDefinition(concatEnumerable));
             body.GetILProcessor()
                 .LdLocA(0)
-                .Dup()
-                .LdArgs(0, 2)
-                .Call(concatEnumerable.FindMethod(".ctor"))
+                .Dup(2)
+                .CpObjFromArgumentToField(enumerable0, 0, concatEnumerable.FindField(ConcatFirstEnumerable))
+                .CpObjFromArgumentToField(enumerable1, 1, concatEnumerable.FindField(ConcatSecondEnumerable))
                 .LdArg(2)
                 .NewObj(@return.FindMethod(".ctor", 2))
                 .Ret();
