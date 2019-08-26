@@ -91,6 +91,57 @@ namespace UniNativeLinq.Editor
         {
             switch (api.Name)
             {
+                case "TryGetMax":
+                case "TryGetMin":
+                    {
+                        var result = api.Description.Split(new[] { " --- " }, StringSplitOptions.RemoveEmptyEntries);
+                        if (result.Length != 2)
+                        {
+                            Debug.LogWarning(api.Name + "\n" + api.Description);
+                            return;
+                        }
+                        switch (result[0])
+                        {
+                            case "Func":
+                                break;
+                            case "RefFunc":
+                                break;
+                            case "Operator":
+                                break;
+                            case "None":
+                                list.Add(new TryGetMinMaxNone(api, result[1], api.Name == "TryGetMax"));
+                                break;
+                        }
+                    }
+                    break;
+                case "All":
+                    switch (api.Description)
+                    {
+                        case "Operator":
+                            list.Add(new AllOperator(api));
+                            break;
+                        case "Func":
+                            list.Add(new AllFunc(api));
+                            break;
+                        case "RefFunc":
+                            list.Add(new AllRefFunc(api));
+                            break;
+                    }
+                    break;
+                case "Any":
+                    switch (api.Description)
+                    {
+                        case "Operator":
+                            list.Add(new AnyOperator(api));
+                            break;
+                        case "Func":
+                            list.Add(new AnyFunc(api));
+                            break;
+                        case "RefFunc":
+                            list.Add(new AnyRefFunc(api));
+                            break;
+                    }
+                    break;
                 case "Sum":
                     switch (api.Description)
                     {

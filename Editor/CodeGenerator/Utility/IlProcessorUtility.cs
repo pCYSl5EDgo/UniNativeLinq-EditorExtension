@@ -955,6 +955,8 @@ namespace UniNativeLinq.Editor.CodeGenerator
             return processor;
         }
 
+        public static ILProcessor LdElemA(this ILProcessor processor, TypeReference type) => processor.Add(Instruction.Create(OpCodes.Ldelema, type));
+
         public static ILProcessor LdElemR8(this ILProcessor processor) => processor.Add(Instruction.Create(OpCodes.Ldelem_R8));
         public static ILProcessor LdElemR4(this ILProcessor processor) => processor.Add(Instruction.Create(OpCodes.Ldelem_R4));
         public static ILProcessor LdElemI1(this ILProcessor processor) => processor.Add(Instruction.Create(OpCodes.Ldelem_I1));
@@ -965,7 +967,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
         public static ILProcessor LdElemU2(this ILProcessor processor) => processor.Add(Instruction.Create(OpCodes.Ldelem_U2));
         public static ILProcessor LdElemU4(this ILProcessor processor) => processor.Add(Instruction.Create(OpCodes.Ldelem_U4));
         public static ILProcessor LdElemRef(this ILProcessor processor) => processor.Add(Instruction.Create(OpCodes.Ldelem_Ref));
-        public static ILProcessor LdElemAny(this ILProcessor processor) => processor.Add(Instruction.Create(OpCodes.Ldelem_Any));
+        public static ILProcessor LdElemAny(this ILProcessor processor, TypeReference type) => processor.Add(Instruction.Create(OpCodes.Ldelem_Any, type));
 
         public static ILProcessor LdElem(this ILProcessor processor, TypeReference type)
         {
@@ -991,8 +993,47 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 case "System.Double":
                     return processor.LdElemR8();
             }
-            return type.IsValueType ? processor.LdElemAny() : processor.LdElemRef();
+            return type.IsValueType ? processor.LdElemAny(type) : processor.LdElemRef();
         }
+
+        public static ILProcessor LdIndR8(this ILProcessor processor) => processor.Add(Instruction.Create(OpCodes.Ldind_R8));
+        public static ILProcessor LdIndR4(this ILProcessor processor) => processor.Add(Instruction.Create(OpCodes.Ldind_R4));
+        public static ILProcessor LdIndI1(this ILProcessor processor) => processor.Add(Instruction.Create(OpCodes.Ldind_I1));
+        public static ILProcessor LdIndI2(this ILProcessor processor) => processor.Add(Instruction.Create(OpCodes.Ldind_I2));
+        public static ILProcessor LdIndI4(this ILProcessor processor) => processor.Add(Instruction.Create(OpCodes.Ldind_I4));
+        public static ILProcessor LdIndI8(this ILProcessor processor) => processor.Add(Instruction.Create(OpCodes.Ldind_I8));
+        public static ILProcessor LdIndU1(this ILProcessor processor) => processor.Add(Instruction.Create(OpCodes.Ldind_U1));
+        public static ILProcessor LdIndU2(this ILProcessor processor) => processor.Add(Instruction.Create(OpCodes.Ldind_U2));
+        public static ILProcessor LdIndU4(this ILProcessor processor) => processor.Add(Instruction.Create(OpCodes.Ldind_U4));
+        public static ILProcessor LdIndRef(this ILProcessor processor) => processor.Add(Instruction.Create(OpCodes.Ldind_Ref));
+
+        public static ILProcessor LdInd(this ILProcessor processor, TypeReference type)
+        {
+            switch (type.FullName)
+            {
+                case "System.Byte":
+                    return processor.LdIndU1();
+                case "System.SByte":
+                    return processor.LdIndI1();
+                case "System.Int16":
+                    return processor.LdIndI2();
+                case "System.UInt16":
+                    return processor.LdIndU2();
+                case "System.Int32":
+                    return processor.LdIndI4();
+                case "System.UInt32":
+                    return processor.LdIndU4();
+                case "System.Int64":
+                case "System.UInt64":
+                    return processor.LdIndI8();
+                case "System.Single":
+                    return processor.LdIndR4();
+                case "System.Double":
+                    return processor.LdIndR8();
+            }
+            return processor.LdIndRef();
+        }
+
 
         public static ILProcessor StLoc(this ILProcessor processor, VariableDefinition variableDefinition) => processor.StLoc(processor.Body.Variables.IndexOf(variableDefinition));
 
@@ -1033,20 +1074,52 @@ namespace UniNativeLinq.Editor.CodeGenerator
             return processor.Add(Instruction.Create(OpCodes.Stloc, index));
         }
 
+        public static ILProcessor StObj(this ILProcessor processor, TypeReference type)
+        {
+            switch (type.FullName)
+            {
+                case "System.Double":
+                    return processor.Add(Instruction.Create(OpCodes.Stind_R8));
+                case "System.Single":
+                    return processor.Add(Instruction.Create(OpCodes.Stind_R4));
+                case "System.SByte":
+                case "System.Byte":
+                    return processor.Add(Instruction.Create(OpCodes.Stind_I1));
+                case "System.Int16":
+                case "System.UInt16":
+                    return processor.Add(Instruction.Create(OpCodes.Stind_I2));
+                case "System.Int32":
+                case "System.UInt32":
+                    return processor.Add(Instruction.Create(OpCodes.Stind_I4));
+                case "System.Int64":
+                case "System.UInt64":
+                    return processor.Add(Instruction.Create(OpCodes.Stind_I8));
+                case "System.IntPtr":
+                case "System.UIntPtr":
+                    return processor.Add(Instruction.Create(OpCodes.Stind_I));
+                default:
+                    return processor.Add(Instruction.Create(OpCodes.Stobj, type));
+            }
+        }
+
         public static ILProcessor Switch<T>(this ILProcessor processor, Instruction[] instructions) => processor.AddRange(InstructionUtility.Switch<T>(instructions));
         public static ILProcessor Br(this ILProcessor processor, Instruction instruction) => processor.Add(Instruction.Create(OpCodes.Br, instruction));
         public static ILProcessor BrS(this ILProcessor processor, Instruction instruction) => processor.Add(Instruction.Create(OpCodes.Br_S, instruction));
+        public static ILProcessor BrBoolS(this ILProcessor processor, Instruction instruction, bool value) => value ? processor.BrTrueS(instruction) : processor.BrFalseS(instruction);
         public static ILProcessor BrTrueS(this ILProcessor processor, Instruction instruction) => processor.Add(Instruction.Create(OpCodes.Brtrue_S, instruction));
         public static ILProcessor BrFalseS(this ILProcessor processor, Instruction instruction) => processor.Add(Instruction.Create(OpCodes.Brfalse_S, instruction));
         public static ILProcessor BeqS(this ILProcessor processor, Instruction instruction) => processor.Add(Instruction.Create(OpCodes.Beq_S, instruction));
         public static ILProcessor BneS(this ILProcessor processor, Instruction instruction) => processor.Add(Instruction.Create(OpCodes.Bne_Un_S, instruction));
         public static ILProcessor Bne(this ILProcessor processor, Instruction instruction) => processor.Add(Instruction.Create(OpCodes.Bne_Un, instruction));
         public static ILProcessor Bgt<T>(this ILProcessor processor, Instruction instruction) => processor.Add(InstructionUtility.Bgt<T>(instruction));
+        public static ILProcessor BgtS(this ILProcessor processor, Instruction instruction) => processor.Add(Instruction.Create(OpCodes.Bgt_S, instruction));
         public static ILProcessor Bge<T>(this ILProcessor processor, Instruction instruction) => processor.Add(InstructionUtility.Bge<T>(instruction));
         public static ILProcessor BgeS<T>(this ILProcessor processor, Instruction instruction) => processor.Add(InstructionUtility.BgeS<T>(instruction));
+        public static ILProcessor BgeS(this ILProcessor processor, Instruction instruction) => processor.Add(Instruction.Create(OpCodes.Bge_S, instruction));
         public static ILProcessor BgeUnS(this ILProcessor processor, Instruction instruction) => processor.Add(Instruction.Create(OpCodes.Bge_Un_S, instruction));
         public static ILProcessor Blt<T>(this ILProcessor processor, Instruction instruction) => processor.Add(InstructionUtility.Blt<T>(instruction));
         public static ILProcessor BltS(this ILProcessor processor, Instruction instruction) => processor.Add(Instruction.Create(OpCodes.Blt_S, instruction));
+        public static ILProcessor BltUnS(this ILProcessor processor, Instruction instruction) => processor.Add(Instruction.Create(OpCodes.Blt_Un_S, instruction));
         public static ILProcessor BleS<T>(this ILProcessor processor, Instruction instruction) => processor.Add(InstructionUtility.BleS<T>(instruction));
 
         public static ILProcessor Call(this ILProcessor processor, MethodReference methodReference) => processor.Add(Instruction.Create(OpCodes.Call, methodReference));
