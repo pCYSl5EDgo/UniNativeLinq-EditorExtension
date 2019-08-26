@@ -993,7 +993,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 case "System.Double":
                     return processor.LdElemR8();
             }
-            return type.IsValueType ? processor.LdElemAny(type) : processor.LdElemRef();
+            return type.IsValueType || (type is GenericParameter genericParameter && genericParameter.HasNotNullableValueTypeConstraint) ? processor.LdElemAny(type) : processor.LdElemRef();
         }
 
         public static ILProcessor LdIndR8(this ILProcessor processor) => processor.Add(Instruction.Create(OpCodes.Ldind_R8));

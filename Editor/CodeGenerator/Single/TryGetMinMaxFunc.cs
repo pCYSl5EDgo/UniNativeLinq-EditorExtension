@@ -7,9 +7,9 @@ using Mono.Cecil.Cil;
 
 namespace UniNativeLinq.Editor.CodeGenerator
 {
-    public sealed class TryGetMinMaxNone : ITypeDictionaryHolder, IApiExtensionMethodGenerator
+    public sealed class TryGetMinMaxFunc : ITypeDictionaryHolder, IApiExtensionMethodGenerator
     {
-        public TryGetMinMaxNone(ISingleApi api, string processType, bool isMax)
+        public TryGetMinMaxFunc(ISingleApi api, string processType, bool isMax)
         {
             Api = api;
             this.isMax = isMax;
@@ -23,20 +23,20 @@ namespace UniNativeLinq.Editor.CodeGenerator
         public Dictionary<string, TypeDefinition> Dictionary { private get; set; }
         public void Generate(IEnumerableCollectionProcessor processor, ModuleDefinition mainModule, ModuleDefinition systemModule, ModuleDefinition unityModule)
         {
-            var returnTypeReference = CalculateReturnType(mainModule);
+            var returnTypeReference = InvokeulateReturnType(mainModule);
             var array = processor.EnabledNameCollection.Intersect(Api.NameCollection).ToArray();
             if (!Api.ShouldDefine(array)) return;
             TypeDefinition @static;
-            mainModule.Types.Add(@static = mainModule.DefineStatic("TryGet" + Name + processType + "NoneHelper"));
+            mainModule.Types.Add(@static = mainModule.DefineStatic("TryGet" + Name + processType + "FuncHelper"));
             foreach (var name in array)
             {
                 if (!processor.IsSpecialType(name, out var isSpecial)) throw new KeyNotFoundException();
                 if (!Api.TryGetEnabled(name, out var apiEnabled) || !apiEnabled) continue;
-                GenerateEach(name, isSpecial, @static, mainModule, returnTypeReference);
+                GenerateEach(name, isSpecial, @static, mainModule, systemModule, returnTypeReference);
             }
         }
 
-        private TypeReference CalculateReturnType(ModuleDefinition mainModule)
+        private TypeReference InvokeulateReturnType(ModuleDefinition mainModule)
         {
             switch (processType)
             {
@@ -116,7 +116,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             }
         }
 
-        private void GenerateEach(string name, bool isSpecial, TypeDefinition @static, ModuleDefinition mainModule, TypeReference returnTypeReference)
+        private void GenerateEach(string name, bool isSpecial, TypeDefinition @static, ModuleDefinition mainModule, ModuleDefinition systemModule, TypeReference returnTypeReference)
         {
             var method = new MethodDefinition("TryGet" + Name, Helper.StaticMethodAttributes, mainModule.TypeSystem.Boolean)
             {
@@ -126,39 +126,53 @@ namespace UniNativeLinq.Editor.CodeGenerator
             };
             @static.Methods.Add(method);
 
+            var T = new GenericParameter("T", method)
+            {
+                HasNotNullableValueTypeConstraint = true,
+                CustomAttributes = { Helper.GetSystemRuntimeInteropServicesUnmanagedTypeConstraintTypeReference() }
+            };
+            method.GenericParameters.Add(T);
+            var Func = new GenericInstanceType(mainModule.ImportReference(systemModule.GetType("System", "Func`2")))
+            {
+                GenericArguments = { T, returnTypeReference }
+            };
+            var Invoke = Func.FindMethod("Invoke");
+
             if (isSpecial)
             {
-                var (baseEnumerable, _, _) = returnTypeReference.MakeSpecialTypePair(name);
+                var (baseEnumerable, _, _) = T.MakeSpecialTypePair(name);
                 switch (name)
                 {
                     case "T[]":
-                        GenerateArray(mainModule, method, returnTypeReference, baseEnumerable);
+                        GenerateArray(mainModule, method, returnTypeReference, baseEnumerable, T, Func, Invoke);
                         break;
                     case "NativeArray<T>":
-                        GenerateNativeArray(mainModule, method, returnTypeReference, baseEnumerable);
+                        GenerateNativeArray(mainModule, method, returnTypeReference, baseEnumerable, T, Func, Invoke);
                         break;
                     default: throw new NotSupportedException(name);
                 }
             }
             else
             {
-                GenerateNormal(method, Dictionary[name], returnTypeReference);
+                GenerateNormal(method, Dictionary[name], returnTypeReference, T, Func, Invoke);
             }
         }
 
-        private void GenerateNativeArray(ModuleDefinition mainModule, MethodDefinition method, TypeReference returnTypeReference, TypeReference baseEnumerable)
+        private void GenerateNativeArray(ModuleDefinition mainModule, MethodDefinition method, TypeReference returnTypeReference, TypeReference baseEnumerable, TypeReference T, TypeReference TFunc, MethodReference Invoke)
         {
             method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(baseEnumerable))
             {
                 CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference() }
             });
             method.Parameters.Add(new ParameterDefinition("value", ParameterAttributes.Out, new ByReferenceType(returnTypeReference)));
+            method.Parameters.Add(new ParameterDefinition("operator", ParameterAttributes.None, TFunc));
 
             var body = method.Body;
             body.Variables.Add(new VariableDefinition(mainModule.TypeSystem.Int32));
+            body.Variables.Add(new VariableDefinition(returnTypeReference));
 
             var il09 = Instruction.Create(OpCodes.Ldarg_1);
-            var il12 = Instruction.Create(OpCodes.Ldarg_0);
+            var il12 = Instruction.Create(OpCodes.Ldarg_2);
             var il1E = Instruction.Create(OpCodes.Ldloc_0);
             var il22 = Instruction.Create(OpCodes.Ldloc_0);
 
@@ -173,25 +187,29 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .Ret()
 
                 .Add(il09)
-                .LdArg(0)
-                .LdC(0)
-                .Call(getItem)
+                    .LdArg(2)
+                        .LdArg(0)
+                        .LdC(0)
+                        .Call(getItem)
+                .CallVirtual(Invoke)
                 .StObj(returnTypeReference)
                 .LdC(1)
                 .StLoc(0)
                 .BrS(il22)
 
                 .Add(il12)
-                .LdLoc(0)
-                .Call(getItem)
+                    .LdArg(0)
+                    .LdLoc(0)
+                    .Call(getItem)
+                .CallVirtual(Invoke)
+                .Dup()
+                .StLoc(1)
                 .LdArg(1)
                 .LdInd(returnTypeReference)
                 .Add(Instruction.Create(isMax ? OpCodeBleS : OpCodeBgeS, il1E))
                 .LdArg(1)
-                .LdArg(0)
-                .LdLoc(0)
-                .Call(getItem)
-                .StObj(returnTypeReference)
+                .LdLocA(1)
+                .CpObj(returnTypeReference)
                 .Add(il1E)
                 .LdC(1)
                 .Add()
@@ -204,16 +222,18 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .Ret();
         }
 
-        private void GenerateArray(ModuleDefinition mainModule, MethodDefinition method, TypeReference returnTypeReference, TypeReference baseEnumerable)
+        private void GenerateArray(ModuleDefinition mainModule, MethodDefinition method, TypeReference returnTypeReference, TypeReference baseEnumerable, TypeReference T, TypeReference TFunc, MethodReference Invoke)
         {
             method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.None, baseEnumerable));
             method.Parameters.Add(new ParameterDefinition("value", ParameterAttributes.Out, new ByReferenceType(returnTypeReference)));
+            method.Parameters.Add(new ParameterDefinition("operator", ParameterAttributes.None, TFunc));
 
             var body = method.Body;
             body.Variables.Add(new VariableDefinition(mainModule.TypeSystem.Int32));
+            body.Variables.Add(new VariableDefinition(returnTypeReference));
 
             var il09 = Instruction.Create(OpCodes.Ldarg_1);
-            var il12 = Instruction.Create(OpCodes.Ldarg_0);
+            var il12 = Instruction.Create(OpCodes.Ldarg_2);
             var il1E = Instruction.Create(OpCodes.Ldloc_0);
             var il22 = Instruction.Create(OpCodes.Ldloc_0);
             body.GetILProcessor()
@@ -224,24 +244,27 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .Ret()
 
                 .Add(il09)
-                .LdArg(0)
-                .LdC(0)
-                .LdElemA(returnTypeReference)
-                .CpObj(returnTypeReference)
+                .LdArg(2)
+                    .LdArg(0)
+                    .LdC(0)
+                    .LdElem(T)
+                .CallVirtual(Invoke)
+                .StObj(returnTypeReference)
                 .LdC(1)
                 .StLoc(0)
                 .BrS(il22)
-
                 .Add(il12)
-                .LdLoc(0)
-                .LdElem(returnTypeReference)
+                    .LdArg(0)
+                    .LdLoc(0)
+                    .LdElem(T)
+                .CallVirtual(Invoke)
+                .Dup()
+                .StLoc(1)
                 .LdArg(1)
                 .LdInd(returnTypeReference)
                 .Add(Instruction.Create(isMax ? OpCodeBleS : OpCodeBgeS, il1E))
                 .LdArg(1)
-                .LdArg(0)
-                .LdLoc(0)
-                .LdElemA(returnTypeReference)
+                .LdLocA(1)
                 .CpObj(returnTypeReference)
                 .Add(il1E)
                 .LdC(1)
@@ -256,24 +279,26 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .Ret();
         }
 
-        private void GenerateNormal(MethodDefinition method, TypeDefinition type, TypeReference returnTypeReference)
+        private void GenerateNormal(MethodDefinition method, TypeDefinition type, TypeReference returnTypeReference, TypeReference T, TypeReference TFunc, MethodReference Invoke)
         {
-            var (enumerable, enumerator, _) = returnTypeReference.MakeFromCommonType(method, type, "0");
+            var (enumerable, enumerator, _) = T.MakeFromCommonType(method, type, "0");
 
             method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(enumerable))
             {
                 CustomAttributes = { Helper.IsReadOnlyAttribute }
             });
             method.Parameters.Add(new ParameterDefinition("value", ParameterAttributes.Out, new ByReferenceType(returnTypeReference)));
+            method.Parameters.Add(new ParameterDefinition("operator", ParameterAttributes.None, TFunc));
 
             var body = method.Body;
 
             var enumeratorVariable = new VariableDefinition(enumerator);
             body.Variables.Add(enumeratorVariable);
             body.Variables.Add(new VariableDefinition(returnTypeReference));
+            body.Variables.Add(new VariableDefinition(T));
             var condition = Instruction.Create(OpCodes.Ldloca_S, enumeratorVariable);
             var loopStart = Instruction.Create(OpCodes.Ldarg_1);
-
+            var shortJump = Instruction.Create(OpCodes.Ldarg_1);
 
             var enumeratorDispose = enumerator.FindMethod("Dispose", 0);
             var enumeratorTryMoveNext = enumerator.FindMethod("TryMoveNext", 1);
@@ -282,22 +307,32 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .Call(enumerable.FindMethod("GetEnumerator", 0))
                 .StLoc(0)
                 .LdLocA(0)
-                .LdArg(1)
+                .LdLocA(2)
                 .Call(enumeratorTryMoveNext)
-                .BrTrueS(condition)
+                .BrTrueS(shortJump)
                 .LdLocA(0)
                 .Call(enumeratorDispose)
                 .LdC(false)
                 .Ret()
+                .Add(shortJump)
+                .LdArg(2)
+                .LdLoc(2)
+                .CallVirtual(Invoke)
+                .StObj(returnTypeReference)
+                .BrS(condition)
                 .Add(loopStart)
+                .LdArg(2)
+                .LdLoc(2)
+                .CallVirtual(Invoke)
+                .StLoc(1)
                 .Add(Instruction.Create(OpCodeLdInd))
                 .LdLoc(1)
                 .Add(Instruction.Create(isMax ? OpCodeBgeS : OpCodeBleS, condition))
                 .LdArg(1)
-                .LdLoc(1)
-                .StObj(returnTypeReference)
-                .Add(condition)
                 .LdLocA(1)
+                .CpObj(returnTypeReference)
+                .Add(condition)
+                .LdLocA(2)
                 .Call(enumeratorTryMoveNext)
                 .BrTrueS(loopStart)
                 .LdLocA(0)

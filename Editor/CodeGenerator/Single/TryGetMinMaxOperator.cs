@@ -179,6 +179,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             var body = method.Body;
             body.Variables.Add(new VariableDefinition(mainModule.TypeSystem.Int32));
             body.Variables.Add(new VariableDefinition(T));
+            body.Variables.Add(new VariableDefinition(returnTypeReference));
 
             var il09 = Instruction.Create(OpCodes.Ldarg_1);
             var il12 = Instruction.Create(OpCodes.Ldarg_2);
@@ -217,19 +218,14 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .LdLocA(1)
                 .Constrained(TOperator)
                 .CallVirtual(Calc)
+                .Dup()
+                .StLoc(2)
                 .LdArg(1)
                 .LdInd(returnTypeReference)
                 .Add(Instruction.Create(isMax ? OpCodeBleS : OpCodeBgeS, il1E))
                 .LdArg(1)
-                .LdArg(2)
-                    .LdArg(0)
-                    .LdLoc(0)
-                    .Call(getItem)
-                .StLoc(1)
-                .LdLocA(1)
-                .Constrained(TOperator)
-                .CallVirtual(Calc)
-                .StObj(returnTypeReference)
+                .LdLocA(2)
+                .CpObj(returnTypeReference)
                 .Add(il1E)
                 .LdC(1)
                 .Add()
@@ -253,6 +249,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
             var body = method.Body;
             body.Variables.Add(new VariableDefinition(mainModule.TypeSystem.Int32));
+            body.Variables.Add(new VariableDefinition(returnTypeReference));
 
             var il09 = Instruction.Create(OpCodes.Ldarg_1);
             var il12 = Instruction.Create(OpCodes.Ldarg_2);
@@ -283,17 +280,14 @@ namespace UniNativeLinq.Editor.CodeGenerator
                     .LdElemA(T)
                 .Constrained(TOperator)
                 .CallVirtual(Calc)
+                .Dup()
+                .StLoc(1)
                 .LdArg(1)
                 .LdInd(returnTypeReference)
                 .Add(Instruction.Create(isMax ? OpCodeBleS : OpCodeBgeS, il1E))
                 .LdArg(1)
-                .LdArg(2)
-                    .LdArg(0)
-                    .LdLoc(0)
-                    .LdElemA(T)
-                .Constrained(TOperator)
-                .CallVirtual(Calc)
-                .StObj(returnTypeReference)
+                .LdLocA(1)
+                .CpObj(returnTypeReference)
                 .Add(il1E)
                 .LdC(1)
                 .Add()
@@ -362,8 +356,8 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .LdLoc(1)
                 .Add(Instruction.Create(isMax ? OpCodeBgeS : OpCodeBleS, condition))
                 .LdArg(1)
-                .LdLoc(1)
-                .StObj(returnTypeReference)
+                .LdLocA(1)
+                .CpObj(returnTypeReference)
                 .Add(condition)
                 .LdLocA(2)
                 .Call(enumeratorTryMoveNext)

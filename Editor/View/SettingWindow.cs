@@ -103,8 +103,10 @@ namespace UniNativeLinq.Editor
                         switch (result[0])
                         {
                             case "Func":
+                                list.Add(new TryGetMinMaxFunc(api, result[1], api.Name == "TryGetMax"));
                                 break;
                             case "RefFunc":
+                                list.Add(new TryGetMinMaxRefFunc(api, result[1], api.Name == "TryGetMax"));
                                 break;
                             case "Operator":
                                 list.Add(new TryGetMinMaxOperator(api, result[1], api.Name == "TryGetMax"));
