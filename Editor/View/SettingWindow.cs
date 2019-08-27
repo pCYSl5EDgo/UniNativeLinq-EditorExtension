@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UniNativeLinq.Editor.CodeGenerator;
 using UniNativeLinq.Editor.CodeGenerator.Aggregate;
+using UniNativeLinq.Editor.CodeGenerator.Average;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -92,6 +93,9 @@ namespace UniNativeLinq.Editor
         {
             switch (api.Name)
             {
+                case "TryGetAverage":
+                    list.Add(new TryGetAverageNone(api, api.Description));
+                    break;
                 case "Aggregate":
                     switch (api.Description)
                     {
@@ -103,6 +107,15 @@ namespace UniNativeLinq.Editor
                             break;
                         case "TResult Aggregate<TAccumulate, TResult>(TAccumulate seed, Func<TAccumulate, T, TAccumulate> func, Func<TAccumulate, TResult> resultFunc)":
                             list.Add(new AggregateValue2Functions(api));
+                            break;
+                        case "void Aggregate<TAccumulate, TResult, TFunc>(ref TAccumulate seed, in TFunc func)":
+                            list.Add(new AggregateRefValue1Operator(api));
+                            break;
+                        case "TAccumulate Aggregate<TAccumulate, TResult, TFunc>(TAccumulate seed, in TFunc func)":
+                            list.Add(new AggregateValue1Operator(api));
+                            break;
+                        case "TAccumulate Aggregate<TAccumulate, TResult, TFunc>(TAccumulate seed, RefAction<T, TAction> func)":
+                            list.Add(new AggregateValue1Function(api));
                             break;
                     }
                     break;

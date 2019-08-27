@@ -10,10 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b98f8d701fd45434cb889bded0829d8d, type: 3}
-  m_Name: Average___Int32
+  m_Name: Aggregate___Value1Function
   m_EditorClassIdentifier: 
-  Name: Average
-  Description: Int32
+  Name: Aggregate
+  Description: TAccumulate Aggregate<TAccumulate, TResult, TFunc>(TAccumulate seed,
+    RefAction<T, TAction> func)
   EnabledArray:
   - Enumerable: NativeArray<T>
     Enabled: 1
@@ -100,5 +101,4 @@ MonoBehaviour:
   - Enumerable: WhereIndex
     Enabled: 1
   <IsHided>k__BackingField: 0
-  <ExcludeEnumerableArray>k__BackingField:
-  - GroupBy
+  <ExcludeEnumerableArray>k__BackingField: []

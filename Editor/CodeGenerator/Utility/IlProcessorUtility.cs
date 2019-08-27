@@ -723,6 +723,8 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
         public static ILProcessor Add(this ILProcessor processor) => processor.Add(Instruction.Create(OpCodes.Add));
         public static ILProcessor Sub(this ILProcessor processor) => processor.Add(Instruction.Create(OpCodes.Sub));
+        public static ILProcessor Div(this ILProcessor processor) => processor.Add(Instruction.Create(OpCodes.Div));
+        public static ILProcessor DivUn(this ILProcessor processor) => processor.Add(Instruction.Create(OpCodes.Div_Un));
 
         public static ILProcessor Sub<T>(this ILProcessor processor, T value)
             where T : unmanaged, IComparable<T>
@@ -773,8 +775,14 @@ namespace UniNativeLinq.Editor.CodeGenerator
             return processor.AddRange(InstructionUtility.LoadConstant(value)).Sub();
         }
 
+        public static ILProcessor ConvR4(this ILProcessor processor) => processor.Add(Instruction.Create(OpCodes.Conv_R4));
+        public static ILProcessor ConvR8(this ILProcessor processor) => processor.Add(Instruction.Create(OpCodes.Conv_R8));
+        public static ILProcessor ConvRUn(this ILProcessor processor) => processor.Add(Instruction.Create(OpCodes.Conv_R_Un));
+        public static ILProcessor ConvU8(this ILProcessor processor) => processor.Add(Instruction.Create(OpCodes.Conv_U8));
+        public static ILProcessor ConvI8(this ILProcessor processor) => processor.Add(Instruction.Create(OpCodes.Conv_I8));
+        public static ILProcessor ConvU4(this ILProcessor processor) => processor.Add(Instruction.Create(OpCodes.Conv_U4));
         public static ILProcessor ConvI4(this ILProcessor processor) => processor.Add(Instruction.Create(OpCodes.Conv_I4));
-        public static ILProcessor ConvUnsigned(this ILProcessor processor) => processor.Add(Instruction.Create(OpCodes.Conv_U));
+        public static ILProcessor ConvUIntPtr(this ILProcessor processor) => processor.Add(Instruction.Create(OpCodes.Conv_U));
         public static ILProcessor ConvIntPtr(this ILProcessor processor) => processor.Add(Instruction.Create(OpCodes.Conv_I));
 
         public static ILProcessor Ceq(this ILProcessor processor) => processor.Add(Instruction.Create(OpCodes.Ceq));
@@ -908,8 +916,10 @@ namespace UniNativeLinq.Editor.CodeGenerator
         public static ILProcessor LdFld(this ILProcessor processor, FieldReference fieldReference) => processor.Add(Instruction.Create(OpCodes.Ldfld, fieldReference));
         public static ILProcessor LdFldA(this ILProcessor processor, FieldReference fieldReference) => processor.Add(Instruction.Create(OpCodes.Ldflda, fieldReference));
 
-        public static ILProcessor LdArg(this ILProcessor processor, VariableDefinition variable)
-            => processor.LdArg(processor.Body.Variables.IndexOf(variable));
+        public static ILProcessor LdArgAs(this ILProcessor processor, ParameterDefinition parameter)
+        {
+            return processor.Add(Instruction.Create(OpCodes.Ldarga_S, parameter));
+        }
         public static ILProcessor LdArg(this ILProcessor processor, int index)
         {
             switch (index)
@@ -1131,6 +1141,8 @@ namespace UniNativeLinq.Editor.CodeGenerator
         public static ILProcessor NewObj(this ILProcessor processor, MethodReference constructor) => processor.Add(Instruction.Create(OpCodes.Newobj, constructor));
         public static ILProcessor InitObj(this ILProcessor processor, TypeReference structTypeReference) => processor.Add(Instruction.Create(OpCodes.Initobj, structTypeReference));
         public static ILProcessor CpObj(this ILProcessor processor, TypeReference typeReference) => processor.Add(Instruction.Create(OpCodes.Cpobj, typeReference));
+
+        public static ILProcessor Throw(this ILProcessor processor) => processor.Add(Instruction.Create(OpCodes.Throw));
 
         public static ILProcessor Ret(this ILProcessor processor) => processor.Add(Instruction.Create(OpCodes.Ret));
     }
