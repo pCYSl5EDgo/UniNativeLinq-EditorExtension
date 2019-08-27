@@ -1132,6 +1132,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
         public static ILProcessor BltS(this ILProcessor processor, Instruction instruction) => processor.Add(Instruction.Create(OpCodes.Blt_S, instruction));
         public static ILProcessor BltUnS(this ILProcessor processor, Instruction instruction) => processor.Add(Instruction.Create(OpCodes.Blt_Un_S, instruction));
         public static ILProcessor BleS<T>(this ILProcessor processor, Instruction instruction) => processor.Add(InstructionUtility.BleS<T>(instruction));
+        public static ILProcessor BleS(this ILProcessor processor, Instruction instruction) => processor.Add(Instruction.Create(OpCodes.Ble_S, instruction));
 
         public static ILProcessor Call(this ILProcessor processor, MethodReference methodReference) => processor.Add(Instruction.Create(OpCodes.Call, methodReference));
         public static ILProcessor Constrained(this ILProcessor processor, TypeReference typeReference) => processor.Add(Instruction.Create(OpCodes.Constrained, typeReference));

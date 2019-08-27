@@ -6,7 +6,6 @@ using UnityEngine;
 
 namespace UniNativeLinq.Editor
 {
-    [CreateAssetMenu(menuName = "Linq/Double Api")]
     public sealed class DifferentNameEnumerableDoubleApi : String2BoolMatrixTuple, IDoubleApi, IDrawableWithEnumerableAndScrollPosition
     {
         public int CompareTo(IDoubleApi other)

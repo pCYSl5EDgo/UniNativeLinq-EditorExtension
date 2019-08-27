@@ -93,6 +93,9 @@ namespace UniNativeLinq.Editor
         {
             switch (api.Name)
             {
+                case "TryGetElementAt":
+                    list.Add(new TryGetElementAt(api));
+                    break;
                 case "TryGetAverage":
                     list.Add(new TryGetAverageNone(api, api.Description));
                     break;
