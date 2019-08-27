@@ -10,12 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b98f8d701fd45434cb889bded0829d8d, type: 3}
-  m_Name: Aggregate___5110AA2E
+  m_Name: Aggregate___Value2Functions
   m_EditorClassIdentifier: 
   Name: Aggregate
-  Description: TNextResult0 Aggregate<TAccumulate0, TNextResult0>(TAccumulate0 seed,
-    RefFunc<TAccumulate0, T, TAccumulate0> func, RefFunc<TAccumulate0, TNextResult0>
-    resultFunc)
+  Description: TResult Aggregate<TAccumulate, TResult>(TAccumulate seed, Func<TAccumulate,
+    T, TAccumulate> func, Func<TAccumulate, TResult> resultFunc)
   EnabledArray:
   - Enumerable: NativeArray<T>
     Enabled: 1
@@ -102,3 +101,4 @@ MonoBehaviour:
   - Enumerable: WhereIndex
     Enabled: 1
   <IsHided>k__BackingField: 0
+  <ExcludeEnumerableArray>k__BackingField: []
