@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using UniNativeLinq.Editor.CodeGenerator;
+using UniNativeLinq.Editor.CodeGenerator.Aggregate;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -91,6 +92,20 @@ namespace UniNativeLinq.Editor
         {
             switch (api.Name)
             {
+                case "Aggregate":
+                    switch (api.Description)
+                    {
+                        case "TResult Aggregate<TAccumulate, TResult, TFunc, TResultFunc>(ref TAccumulate seed, in TFunc func, in TResultFunc resultFunc)":
+                            list.Add(new AggregateRefValue2Operators(api));
+                            break;
+                        case "TResult Aggregate<TAccumulate, TResult>(ref TAccumulate seed, RefAction<T, TAccumulate> func, RefFunc<TAccumulate, TResult> resultFunc)":
+                            list.Add(new AggregateRefValue2Refs(api));
+                            break;
+                        case "TResult Aggregate<TAccumulate, TResult>(TAccumulate seed, Func<TAccumulate, T, TAccumulate> func, Func<TAccumulate, TResult> resultFunc)":
+                            list.Add(new AggregateValue2Functions(api));
+                            break;
+                    }
+                    break;
                 case "TryGetMax":
                 case "TryGetMin":
                     {

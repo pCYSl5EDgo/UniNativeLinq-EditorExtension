@@ -1034,6 +1034,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             return processor.LdIndRef();
         }
 
+        public static ILProcessor StArgS(this ILProcessor processor, ParameterDefinition parameter) => processor.Add(Instruction.Create(OpCodes.Starg_S, parameter));
 
         public static ILProcessor StLoc(this ILProcessor processor, VariableDefinition variableDefinition) => processor.StLoc(processor.Body.Variables.IndexOf(variableDefinition));
 
