@@ -124,9 +124,16 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 CallingConvention = self.CallingConvention
             };
             foreach (var parameter in self.Parameters)
-                reference.Parameters.Add(new ParameterDefinition(parameter.ParameterType));
+            {
+                reference.Parameters.Add(new ParameterDefinition(parameter.ParameterType)
+                {
+                    Constant = parameter.Constant,
+                });
+            }
             foreach (var genericParameter in self.GenericParameters)
+            {
                 reference.GenericParameters.Add(new GenericParameter(genericParameter.Name, reference));
+            }
             return reference;
         }
 
@@ -145,8 +152,16 @@ namespace UniNativeLinq.Editor.CodeGenerator
         {
             var typeDefinition = type.ToDefinition();
             var methodDefinition = typeDefinition.Methods.Single(x => x.Name == name && x.Parameters.Count == parameterCount);
-            var imported = type.Module.ImportReference(methodDefinition);
-            return type is GenericInstanceType genericInstanceType ? imported.MakeHostInstanceGeneric(genericInstanceType.GenericArguments) : imported;
+
+            if (type.Module == typeDefinition.Module)
+            {
+                return type is GenericInstanceType genericInstanceType ? methodDefinition.MakeHostInstanceGeneric(genericInstanceType.GenericArguments) : methodDefinition;
+            }
+            else
+            {
+                var imported = type.Module.ImportReference(methodDefinition);
+                return type is GenericInstanceType genericInstanceType ? imported.MakeHostInstanceGeneric(genericInstanceType.GenericArguments) : imported;
+            }
         }
 
         public static FieldReference FindField(this GenericInstanceType type, string name)
