@@ -6,6 +6,7 @@ using UniNativeLinq.Editor.CodeGenerator.Average;
 using UniNativeLinq.Editor.CodeGenerator.Contains;
 using UniNativeLinq.Editor.CodeGenerator.MinMaxBy;
 using UniNativeLinq.Editor.CodeGenerator.TryGetSingle;
+using UniNativeLinq.Editor.CodeGenerator.Where;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -96,6 +97,20 @@ namespace UniNativeLinq.Editor
         {
             switch (api.Name)
             {
+                case "Where":
+                    switch (api.Description)
+                    {
+                        case "Operator":
+                            list.Add(new WhereOperator(api));
+                            break;
+                        case "Func":
+                            list.Add(new WhereFunc(api));
+                            break;
+                        case "RefFunc":
+                            list.Add(new WhereRefFunc(api));
+                            break;
+                    }
+                    break;
                 case "MaxByDouble":
                 case "MaxBySingle":
                 case "MaxByInt32":

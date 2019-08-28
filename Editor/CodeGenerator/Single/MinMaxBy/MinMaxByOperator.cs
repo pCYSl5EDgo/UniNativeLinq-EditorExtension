@@ -110,11 +110,11 @@ namespace UniNativeLinq.Editor.CodeGenerator.MinMaxBy
                 {
                     GenericArguments = { enumerable, enumerator, T, TKeySelector }
                 };
-                GenerateNormal(method, enumerable, enumerator, T, TKeySelector);
+                GenerateNormal(method, enumerable, TKeySelector);
             }
         }
 
-        private static void GenerateNormal(MethodDefinition method, TypeReference enumerable, TypeReference enumerator, GenericParameter genericParameter, GenericParameter keySelector)
+        private static void GenerateNormal(MethodDefinition method, TypeReference enumerable, GenericParameter keySelector)
         {
             method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(enumerable))
             {
