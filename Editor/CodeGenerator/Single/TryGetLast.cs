@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+// ReSharper disable InconsistentNaming
 
 namespace UniNativeLinq.Editor.CodeGenerator
 {
-    public sealed class TryGetFirst : ITypeDictionaryHolder, IApiExtensionMethodGenerator
+    public sealed class TryGetLast : ITypeDictionaryHolder, IApiExtensionMethodGenerator
     {
-        public TryGetFirst(ISingleApi api)
+        public TryGetLast(ISingleApi api)
         {
             Api = api;
         }
@@ -19,7 +20,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             var array = processor.EnabledNameCollection.Intersect(Api.NameCollection).ToArray();
             if (!Api.ShouldDefine(array)) return;
             TypeDefinition @static;
-            mainModule.Types.Add(@static = mainModule.DefineStatic(nameof(TryGetFirst) + "Helper"));
+            mainModule.Types.Add(@static = mainModule.DefineStatic(nameof(TryGetLast) + "Helper"));
             foreach (var name in array)
             {
                 if (!processor.IsSpecialType(name, out var isSpecial)) throw new KeyNotFoundException();
@@ -30,7 +31,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
         private void GenerateEach(string name, bool isSpecial, TypeDefinition @static, ModuleDefinition mainModule)
         {
-            var method = new MethodDefinition("TryGetFirst", Helper.StaticMethodAttributes, mainModule.TypeSystem.Boolean)
+            var method = new MethodDefinition("TryGetLast", Helper.StaticMethodAttributes, mainModule.TypeSystem.Boolean)
             {
                 DeclaringType = @static,
                 AggressiveInlining = true,
@@ -81,42 +82,87 @@ namespace UniNativeLinq.Editor.CodeGenerator
                     }
                     else
                     {
-                        GenerateNormalCanFastCount(method, enumerable, enumerator);
+                        GenerateNormalCanFastCount(method, T, enumerable, enumerator);
                     }
                 }
                 else
                 {
-                    GenerateNormal(method, enumerable, enumerator);
+                    GenerateNormal(method, T, enumerable, enumerator);
                 }
             }
         }
 
-        private static void GenerateNormal(MethodDefinition method, TypeReference enumerable, TypeReference enumerator)
+        private void GenerateNormal(MethodDefinition method, GenericParameter T, TypeReference enumerable, TypeReference enumerator)
         {
             var body = method.Body;
 
-            body.Variables.Add(new VariableDefinition(enumerator));
+            var enumeratorVariable = new VariableDefinition(enumerator);
+            body.Variables.Add(enumeratorVariable);
+            body.Variables.Add(new VariableDefinition(T));
+            body.Variables.Add(new VariableDefinition(T));
 
+            var notZero = Instruction.Create(OpCodes.Ldarg_0);
+            var loopStart = Instruction.Create(OpCodes.Ldloca_S, enumeratorVariable);
+            var success = Instruction.Create(OpCodes.Ldloca_S, enumeratorVariable);
+            var @return = Instruction.Create(OpCodes.Cpobj, T);
+
+            var TryMoveNext = enumerator.FindMethod("TryMoveNext");
+            var Dispose = enumerator.FindMethod("Dispose", 0);
             body.GetILProcessor()
                 .LdArg(0)
                 .Call(enumerable.FindMethod("GetEnumerator", 0))
                 .StLoc(0)
+
                 .LdLocA(0)
+                .LdLocA(2)
+                .Call(TryMoveNext)
+                .BrTrueS(loopStart)
+
+                .LdLocA(0)
+                .Call(Dispose)
+                .LdC(false)
+                .Ret()
+
+                .Add(loopStart)
+                .LdLocA(1)
+                .Call(TryMoveNext)
+                .BrTrueS(success)
+
                 .LdArg(1)
-                .Call(enumerator.FindMethod("TryMoveNext"))
+                .LdLocA(2)
+                .BrS(@return)
+
+                .Add(success)
+                .LdLocA(2)
+                .Call(TryMoveNext)
+                .BrTrueS(loopStart)
+
+                .LdArg(1)
+                .LdLocA(1)
+
+                .Add(@return)
                 .LdLocA(0)
-                .Call(enumerator.FindMethod("Dispose", 0))
+                .Call(Dispose)
+                .LdC(true)
                 .Ret();
         }
 
-        private static void GenerateNormalCanFastCount(MethodDefinition method, TypeReference enumerable, TypeReference enumerator)
+        private void GenerateNormalCanFastCount(MethodDefinition method, GenericParameter T, TypeReference enumerable, TypeReference enumerator)
         {
-            var notZero = Instruction.Create(OpCodes.Call, enumerable.FindMethod("GetEnumerator", 0));
 
             var body = method.Body;
 
-            body.Variables.Add(new VariableDefinition(enumerator));
+            var enumeratorVariable = new VariableDefinition(enumerator);
+            body.Variables.Add(enumeratorVariable);
+            body.Variables.Add(new VariableDefinition(T));
+            body.Variables.Add(new VariableDefinition(T));
 
+            var notZero = Instruction.Create(OpCodes.Call, enumerable.FindMethod("GetEnumerator", 0));
+            var loopStart = Instruction.Create(OpCodes.Ldloca_S, enumeratorVariable);
+            var success = Instruction.Create(OpCodes.Ldloca_S, enumeratorVariable);
+            var @return = Instruction.Create(OpCodes.Cpobj, T);
+
+            var TryMoveNext = enumerator.FindMethod("TryMoveNext");
             body.GetILProcessor()
                 .LdArg(0)
                 .Dup()
@@ -129,15 +175,32 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
                 .Add(notZero)
                 .StLoc(0)
-                .LdLocA(0)
+
+                .Add(loopStart)
+                .LdLocA(1)
+                .Call(TryMoveNext)
+                .BrTrueS(success)
+
                 .LdArg(1)
-                .Call(enumerator.FindMethod("TryMoveNext"))
+                .LdLocA(2)
+                .BrS(@return)
+
+                .Add(success)
+                .LdLocA(2)
+                .Call(TryMoveNext)
+                .BrTrueS(loopStart)
+
+                .LdArg(1)
+                .LdLocA(1)
+
+                .Add(@return)
                 .LdLocA(0)
                 .Call(enumerator.FindMethod("Dispose", 0))
+                .LdC(true)
                 .Ret();
         }
 
-        private static void GenerateCanIndexAccess(MethodDefinition method, GenericParameter T, TypeReference enumerable)
+        private void GenerateCanIndexAccess(MethodDefinition method, GenericParameter T, TypeReference enumerable)
         {
             var notZero = Instruction.Create(OpCodes.Ldarg_1);
 
@@ -151,7 +214,10 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
                 .Add(notZero)
                 .LdArg(0)
-                .LdC(0L)
+                .Dup()
+                .Call(enumerable.FindMethod("LongCount", 0))
+                .LdC(1L)
+                .Sub()
                 .Call(enumerable.FindMethod("get_Item"))
                 .CpObj(T)
 
@@ -159,7 +225,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .Ret();
         }
 
-        private static void GenerateNativeArray(MethodDefinition method, TypeReference baseEnumerable, GenericParameter T)
+        private void GenerateNativeArray(MethodDefinition method, TypeReference baseEnumerable, GenericParameter T)
         {
             method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(baseEnumerable))
             {
@@ -169,9 +235,10 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
             var notZero = Instruction.Create(OpCodes.Ldarg_1);
 
+            var getLength = baseEnumerable.FindMethod("get_Length");
             method.Body.GetILProcessor()
                 .LdArg(0)
-                .Call(baseEnumerable.FindMethod("get_Length"))
+                .Call(getLength)
                 .BrTrueS(notZero)
 
                 .LdC(false)
@@ -179,7 +246,10 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
                 .Add(notZero)
                 .LdArg(0)
-                .LdC(0)
+                .Dup()
+                .Call(getLength)
+                .LdC(1L)
+                .Sub()
                 .Call(baseEnumerable.FindMethod("get_Item"))
                 .StObj(T)
 
@@ -187,7 +257,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .Ret();
         }
 
-        private static void GenerateArray(MethodDefinition method, TypeReference baseEnumerable, GenericParameter T)
+        private void GenerateArray(MethodDefinition method, TypeReference baseEnumerable, GenericParameter T)
         {
             method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.None, baseEnumerable));
             method.Parameters.Add(new ParameterDefinition("value", ParameterAttributes.Out, new ByReferenceType(T)));
@@ -204,7 +274,10 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
                 .Add(notZero)
                 .LdArg(0)
-                .LdC(0)
+                .Dup()
+                .LdLen()
+                .LdC(1)
+                .Sub()
                 .LdElemA(T)
                 .CpObj(T)
 

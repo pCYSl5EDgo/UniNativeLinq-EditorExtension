@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UniNativeLinq.Editor.CodeGenerator;
 using UniNativeLinq.Editor.CodeGenerator.Aggregate;
 using UniNativeLinq.Editor.CodeGenerator.Average;
+using UniNativeLinq.Editor.CodeGenerator.TryGetSingle;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -96,8 +97,19 @@ namespace UniNativeLinq.Editor
                 case "TryGetFirst":
                     list.Add(new TryGetFirst(api));
                     break;
+                case "TryGetLast":
+                    list.Add(new TryGetLast(api));
+                    break;
                 case "TryGetElementAt":
                     list.Add(new TryGetElementAt(api));
+                    break;
+                case "TryGetSingle":
+                    switch (api.Description)
+                    {
+                        case "Operator":
+                            list.Add(new TryGetSingleOperator(api));
+                            break;
+                    }
                     break;
                 case "TryGetAverage":
                     list.Add(new TryGetAverageNone(api, api.Description));
