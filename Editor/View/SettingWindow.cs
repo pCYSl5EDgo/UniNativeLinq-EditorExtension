@@ -93,6 +93,9 @@ namespace UniNativeLinq.Editor
         {
             switch (api.Name)
             {
+                case "TryGetFirst":
+                    list.Add(new TryGetFirst(api));
+                    break;
                 case "TryGetElementAt":
                     list.Add(new TryGetElementAt(api));
                     break;
