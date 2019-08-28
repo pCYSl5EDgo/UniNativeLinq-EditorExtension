@@ -40,11 +40,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             };
             @static.Methods.Add(method);
 
-            var T = new GenericParameter("T", method)
-            {
-                HasNotNullableValueTypeConstraint = true,
-                CustomAttributes = { Helper.GetSystemRuntimeInteropServicesUnmanagedTypeConstraintTypeReference() }
-            };
+            var T = method.DefineUnmanagedGenericParameter();
             method.GenericParameters.Add(T);
 
             var Func = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "RefFunc`2"))

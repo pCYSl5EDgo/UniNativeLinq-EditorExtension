@@ -69,8 +69,8 @@ namespace UniNativeLinq.Editor.CodeGenerator
         {
             var (key, keyEqualityComparer, T) = Prepare(method, mainModule, systemModule);
 
-            var (element0, baseEnumerable0, enumerable0, enumerator0, keySelector0) = DefineWithSpecial(rowName, method, key, 0);
-            var (element1, baseEnumerable1, enumerable1, enumerator1, keySelector1) = DefineWithSpecial(columnName, method, key, 1);
+            var (element0, baseEnumerable0, enumerable0, enumerator0, keySelector0) = DefineWithSpecial(rowName, method, key, 0, systemModule);
+            var (element1, baseEnumerable1, enumerable1, enumerator1, keySelector1) = DefineWithSpecial(columnName, method, key, 1, systemModule);
 
             ParameterDefinition outer = new ParameterDefinition(nameof(outer), ParameterAttributes.None, baseEnumerable0);
             method.Parameters.Add(outer);
@@ -111,7 +111,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
             if (specialIndex == 0)
             {
-                (element0, baseEnumerable, enumerable0, enumerator0, keySelector0) = DefineWithSpecial(specialName, method, key, specialIndex);
+                (element0, baseEnumerable, enumerable0, enumerator0, keySelector0) = DefineWithSpecial(specialName, method, key, specialIndex, systemModule);
                 Routine(type0, method, "1", key, out enumerable1, out enumerator1, out element1, out keySelector1);
 
                 ParameterDefinition outer = new ParameterDefinition(nameof(outer), ParameterAttributes.None, baseEnumerable);
@@ -124,7 +124,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             else
             {
                 Routine(type0, method, "0", key, out enumerable0, out enumerator0, out element0, out keySelector0);
-                (element1, baseEnumerable, enumerable1, enumerator1, keySelector1) = DefineWithSpecial(specialName, method, key, specialIndex);
+                (element1, baseEnumerable, enumerable1, enumerator1, keySelector1) = DefineWithSpecial(specialName, method, key, specialIndex, systemModule);
 
                 ParameterDefinition outer = new ParameterDefinition(nameof(outer), ParameterAttributes.In, new ByReferenceType(enumerable0));
                 outer.CustomAttributes.Add(Helper.IsReadOnlyAttribute);
@@ -163,13 +163,9 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .Ret();
         }
 
-        private static (TypeReference element0, TypeReference baseEnumerable, GenericInstanceType enumerable0, TypeReference enumerator0, GenericInstanceType keySelector0) DefineWithSpecial(string specialName, MethodDefinition method, GenericParameter key, int specialIndex)
+        private static (TypeReference element0, TypeReference baseEnumerable, GenericInstanceType enumerable0, TypeReference enumerator0, GenericInstanceType keySelector0) DefineWithSpecial(string specialName, MethodDefinition method, GenericParameter key, int specialIndex, ModuleDefinition systemModule)
         {
-            TypeReference element = new GenericParameter("TSpecial" + specialIndex, method)
-            {
-                HasNotNullableValueTypeConstraint = true,
-                CustomAttributes = { Helper.GetSystemRuntimeInteropServicesUnmanagedTypeConstraintTypeReference() }
-            };
+            TypeReference element = method.DefineUnmanagedGenericParameter("TSpecial" + specialIndex);
             method.GenericParameters.Add((GenericParameter)element);
             var (baseEnumerable, enumerable, enumerator) = ((GenericParameter)element).MakeSpecialTypePair(specialName);
             var keySelector = new GenericInstanceType(method.Module.GetType("UniNativeLinq", "DelegateFuncToStructOperatorFunc`2"))

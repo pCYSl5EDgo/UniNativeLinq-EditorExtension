@@ -7,6 +7,8 @@ using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
 using Mono.Collections.Generic;
 
+// ReSharper disable InconsistentNaming
+
 namespace UniNativeLinq.Editor.CodeGenerator
 {
     internal static class Helper
@@ -27,14 +29,20 @@ namespace UniNativeLinq.Editor.CodeGenerator
             Initialize();
         }
 
-        public static CustomAttribute GetSystemRuntimeInteropServicesUnmanagedTypeConstraintTypeReference()
+        public static GenericParameter DefineUnmanagedGenericParameter(this MethodDefinition method, string name = "T")
         {
-            return MainModule.GetType("UniNativeLinq", "NativeEnumerable`1").GenericParameters.First().CustomAttributes[0];
+            var x = method.Module.GetType("UniNativeLinq", "NativeEnumerable`1").GenericParameters[0];
+            return new GenericParameter(name, method)
+            {
+                HasNotNullableValueTypeConstraint = true,
+                Constraints = { x.Constraints[0] },
+                CustomAttributes = { x.CustomAttributes[0] }
+            };
         }
 
         public static CustomAttribute GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference()
         {
-            return MainModule.GetType("UniNativeLinq.NegatePredicate`2").GetConstructors().First().Parameters.First().CustomAttributes.First();
+            return MainModule.GetType("UniNativeLinq", "NegatePredicate`2").Methods[0].Parameters[0].CustomAttributes[0];
         }
 
         public static bool? CanIndexAccess(this TypeDefinition type)

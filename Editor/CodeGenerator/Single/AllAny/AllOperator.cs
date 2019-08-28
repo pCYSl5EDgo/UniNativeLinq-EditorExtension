@@ -25,11 +25,11 @@ namespace UniNativeLinq.Editor.CodeGenerator
             {
                 if (!processor.IsSpecialType(name, out var isSpecial)) throw new KeyNotFoundException();
                 if (!Api.TryGetEnabled(name, out var apiEnabled) || !apiEnabled) continue;
-                GenerateEach(name, isSpecial, @static, mainModule);
+                GenerateEach(name, isSpecial, @static, mainModule, systemModule);
             }
         }
 
-        private void GenerateEach(string name, bool isSpecial, TypeDefinition @static, ModuleDefinition mainModule)
+        private void GenerateEach(string name, bool isSpecial, TypeDefinition @static, ModuleDefinition mainModule, ModuleDefinition systemModule)
         {
             var method = new MethodDefinition("All", Helper.StaticMethodAttributes, mainModule.TypeSystem.Boolean)
             {
@@ -39,25 +39,15 @@ namespace UniNativeLinq.Editor.CodeGenerator
             };
             @static.Methods.Add(method);
 
-            var T = new GenericParameter("T", method)
-            {
-                HasNotNullableValueTypeConstraint = true,
-                CustomAttributes = { Helper.GetSystemRuntimeInteropServicesUnmanagedTypeConstraintTypeReference() }
-            };
+            var T = method.DefineUnmanagedGenericParameter();
             method.GenericParameters.Add(T);
 
             var IRefFunc2 = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "IRefFunc`2"))
             {
                 GenericArguments = { T, mainModule.TypeSystem.Boolean }
             };
-            var TOperator = new GenericParameter("TOperator", method)
-            {
-                HasNotNullableValueTypeConstraint = true,
-                CustomAttributes = { Helper.GetSystemRuntimeInteropServicesUnmanagedTypeConstraintTypeReference() },
-                Constraints = {
-                    IRefFunc2
-                }
-            };
+            var TOperator = method.DefineUnmanagedGenericParameter("TOperator");
+            TOperator.Constraints.Add(IRefFunc2);
             method.GenericParameters.Add(TOperator);
 
             if (isSpecial)

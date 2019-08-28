@@ -32,12 +32,12 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
                     if (!Api.TryGetEnabled(rowName, columnName, out var apiEnabled) || !apiEnabled) continue;
 
-                    GenerateEachPair(rowName, isRowSpecial, columnName, isColumnSpecial, @static, mainModule);
+                    GenerateEachPair(rowName, isRowSpecial, columnName, isColumnSpecial, @static, mainModule, systemModule);
                 }
             }
         }
 
-        private void GenerateEachPair(string rowName, bool isRowSpecial, string columnName, bool isColumnSpecial, TypeDefinition @static, ModuleDefinition mainModule)
+        private void GenerateEachPair(string rowName, bool isRowSpecial, string columnName, bool isColumnSpecial, TypeDefinition @static, ModuleDefinition mainModule, ModuleDefinition systemModule)
         {
             var method = new MethodDefinition("Intersect", Helper.StaticMethodAttributes, mainModule.TypeSystem.Boolean)
             {
@@ -48,25 +48,25 @@ namespace UniNativeLinq.Editor.CodeGenerator
             @static.Methods.Add(method);
             if (isRowSpecial && isColumnSpecial)
             {
-                GenerateSpecialSpecial(rowName, columnName, mainModule, method);
+                GenerateSpecialSpecial(rowName, columnName, mainModule, method, systemModule);
             }
             else if (isRowSpecial)
             {
-                GenerateSpecialNormal(specialName: rowName, type: Dictionary[columnName], mainModule, method, specialIndex: 0);
+                GenerateSpecialNormal(specialName: rowName, type: Dictionary[columnName], mainModule, method, specialIndex: 0, systemModule);
             }
             else if (isColumnSpecial)
             {
-                GenerateSpecialNormal(specialName: columnName, type: Dictionary[rowName], mainModule, method, specialIndex: 1);
+                GenerateSpecialNormal(specialName: columnName, type: Dictionary[rowName], mainModule, method, specialIndex: 1, systemModule);
             }
             else
             {
-                GenerateNormalNormal(Dictionary[rowName], Dictionary[columnName], mainModule, method);
+                GenerateNormalNormal(Dictionary[rowName], Dictionary[columnName], mainModule, method, systemModule);
             }
         }
 
-        private void GenerateSpecialSpecial(string rowName, string columnName, ModuleDefinition mainModule, MethodDefinition method)
+        private void GenerateSpecialSpecial(string rowName, string columnName, ModuleDefinition mainModule, MethodDefinition method, ModuleDefinition systemModule)
         {
-            var T = DefineT(method);
+            var T = DefineT(method, systemModule);
             var (baseEnumerable0, enumerable0, enumerator0) = T.MakeSpecialTypePair(rowName);
             var (baseEnumerable1, enumerable1, enumerator1) = T.MakeSpecialTypePair(columnName);
             var TComparer = DefineTComparer(mainModule, method, T);
@@ -93,9 +93,9 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .Ret();
         }
 
-        private void GenerateSpecialNormal(string specialName, TypeDefinition type, ModuleDefinition mainModule, MethodDefinition method, int specialIndex)
+        private void GenerateSpecialNormal(string specialName, TypeDefinition type, ModuleDefinition mainModule, MethodDefinition method, int specialIndex, ModuleDefinition systemModule)
         {
-            var T = DefineT(method);
+            var T = DefineT(method, systemModule);
             var TComparer = DefineTComparer(mainModule, method, T);
             var body = method.Body;
 
@@ -177,9 +177,9 @@ namespace UniNativeLinq.Editor.CodeGenerator
             method.Parameters.Add(allocator);
         }
 
-        private void GenerateNormalNormal(TypeDefinition type0, TypeDefinition type1, ModuleDefinition mainModule, MethodDefinition method)
+        private void GenerateNormalNormal(TypeDefinition type0, TypeDefinition type1, ModuleDefinition mainModule, MethodDefinition method, ModuleDefinition systemModule)
         {
-            var T = DefineT(method);
+            var T = DefineT(method, systemModule);
 
             var (enumerable0, enumerator0, _) = T.MakeFromCommonType(method, type0, "0");
             var (enumerable1, enumerator1, _) = T.MakeFromCommonType(method, type1, "1");
@@ -243,13 +243,9 @@ namespace UniNativeLinq.Editor.CodeGenerator
             return (TSetOperation, @return);
         }
 
-        private static GenericParameter DefineT(MethodDefinition method)
+        private static GenericParameter DefineT(MethodDefinition method, ModuleDefinition systemModule)
         {
-            var T = new GenericParameter("T", method)
-            {
-                HasNotNullableValueTypeConstraint = true,
-                CustomAttributes = { Helper.GetSystemRuntimeInteropServicesUnmanagedTypeConstraintTypeReference() },
-            };
+            var T = method.DefineUnmanagedGenericParameter();
             method.GenericParameters.Add(T);
             return T;
         }

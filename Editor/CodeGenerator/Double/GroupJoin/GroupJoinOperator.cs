@@ -66,9 +66,9 @@ namespace UniNativeLinq.Editor.CodeGenerator
         private void GenerateSpecialSpecial(string rowName, string columnName, ModuleDefinition mainModule, ModuleDefinition systemModule, MethodDefinition method)
         {
             var (key, keyEqualityComparer, T, refFunc2) = Prepare(method, mainModule, systemModule);
-            var (Element0, baseEnumerable0, Enumerable0, Enumerator0) = DefineSpecial(rowName, method, 0);
+            var (Element0, baseEnumerable0, Enumerable0, Enumerator0) = DefineSpecial(rowName, method, 0, systemModule);
             var TOuterKeySelector = InternalOuterRoutine(method, refFunc2, Element0, key);
-            var (Element1, baseEnumerable1, Enumerable1, Enumerator1) = DefineSpecial(columnName, method, 1);
+            var (Element1, baseEnumerable1, Enumerable1, Enumerator1) = DefineSpecial(columnName, method, 1, systemModule);
             var TInnerKeySelector = InternalInnerRoutine(method, refFunc2, Element1, key, mainModule, keyEqualityComparer, out var WhereIndexEnumerable);
 
             var TSelector = Epilogue(method, mainModule, Element0, WhereIndexEnumerable, T, Enumerable0, Enumerator0, Enumerable1, Enumerator1, Element1, key, TOuterKeySelector, TInnerKeySelector, keyEqualityComparer, out var @return);
@@ -96,7 +96,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
             if (specialIndex == 0)
             {
-                var (Element0, baseEnumerable, Enumerable0, Enumerator0) = DefineSpecial(specialName, method, specialIndex);
+                var (Element0, baseEnumerable, Enumerable0, Enumerator0) = DefineSpecial(specialName, method, specialIndex, systemModule);
                 var TOuterKeySelector = InternalOuterRoutine(method, refFunc2, Element0, key);
 
                 var Enumerable1 = InnerRoutine(type, method, refFunc2, key, mainModule, keyEqualityComparer, out var Enumerator1, out var Element1, out var TInnerKeySelector, out var WhereIndexEnumerable);
@@ -122,7 +122,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             {
                 var Enumerable0 = OuterRoutine(type, method, refFunc2, key, out var Enumerator0, out var Element0, out var TOuterKeySelector);
 
-                var (Element1, baseEnumerable, Enumerable1, Enumerator1) = DefineSpecial(specialName, method, specialIndex);
+                var (Element1, baseEnumerable, Enumerable1, Enumerator1) = DefineSpecial(specialName, method, specialIndex, systemModule);
                 var TInnerKeySelector = InternalInnerRoutine(method, refFunc2, Element1, key, mainModule, keyEqualityComparer, out var WhereIndexEnumerable);
 
                 var TSelector = Epilogue(method, mainModule, Element0, WhereIndexEnumerable, T, Enumerable0, Enumerator0, Enumerable1, Enumerator1, Element1, key, TOuterKeySelector, TInnerKeySelector, keyEqualityComparer, out var @return);
@@ -145,13 +145,9 @@ namespace UniNativeLinq.Editor.CodeGenerator
             }
         }
 
-        private static (TypeReference specialTypeReference, TypeReference baseEnumerable, GenericInstanceType enumerable, TypeReference enumerator) DefineSpecial(string specialName, MethodDefinition method, int specialIndex)
+        private static (TypeReference specialTypeReference, TypeReference baseEnumerable, GenericInstanceType enumerable, TypeReference enumerator) DefineSpecial(string specialName, MethodDefinition method, int specialIndex, ModuleDefinition systemModule)
         {
-            var specialTypeReference = new GenericParameter("TSpecial" + specialIndex, method)
-            {
-                HasNotNullableValueTypeConstraint = true,
-                CustomAttributes = { Helper.GetSystemRuntimeInteropServicesUnmanagedTypeConstraintTypeReference() }
-            };
+            var specialTypeReference = method.DefineUnmanagedGenericParameter("TSpecial" + specialIndex);
             method.GenericParameters.Add(specialTypeReference);
             var (baseEnumerable, enumerable, enumerator) = specialTypeReference.MakeSpecialTypePair(specialName);
             return (specialTypeReference, baseEnumerable, enumerable, enumerator);

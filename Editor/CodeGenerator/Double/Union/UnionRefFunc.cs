@@ -264,19 +264,11 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
         private static GenericParameter DefineT(ModuleDefinition mainModule, ModuleDefinition systemModule, MethodDefinition method)
         {
-            var T = new GenericParameter("T", method)
+            var T = method.DefineUnmanagedGenericParameter();
+            T.Constraints.Add(new GenericInstanceType(mainModule.ImportReference(systemModule.GetType("System", "IEquatable`1")))
             {
-                HasNotNullableValueTypeConstraint = true,
-                CustomAttributes = { Helper.GetSystemRuntimeInteropServicesUnmanagedTypeConstraintTypeReference() },
-                Constraints =
-                {
-                    new GenericInstanceType(mainModule.ImportReference(systemModule.GetType("System", "IEquatable`1")))
-                    {
-                        GenericArguments = {mainModule.TypeSystem.Boolean}
-                    }
-                }
-            };
-            ((GenericInstanceType)T.Constraints[0]).GenericArguments[0] = T;
+                GenericArguments = { T }
+            });
             method.GenericParameters.Add(T);
             return T;
         }

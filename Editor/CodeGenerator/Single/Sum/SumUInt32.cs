@@ -24,11 +24,11 @@ namespace UniNativeLinq.Editor.CodeGenerator
             {
                 if (!processor.IsSpecialType(name, out var isSpecial)) throw new KeyNotFoundException();
                 if (!Api.TryGetEnabled(name, out var apiEnabled) || !apiEnabled) continue;
-                GenerateEach(name, isSpecial, @static, mainModule);
+                GenerateEach(name, isSpecial, @static, mainModule, systemModule);
             }
         }
 
-        private void GenerateEach(string name, bool isSpecial, TypeDefinition @static, ModuleDefinition mainModule)
+        private void GenerateEach(string name, bool isSpecial, TypeDefinition @static, ModuleDefinition mainModule, ModuleDefinition systemModule)
         {
             var returnType = mainModule.TypeSystem.UInt32;
             var method = new MethodDefinition("Sum", Helper.StaticMethodAttributes, returnType)

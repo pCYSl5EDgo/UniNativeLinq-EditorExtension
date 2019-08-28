@@ -23,10 +23,9 @@ namespace UniNativeLinq.Editor.CodeGenerator.MinMaxBy
         public Dictionary<string, TypeDefinition> Dictionary { private get; set; }
         public void Generate(IEnumerableCollectionProcessor processor, ModuleDefinition mainModule, ModuleDefinition systemModule, ModuleDefinition unityModule)
         {
+            if (!processor.TryGetEnabled(Name + keyName, out var enabled) || !enabled) return;
             var array = processor.EnabledNameCollection.Intersect(Api.NameCollection).ToArray();
             if (!Api.ShouldDefine(array)) return;
-            TypeDefinition @static;
-            mainModule.Types.Add(@static = mainModule.DefineStatic(Name + "Func" + keyName + "Helper"));
             TypeReference keyType;
             switch (keyName)
             {
@@ -50,6 +49,8 @@ namespace UniNativeLinq.Editor.CodeGenerator.MinMaxBy
                     break;
                 default: throw new ArgumentOutOfRangeException();
             }
+            TypeDefinition @static;
+            mainModule.Types.Add(@static = mainModule.DefineStatic(Name + "Func" + keyName + "Helper"));
             foreach (var name in array)
             {
                 if (!processor.IsSpecialType(name, out var isSpecial)) throw new KeyNotFoundException();
@@ -61,7 +62,10 @@ namespace UniNativeLinq.Editor.CodeGenerator.MinMaxBy
         private void GenerateEach(string name, bool isSpecial, TypeDefinition @static, ModuleDefinition mainModule, ModuleDefinition systemModule, TypeReference keyType)
         {
             var returnTypeDefinition = mainModule.GetType("UniNativeLinq", Name + keyName + "Enumerable`4");
-
+            if (returnTypeDefinition is null)
+            {
+                throw new NullReferenceException(Name + " : " + keyName);
+            }
             var method = new MethodDefinition(Name, Helper.StaticMethodAttributes, mainModule.TypeSystem.Boolean)
             {
                 DeclaringType = @static,
@@ -70,11 +74,7 @@ namespace UniNativeLinq.Editor.CodeGenerator.MinMaxBy
             };
             @static.Methods.Add(method);
 
-            var T = new GenericParameter("T", method)
-            {
-                HasNotNullableValueTypeConstraint = true,
-                CustomAttributes = { Helper.GetSystemRuntimeInteropServicesUnmanagedTypeConstraintTypeReference() }
-            };
+            var T = method.DefineUnmanagedGenericParameter();
             method.GenericParameters.Add(T);
 
             var func = new GenericInstanceType(mainModule.ImportReference(systemModule.GetType("System", "Func`2")))

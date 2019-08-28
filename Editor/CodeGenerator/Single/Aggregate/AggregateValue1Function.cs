@@ -46,11 +46,7 @@ namespace UniNativeLinq.Editor.CodeGenerator.Aggregate
 
             var genericParameters = method.GenericParameters;
 
-            var T = new GenericParameter("T", method)
-            {
-                HasNotNullableValueTypeConstraint = true,
-                CustomAttributes = { Helper.GetSystemRuntimeInteropServicesUnmanagedTypeConstraintTypeReference() }
-            };
+            var T = method.DefineUnmanagedGenericParameter();
             genericParameters.Add(T);
 
             var TAccumulate = new GenericParameter("TAccumulate", method);

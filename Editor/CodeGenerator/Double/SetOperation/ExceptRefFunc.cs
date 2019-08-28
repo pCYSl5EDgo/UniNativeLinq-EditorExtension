@@ -66,7 +66,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
         private void GenerateSpecialSpecial(string rowName, string columnName, ModuleDefinition mainModule, ModuleDefinition systemModule, MethodDefinition method)
         {
-            var T = DefineT(method);
+            var T = DefineT(method, systemModule);
             var (baseEnumerable0, enumerable0, enumerator0) = T.MakeSpecialTypePair(rowName);
             var (baseEnumerable1, enumerable1, enumerator1) = T.MakeSpecialTypePair(columnName);
             var TComparer = DefineTComparer(mainModule, T);
@@ -76,7 +76,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             method.Parameters.Add(param0);
             var param1 = new ParameterDefinition("second", ParameterAttributes.None, baseEnumerable1);
             method.Parameters.Add(param1);
-            DefineComparer(method, systemModule, T);
+            DefineComparer(method, T);
             DefineAllocator(method);
 
             var body = method.Body;
@@ -95,7 +95,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
         private void GenerateSpecialNormal(string specialName, TypeDefinition type, ModuleDefinition mainModule, ModuleDefinition systemModule, MethodDefinition method, int specialIndex)
         {
-            var T = DefineT(method);
+            var T = DefineT(method, systemModule);
             var TComparer = DefineTComparer(mainModule, T);
             var body = method.Body;
 
@@ -110,7 +110,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 var param1 = new ParameterDefinition("second", ParameterAttributes.In, new ByReferenceType(enumerable1));
                 param1.CustomAttributes.Add(Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference());
                 method.Parameters.Add(param1);
-                DefineComparer(method, systemModule, T);
+                DefineComparer(method, T);
                 DefineAllocator(method);
                 body.Variables.Add(new VariableDefinition(TSetOperation));
 
@@ -135,7 +135,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 method.Parameters.Add(param0);
                 var param1 = new ParameterDefinition("second", ParameterAttributes.None, baseEnumerable);
                 method.Parameters.Add(param1);
-                DefineComparer(method, systemModule, T);
+                DefineComparer(method, T);
                 DefineAllocator(method);
                 body.Variables.Add(new VariableDefinition(TSetOperation));
 
@@ -170,7 +170,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
         private void GenerateNormalNormal(TypeDefinition type0, TypeDefinition type1, ModuleDefinition mainModule, ModuleDefinition systemModule, MethodDefinition method)
         {
-            var T = DefineT(method);
+            var T = DefineT(method, systemModule);
 
             var (enumerable0, enumerator0, _) = T.MakeFromCommonType(method, type0, "0");
             var (enumerable1, enumerator1, _) = T.MakeFromCommonType(method, type1, "1");
@@ -183,7 +183,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             var param1 = new ParameterDefinition("second", ParameterAttributes.In, new ByReferenceType(enumerable1));
             param1.CustomAttributes.Add(systemRuntimeCompilerServicesReadonlyAttributeTypeReference);
             method.Parameters.Add(param1);
-            DefineComparer(method, systemModule, T);
+            DefineComparer(method, T);
             DefineAllocator(method);
 
             var body = method.Body;
@@ -199,7 +199,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .Ret();
         }
 
-        private static void DefineComparer(MethodDefinition method, ModuleDefinition systemModule, TypeReference T)
+        private static void DefineComparer(MethodDefinition method, TypeReference T)
         {
             method.Parameters.Add(new ParameterDefinition("comparer", ParameterAttributes.None, new GenericInstanceType(method.Module.GetType("UniNativeLinq", "RefFunc`3"))
             {
@@ -237,13 +237,9 @@ namespace UniNativeLinq.Editor.CodeGenerator
             return (TSetOperation, @return);
         }
 
-        private static GenericParameter DefineT(MethodDefinition method)
+        private static GenericParameter DefineT(MethodDefinition method, ModuleDefinition systemModule)
         {
-            var T = new GenericParameter("T", method)
-            {
-                HasNotNullableValueTypeConstraint = true,
-                CustomAttributes = { Helper.GetSystemRuntimeInteropServicesUnmanagedTypeConstraintTypeReference() },
-            };
+            var T = method.DefineUnmanagedGenericParameter();
             method.GenericParameters.Add(T);
             return T;
         }

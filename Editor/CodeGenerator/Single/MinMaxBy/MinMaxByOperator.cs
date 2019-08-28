@@ -23,6 +23,7 @@ namespace UniNativeLinq.Editor.CodeGenerator.MinMaxBy
         public Dictionary<string, TypeDefinition> Dictionary { private get; set; }
         public void Generate(IEnumerableCollectionProcessor processor, ModuleDefinition mainModule, ModuleDefinition systemModule, ModuleDefinition unityModule)
         {
+            if (!processor.TryGetEnabled(Name + keyName, out var enabled) || !enabled) return;
             var array = processor.EnabledNameCollection.Intersect(Api.NameCollection).ToArray();
             if (!Api.ShouldDefine(array)) return;
             TypeDefinition @static;
@@ -70,11 +71,7 @@ namespace UniNativeLinq.Editor.CodeGenerator.MinMaxBy
             };
             @static.Methods.Add(method);
 
-            var T = new GenericParameter("T", method)
-            {
-                HasNotNullableValueTypeConstraint = true,
-                CustomAttributes = { Helper.GetSystemRuntimeInteropServicesUnmanagedTypeConstraintTypeReference() }
-            };
+            var T = method.DefineUnmanagedGenericParameter();
             method.GenericParameters.Add(T);
 
             var IRefFunc = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "IRefFunc`2"))

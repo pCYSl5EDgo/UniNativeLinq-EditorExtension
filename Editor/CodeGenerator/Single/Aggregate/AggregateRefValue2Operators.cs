@@ -32,11 +32,11 @@ namespace UniNativeLinq.Editor.CodeGenerator.Aggregate
             {
                 if (!processor.IsSpecialType(name, out var isSpecial)) throw new KeyNotFoundException();
                 if (!Api.TryGetEnabled(name, out var apiEnabled) || !apiEnabled) continue;
-                GenerateEach(name, isSpecial, @static, mainModule);
+                GenerateEach(name, isSpecial, @static, mainModule, systemModule);
             }
         }
 
-        private void GenerateEach(string name, bool isSpecial, TypeDefinition @static, ModuleDefinition mainModule)
+        private void GenerateEach(string name, bool isSpecial, TypeDefinition @static, ModuleDefinition mainModule, ModuleDefinition systemModule)
         {
             var method = new MethodDefinition("Aggregate", Helper.StaticMethodAttributes, mainModule.TypeSystem.Boolean)
             {
@@ -48,11 +48,7 @@ namespace UniNativeLinq.Editor.CodeGenerator.Aggregate
 
             var genericParameters = method.GenericParameters;
 
-            var T = new GenericParameter("T", method)
-            {
-                HasNotNullableValueTypeConstraint = true,
-                CustomAttributes = { Helper.GetSystemRuntimeInteropServicesUnmanagedTypeConstraintTypeReference() }
-            };
+            var T = method.DefineUnmanagedGenericParameter();
             genericParameters.Add(T);
 
             var TAccumulate = new GenericParameter("TAccumulate", method);

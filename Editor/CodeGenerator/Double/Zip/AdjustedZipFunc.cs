@@ -67,8 +67,8 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
         private void GenerateSpecialSpecial(string rowName, string columnName, ModuleDefinition mainModule, ModuleDefinition systemModule, MethodDefinition method)
         {
-            var (element0, enumerable0, enumerator0, baseTypeReference0) = DefineWithSpecial(rowName, method, 0);
-            var (element1, enumerable1, enumerator1, baseTypeReference1) = DefineWithSpecial(columnName, method, 1);
+            var (element0, enumerable0, enumerator0, baseTypeReference0) = DefineWithSpecial(rowName, method, 0, systemModule);
+            var (element1, enumerable1, enumerator1, baseTypeReference1) = DefineWithSpecial(columnName, method, 1, systemModule);
             var (T, TAction, Func) = Prepare(element0, element1, mainModule, systemModule, method);
             var @return = DefineReturn(mainModule, method, enumerable0, enumerator0, element0, enumerable1, enumerator1, element1, T, TAction);
             var param0 = new ParameterDefinition("@this", ParameterAttributes.None, baseTypeReference0);
@@ -100,13 +100,13 @@ namespace UniNativeLinq.Editor.CodeGenerator
             TypeReference enumerator1;
             if (specialIndex == 0)
             {
-                (element0, enumerable0, enumerator0, baseTypeReference) = DefineWithSpecial(specialName, method, 0);
+                (element0, enumerable0, enumerator0, baseTypeReference) = DefineWithSpecial(specialName, method, 0, systemModule);
                 (element1, enumerable1, enumerator1) = type0.MakeGenericInstanceVariant("1", method);
             }
             else
             {
                 (element0, enumerable0, enumerator0) = type0.MakeGenericInstanceVariant("0", method);
-                (element1, enumerable1, enumerator1, baseTypeReference) = DefineWithSpecial(specialName, method, 1);
+                (element1, enumerable1, enumerator1, baseTypeReference) = DefineWithSpecial(specialName, method, 1, systemModule);
             }
             var (T, TAction, Func) = Prepare(element0, element1, mainModule, systemModule, method);
 
@@ -160,13 +160,9 @@ namespace UniNativeLinq.Editor.CodeGenerator
             }
         }
 
-        private static (TypeReference elemenet, TypeReference enumerable, TypeReference enumerator, TypeReference baseTypeReference) DefineWithSpecial(string specialName, MethodDefinition method, int specialIndex)
+        private static (TypeReference elemenet, TypeReference enumerable, TypeReference enumerator, TypeReference baseTypeReference) DefineWithSpecial(string specialName, MethodDefinition method, int specialIndex, ModuleDefinition systemModule)
         {
-            var element = new GenericParameter("TSpecial" + specialIndex, method)
-            {
-                HasNotNullableValueTypeConstraint = true,
-                CustomAttributes = { Helper.GetSystemRuntimeInteropServicesUnmanagedTypeConstraintTypeReference() }
-            };
+            var element = method.DefineUnmanagedGenericParameter("TSpecial" + specialIndex);
             method.GenericParameters.Add(element);
             var (baseEnumerable, enumerable, enumerator) = element.MakeSpecialTypePair(specialName);
             return (element, enumerable, enumerator, baseEnumerable);
@@ -227,11 +223,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
         private (TypeReference, TypeReference, TypeReference) Prepare(TypeReference element0, TypeReference element1, ModuleDefinition mainModule, ModuleDefinition systemModule, MethodDefinition method)
         {
-            var T = new GenericParameter("T", method)
-            {
-                HasNotNullableValueTypeConstraint = true,
-                CustomAttributes = { Helper.GetSystemRuntimeInteropServicesUnmanagedTypeConstraintTypeReference() }
-            };
+            var T = method.DefineUnmanagedGenericParameter();
             method.GenericParameters.Add(T);
 
             var TAction = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "DelegateFuncToStructOperatorAction`3"))

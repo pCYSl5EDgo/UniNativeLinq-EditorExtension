@@ -32,7 +32,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             {
                 if (!processor.IsSpecialType(name, out var isSpecial)) throw new KeyNotFoundException();
                 if (!Api.TryGetEnabled(name, out var apiEnabled) || !apiEnabled) continue;
-                GenerateEach(name, isSpecial, @static, mainModule, returnTypeReference);
+                GenerateEach(name, isSpecial, @static, mainModule, returnTypeReference, systemModule);
             }
         }
 
@@ -116,7 +116,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             }
         }
 
-        private void GenerateEach(string name, bool isSpecial, TypeDefinition @static, ModuleDefinition mainModule, TypeReference returnTypeReference)
+        private void GenerateEach(string name, bool isSpecial, TypeDefinition @static, ModuleDefinition mainModule, TypeReference returnTypeReference, ModuleDefinition systemModule)
         {
             var method = new MethodDefinition("TryGet" + Name, Helper.StaticMethodAttributes, mainModule.TypeSystem.Boolean)
             {
@@ -126,11 +126,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             };
             @static.Methods.Add(method);
 
-            var T = new GenericParameter("T", method)
-            {
-                HasNotNullableValueTypeConstraint = true,
-                CustomAttributes = { Helper.GetSystemRuntimeInteropServicesUnmanagedTypeConstraintTypeReference() }
-            };
+            var T = method.DefineUnmanagedGenericParameter();
             method.GenericParameters.Add(T);
             var TRefFunc = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "RefFunc`2"))
             {

@@ -39,11 +39,7 @@ namespace UniNativeLinq.Editor.CodeGenerator.Contains
             };
             @static.Methods.Add(method);
 
-            var T = new GenericParameter("T", method)
-            {
-                HasNotNullableValueTypeConstraint = true,
-                CustomAttributes = { Helper.GetSystemRuntimeInteropServicesUnmanagedTypeConstraintTypeReference() }
-            };
+            var T = method.DefineUnmanagedGenericParameter();
             method.GenericParameters.Add(T);
             var TFunc = new GenericInstanceType(mainModule.ImportReference(systemModule.GetType("System", "Func`3")))
             {
