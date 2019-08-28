@@ -7,9 +7,9 @@ using Mono.Cecil.Cil;
 
 namespace UniNativeLinq.Editor.CodeGenerator.Contains
 {
-    public sealed class ContainsNone : ITypeDictionaryHolder, IApiExtensionMethodGenerator
+    public sealed class ContainsRefFunc : ITypeDictionaryHolder, IApiExtensionMethodGenerator
     {
-        public ContainsNone(ISingleApi api)
+        public ContainsRefFunc(ISingleApi api)
         {
             Api = api;
         }
@@ -20,7 +20,7 @@ namespace UniNativeLinq.Editor.CodeGenerator.Contains
             var array = processor.EnabledNameCollection.Intersect(Api.NameCollection).ToArray();
             if (!Api.ShouldDefine(array)) return;
             TypeDefinition @static;
-            mainModule.Types.Add(@static = mainModule.DefineStatic(nameof(ContainsNone) + "Helper"));
+            mainModule.Types.Add(@static = mainModule.DefineStatic(nameof(ContainsRefFunc) + "Helper"));
             foreach (var name in array)
             {
                 if (!processor.IsSpecialType(name, out var isSpecial)) throw new KeyNotFoundException();
@@ -44,12 +44,11 @@ namespace UniNativeLinq.Editor.CodeGenerator.Contains
                 HasNotNullableValueTypeConstraint = true,
                 CustomAttributes = { Helper.GetSystemRuntimeInteropServicesUnmanagedTypeConstraintTypeReference() }
             };
-            var IEquatable = new GenericInstanceType(mainModule.ImportReference(systemModule.GetType("System", "IEquatable`1")))
-            {
-                GenericArguments = { T }
-            };
-            T.Constraints.Add(IEquatable);
             method.GenericParameters.Add(T);
+            var TRefFunc = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "RefFunc`3"))
+            {
+                GenericArguments = { T, T, mainModule.TypeSystem.Boolean }
+            };
 
             if (isSpecial)
             {
@@ -57,10 +56,10 @@ namespace UniNativeLinq.Editor.CodeGenerator.Contains
                 switch (name)
                 {
                     case "T[]":
-                        GenerateArray(method, enumerable, T, IEquatable);
+                        GenerateArray(method, enumerable, T, TRefFunc);
                         break;
                     case "NativeArray<T>":
-                        GenerateNativeArray(method, enumerable, T, IEquatable);
+                        GenerateNativeArray(method, enumerable, T, TRefFunc);
                         break;
                     default: throw new NotSupportedException(name);
                 }
@@ -70,20 +69,11 @@ namespace UniNativeLinq.Editor.CodeGenerator.Contains
                 var type = Dictionary[name];
                 var (enumerable, enumerator, _) = T.MakeFromCommonType(method, type, "0");
 
-                method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(enumerable))
-                {
-                    CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference() }
-                });
-                method.Parameters.Add(new ParameterDefinition("value", ParameterAttributes.In, new ByReferenceType(T))
-                {
-                    CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference() }
-                });
-
-                GenerateNormal(method, T, enumerable, enumerator, IEquatable);
+                GenerateNormal(method, T, enumerable, enumerator, TRefFunc);
             }
         }
 
-        private static void GenerateNormal(MethodDefinition method, GenericParameter T, TypeReference enumerable, TypeReference enumerator, GenericInstanceType equatable)
+        private static void GenerateNormal(MethodDefinition method, GenericParameter T, TypeReference enumerable, TypeReference enumerator, TypeReference TRefFunc)
         {
             method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(enumerable))
             {
@@ -93,6 +83,7 @@ namespace UniNativeLinq.Editor.CodeGenerator.Contains
             {
                 CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference() }
             });
+            method.Parameters.Add(new ParameterDefinition("func", ParameterAttributes.None, TRefFunc));
 
             var body = method.Body;
             body.InitLocals = true;
@@ -114,10 +105,10 @@ namespace UniNativeLinq.Editor.CodeGenerator.Contains
                 .Call(enumerator.FindMethod("TryMoveNext"))
                 .BrFalseS(fail)
 
+                .LdArg(2)
                 .LdArg(1)
-                .LdLoc(1)
-                .Constrained(T)
-                .CallVirtual(equatable.FindMethod("Equals"))
+                .LdLocA(1)
+                .CallVirtual(TRefFunc.FindMethod("Invoke"))
                 .BrFalseS(loopStart)
 
                 .LdC(true)
@@ -129,7 +120,7 @@ namespace UniNativeLinq.Editor.CodeGenerator.Contains
                 .Ret();
         }
 
-        private static void GenerateNativeArray(MethodDefinition method, TypeReference enumerable, GenericParameter T, GenericInstanceType equatable)
+        private static void GenerateNativeArray(MethodDefinition method, TypeReference enumerable, GenericParameter T, TypeReference TRefFunc)
         {
             method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(enumerable))
             {
@@ -139,13 +130,15 @@ namespace UniNativeLinq.Editor.CodeGenerator.Contains
             {
                 CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference() }
             });
-
+            method.Parameters.Add(new ParameterDefinition("func", ParameterAttributes.None, TRefFunc));
 
             var body = method.Body;
             body.InitLocals = true;
             body.Variables.Add(new VariableDefinition(method.Module.TypeSystem.Int32));
+            body.Variables.Add(new VariableDefinition(T));
 
-            var loopStart = Instruction.Create(OpCodes.Ldarg_1);
+
+            var loopStart = Instruction.Create(OpCodes.Ldarg_2);
             var @return = InstructionUtility.LoadConstant(true);
 
             var getLength = enumerable.FindMethod("get_Length");
@@ -159,11 +152,13 @@ namespace UniNativeLinq.Editor.CodeGenerator.Contains
                 .Ret()
 
                 .Add(loopStart)
+                .LdArg(1)
                 .LdArg(0)
                 .LdLoc(0)
                 .Call(enumerable.FindMethod("get_Item"))
-                .Constrained(T)
-                .CallVirtual(equatable.FindMethod("Equals"))
+                .StLoc(1)
+                .LdLocA(1)
+                .CallVirtual(TRefFunc.FindMethod("Invoke"))
                 .BrTrueS(@return)
 
                 .LdLoc(0)
@@ -182,20 +177,20 @@ namespace UniNativeLinq.Editor.CodeGenerator.Contains
                 .Ret();
         }
 
-        private static void GenerateArray(MethodDefinition method, TypeReference enumerable, GenericParameter T, GenericInstanceType equatable)
+        private static void GenerateArray(MethodDefinition method, TypeReference enumerable, GenericParameter T, TypeReference TRefFunc)
         {
             method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.None, enumerable));
             method.Parameters.Add(new ParameterDefinition("value", ParameterAttributes.In, new ByReferenceType(T))
             {
                 CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference() }
             });
-
+            method.Parameters.Add(new ParameterDefinition("func", ParameterAttributes.None, TRefFunc));
 
             var body = method.Body;
             body.InitLocals = true;
             body.Variables.Add(new VariableDefinition(method.Module.TypeSystem.IntPtr));
 
-            var loopStart = Instruction.Create(OpCodes.Ldarg_1);
+            var loopStart = Instruction.Create(OpCodes.Ldarg_2);
             var @return = InstructionUtility.LoadConstant(true);
 
             body.GetILProcessor()
@@ -207,11 +202,11 @@ namespace UniNativeLinq.Editor.CodeGenerator.Contains
                 .Ret()
 
                 .Add(loopStart)
+                .LdArg(1)
                 .LdArg(0)
                 .LdLoc(0)
-                .LdElem(T)
-                .Constrained(T)
-                .CallVirtual(equatable.FindMethod("Equals"))
+                .LdElemA(T)
+                .CallVirtual(TRefFunc.FindMethod("Invoke"))
                 .BrTrueS(@return)
 
                 .LdLoc(0)

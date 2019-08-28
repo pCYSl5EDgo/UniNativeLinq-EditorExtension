@@ -4,6 +4,7 @@ using UniNativeLinq.Editor.CodeGenerator;
 using UniNativeLinq.Editor.CodeGenerator.Aggregate;
 using UniNativeLinq.Editor.CodeGenerator.Average;
 using UniNativeLinq.Editor.CodeGenerator.Contains;
+using UniNativeLinq.Editor.CodeGenerator.MinMaxBy;
 using UniNativeLinq.Editor.CodeGenerator.TryGetSingle;
 using UnityEditor;
 using UnityEngine;
@@ -95,14 +96,40 @@ namespace UniNativeLinq.Editor
         {
             switch (api.Name)
             {
-                case "Contains":
+                case "MaxByDouble":
+                case "MaxBySingle":
+                case "MaxByInt32":
+                case "MaxByInt64":
+                case "MaxByUInt32":
+                case "MaxByUInt64":
+                case "MinByDouble":
+                case "MinBySingle":
+                case "MinByInt32":
+                case "MinByInt64":
+                case "MinByUInt32":
+                case "MinByUInt64":
                     switch (api.Description)
                     {
+                        case "Operator":
+                            list.Add(new MinMaxByOperator(api, api.Name[1] == 'a', api.Name.Substring(5)));
+                            break;
                         case "Func":
                             break;
                         case "RefFunc":
                             break;
+                    }
+                    break;
+                case "Contains":
+                    switch (api.Description)
+                    {
+                        case "Func":
+                            list.Add(new ContainsFunc(api));
+                            break;
+                        case "RefFunc":
+                            list.Add(new ContainsRefFunc(api));
+                            break;
                         case "Operator":
+                            list.Add(new ContainsOperator(api));
                             break;
                         case "None":
                             list.Add(new ContainsNone(api));

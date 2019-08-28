@@ -78,11 +78,16 @@ namespace UniNativeLinq.Editor.CodeGenerator.Aggregate
             }
             else
             {
-                GenerateNormal(method, Dictionary[name], T, TAccumulate, Func);
+                var typeDefinition = Dictionary[name];
+                if (typeDefinition is null)
+                {
+                    throw new NullReferenceException(name);
+                }
+                GenerateNormal(method, typeDefinition, T, TAccumulate, Func);
             }
         }
 
-        private void GenerateArray(MethodDefinition method, TypeReference baseEnumerable, TypeReference T, TypeReference TAccumulate, TypeReference TFunc)
+        private static void GenerateArray(MethodDefinition method, TypeReference baseEnumerable, TypeReference T, TypeReference TAccumulate, TypeReference TFunc)
         {
             method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.None, baseEnumerable));
             var paramAccumulate = new ParameterDefinition("accumulate", ParameterAttributes.None, TAccumulate);
@@ -120,7 +125,7 @@ namespace UniNativeLinq.Editor.CodeGenerator.Aggregate
                 .Ret();
         }
 
-        private void GenerateNativeArray(MethodDefinition method, TypeReference baseEnumerable, TypeReference enumerable, TypeReference enumerator, TypeReference T, TypeReference TAccumulate, TypeReference TFunc)
+        private static void GenerateNativeArray(MethodDefinition method, TypeReference baseEnumerable, TypeReference enumerable, TypeReference enumerator, TypeReference T, TypeReference TAccumulate, TypeReference TFunc)
         {
             method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.None, baseEnumerable));
             var paramAccumulate = new ParameterDefinition("accumulate", ParameterAttributes.None, TAccumulate);
@@ -160,7 +165,7 @@ namespace UniNativeLinq.Editor.CodeGenerator.Aggregate
                 .Ret();
         }
 
-        private void GenerateNormal(MethodDefinition method, TypeDefinition type, TypeReference T, TypeReference TAccumulate, TypeReference TFunc)
+        private static void GenerateNormal(MethodDefinition method, TypeDefinition type, TypeReference T, TypeReference TAccumulate, TypeReference TFunc)
         {
             var (enumerable, enumerator, _) = T.MakeFromCommonType(method, type, "0");
             method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(enumerable))
