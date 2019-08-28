@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UniNativeLinq.Editor.CodeGenerator;
 using UniNativeLinq.Editor.CodeGenerator.Aggregate;
 using UniNativeLinq.Editor.CodeGenerator.Average;
+using UniNativeLinq.Editor.CodeGenerator.Contains;
 using UniNativeLinq.Editor.CodeGenerator.TryGetSingle;
 using UnityEditor;
 using UnityEngine;
@@ -94,6 +95,20 @@ namespace UniNativeLinq.Editor
         {
             switch (api.Name)
             {
+                case "Contains":
+                    switch (api.Description)
+                    {
+                        case "Func":
+                            break;
+                        case "RefFunc":
+                            break;
+                        case "Operator":
+                            break;
+                        case "None":
+                            list.Add(new ContainsNone(api));
+                            break;
+                    }
+                    break;
                 case "TryGetFirst":
                     list.Add(new TryGetFirst(api));
                     break;

@@ -12,7 +12,7 @@ namespace UniNativeLinq.Editor.CodeGenerator.Average
     {
         public TryGetAverageNone(ISingleApi api, string returnTypeName)
         {
-            this.Api = api;
+            Api = api;
             this.returnTypeName = returnTypeName;
         }
 
