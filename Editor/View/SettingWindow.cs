@@ -108,15 +108,21 @@ namespace UniNativeLinq.Editor
                 case "MinByInt64":
                 case "MinByUInt32":
                 case "MinByUInt64":
-                    switch (api.Description)
                     {
-                        case "Operator":
-                            list.Add(new MinMaxByOperator(api, api.Name[1] == 'a', api.Name.Substring(5)));
-                            break;
-                        case "Func":
-                            break;
-                        case "RefFunc":
-                            break;
+                        var keyName = api.Name.Substring(5);
+                        var isMax = api.Name[1] == 'a';
+                        switch (api.Description)
+                        {
+                            case "Operator":
+                                list.Add(new MinMaxByOperator(api, isMax, keyName));
+                                break;
+                            case "Func":
+                                list.Add(new MinMaxByFunc(api, isMax, keyName));
+                                break;
+                            case "RefFunc":
+                                list.Add(new MinMaxByRefFunc(api, isMax, keyName));
+                                break;
+                        }
                     }
                     break;
                 case "Contains":
