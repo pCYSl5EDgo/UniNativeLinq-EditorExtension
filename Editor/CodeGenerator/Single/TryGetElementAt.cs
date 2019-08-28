@@ -61,31 +61,123 @@ namespace UniNativeLinq.Editor.CodeGenerator
             }
             else
             {
-                switch (name)
+                var type = Dictionary[name];
+                var (enumerable, enumerator, _) = T.MakeFromCommonType(method, type, "0");
+                var canIndexAccess = type.CanIndexAccess();
+                var canFastCount = type.CanFastCount();
+
+                method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(enumerable))
                 {
-                    case "Native":
-                    case "Array":
-                        GenerateIndex(method, T.MakeFromCommonType(method, Dictionary[name], "0").enumerable, T);
-                        break;
-                    default:
-                        GenerateNormal(method, Dictionary[name], T);
-                        break;
+                    CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference() }
+                });
+                var paramIndex = new ParameterDefinition("index", ParameterAttributes.None, method.Module.TypeSystem.Int64);
+                method.Parameters.Add(paramIndex);
+                method.Parameters.Add(new ParameterDefinition("value", ParameterAttributes.Out, new ByReferenceType(T)));
+
+
+                if (canFastCount.HasValue && canFastCount.Value)
+                {
+                    if (canIndexAccess.HasValue && canIndexAccess.Value)
+                    {
+                        GenerateCanIndexAccess(method, T, enumerable);
+                    }
+                    else
+                    {
+                        GenerateNormalCanFastCount(method, T, enumerable, enumerator, paramIndex);
+                    }
+                }
+                else
+                {
+                    GenerateNormal(method, T, enumerable, enumerator, paramIndex);
                 }
             }
         }
 
-        private void GenerateNormal(MethodDefinition method, TypeDefinition type, GenericParameter T)
+        private void GenerateNormalCanFastCount(MethodDefinition method, GenericParameter T, TypeReference enumerable, TypeReference enumerator, ParameterDefinition paramIndex)
         {
-            var (enumerable, enumerator, _) = T.MakeFromCommonType(method, type, "0");
+            var body = method.Body;
 
-            method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(enumerable))
-            {
-                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference() }
-            });
-            var paramIndex = new ParameterDefinition("index", ParameterAttributes.None, method.Module.TypeSystem.Int64);
-            method.Parameters.Add(paramIndex);
-            method.Parameters.Add(new ParameterDefinition("value", ParameterAttributes.Out, new ByReferenceType(T)));
+            var enumeratorVariable = new VariableDefinition(enumerator);
+            body.Variables.Add(enumeratorVariable);
 
+            var notZero = Instruction.Create(OpCodes.Ldarg_0);
+            var loopStart = Instruction.Create(OpCodes.Ldloca_S, enumeratorVariable);
+            var @return = Instruction.Create(OpCodes.Ldarg_2);
+            var fail = InstructionUtility.LoadConstant(false);
+
+            var dispose = enumerator.FindMethod("Dispose", 0);
+            body.GetILProcessor()
+                .LdArg(1)
+                .LdC(0)
+                .BgeS(notZero)
+
+                .Add(fail)
+                .Ret()
+
+                .Add(notZero)
+                .Call(enumerable.FindMethod("LongCount"))
+                .LdArg(1)
+                .BgeS(fail)
+
+                .LdArg(0)
+                .Call(enumerable.FindMethod("GetEnumerator", 0))
+                .StLoc(0)
+
+                .Add(loopStart)
+                .Call(enumerator.FindMethod("MoveNext"))
+                .Pop()
+
+                .LdArg(1)
+                .LdC(0L)
+                .BeqS(@return)
+
+                .LdArg(1)
+                .LdC(1L)
+                .Sub()
+                .StArgS(paramIndex)
+                .BrS(loopStart)
+
+                .Add(@return)
+                .LdLocA(0)
+                .Call(enumerator.FindMethod("get_Current"))
+                .CpObj(T)
+                .LdLocA(0)
+                .Call(dispose)
+                .LdC(true)
+                .Ret();
+        }
+
+        private void GenerateCanIndexAccess(MethodDefinition method, GenericParameter T, TypeReference enumerable)
+        {
+            var notMinus = Instruction.Create(OpCodes.Ldarg_0);
+            var fail = Instruction.Create(OpCodes.Ldc_I4_0);
+
+            var body = method.Body;
+
+            body.GetILProcessor()
+                .LdArg(1)
+                .LdC(0)
+                .BgeS(notMinus)
+
+                .Add(fail)
+                .Ret()
+
+                .Add(notMinus)
+                .Call(enumerable.FindMethod("LongCount", 0))
+                .LdArg(1)
+                .BleS(fail)
+
+                .LdArg(2)
+                .LdArg(0)
+                .LdArg(1)
+                .Call(enumerable.FindMethod("get_Item"))
+                .CpObj(T)
+                .LdC(true)
+                .Ret();
+        }
+
+        private void GenerateNormal(MethodDefinition method, GenericParameter T, TypeReference enumerable, TypeReference enumerator, ParameterDefinition paramIndex)
+        {
             var body = method.Body;
 
             var enumeratorVariable = new VariableDefinition(enumerator);
@@ -134,41 +226,6 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .CpObj(T)
                 .LdLocA(0)
                 .Call(dispose)
-                .LdC(true)
-                .Ret();
-        }
-
-        private void GenerateIndex(MethodDefinition method, TypeReference enumerable, GenericParameter T)
-        {
-            method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(enumerable))
-            {
-                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference() }
-            });
-            method.Parameters.Add(new ParameterDefinition("index", ParameterAttributes.None, method.Module.TypeSystem.Int64));
-            method.Parameters.Add(new ParameterDefinition("value", ParameterAttributes.Out, new ByReferenceType(T)));
-
-            var fail = InstructionUtility.LoadConstant(false);
-            var notMinus = Instruction.Create(OpCodes.Ldarg_0);
-
-            method.Body.GetILProcessor()
-                .LdArg(1)
-                .LdC(0)
-                .BgeS(notMinus)
-
-                .Add(fail)
-                .Ret()
-
-                .Add(notMinus)
-                .Call(enumerable.FindMethod("LongCount"))
-                .LdArg(1)
-                .BleS(fail)
-
-                .LdArg(2)
-                .LdArg(0)
-                .LdArg(1)
-                .Call(enumerable.FindMethod("get_Item"))
-                .CpObj(T)
-
                 .LdC(true)
                 .Ret();
         }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Mono.Cecil;
+using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
 using Mono.Collections.Generic;
 
@@ -34,6 +35,34 @@ namespace UniNativeLinq.Editor.CodeGenerator
         public static CustomAttribute GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference()
         {
             return MainModule.GetType("UniNativeLinq.NegatePredicate`2").GetConstructors().First().Parameters.First().CustomAttributes.First();
+        }
+
+        public static bool? CanIndexAccess(this TypeDefinition type)
+        {
+            var opCode = type.Methods.First(x => x.Name == "CanIndexAccess").Body.Instructions[0].OpCode.Code;
+            switch (opCode)
+            {
+                case Code.Ldc_I4_1:
+                    return true;
+                case Code.Ldc_I4_0:
+                    return false;
+                default:
+                    return null;
+            }
+        }
+
+        public static bool? CanFastCount(this TypeDefinition type)
+        {
+            var opCode = type.Methods.First(x => x.Name == "CanFastCount").Body.Instructions[0].OpCode.Code;
+            switch (opCode)
+            {
+                case Code.Ldc_I4_1:
+                    return true;
+                case Code.Ldc_I4_0:
+                    return false;
+                default:
+                    return null;
+            }
         }
 
         public static (TypeReference baseEnumerable, GenericInstanceType specialEnumerable, GenericInstanceType specialEnumerator) MakeSpecialTypePair(this TypeReference type, string specialName)
