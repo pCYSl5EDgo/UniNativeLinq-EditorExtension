@@ -550,7 +550,7 @@ namespace UniNativeLinq.Editor
             scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition, GUI.skin.box);
             if (GUILayout.Button("Generate DLL"))
             {
-                AssetDatabase.Refresh();
+                AssetDatabase.SaveAssets();
                 dllGenerator.Execute(enumerableCollectionProcessor, extensionMethodGenerators, dependencies);
                 Close();
             }
