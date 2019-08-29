@@ -78,13 +78,6 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
         private static void GenerateNormal(MethodDefinition method, TypeReference enumerable, TypeReference enumerator, GenericParameter T, GenericInstanceType Func)
         {
-            method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(enumerable))
-            {
-                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference() }
-            });
-            method.Parameters.Add(new ParameterDefinition("value", ParameterAttributes.Out, new ByReferenceType(T)));
-            method.Parameters.Add(new ParameterDefinition("func", ParameterAttributes.None, Func));
-
             var body = method.Body;
             body.InitLocals = true;
             var enumeratorVariable = new VariableDefinition(enumerator);

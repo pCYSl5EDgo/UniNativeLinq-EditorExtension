@@ -307,6 +307,9 @@ namespace UniNativeLinq.Editor
                         case "Operator":
                             list.Add(new TryGetSingleOperator(api));
                             break;
+                        case "None":
+                            list.Add(new TryGetSingleNone(api));
+                            break;
                     }
                     break;
                 case "TryGetAverage":
