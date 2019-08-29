@@ -7,9 +7,9 @@ using Mono.Cecil.Cil;
 
 namespace UniNativeLinq.Editor.CodeGenerator
 {
-    public sealed class WhereSkipWhileTakeWhileFunc : ITypeDictionaryHolder, IApiExtensionMethodGenerator
+    public sealed class WhereIndexRefFunc : ITypeDictionaryHolder, IApiExtensionMethodGenerator
     {
-        public WhereSkipWhileTakeWhileFunc(ISingleApi api)
+        public WhereIndexRefFunc(ISingleApi api)
         {
             Api = api;
         }
@@ -21,7 +21,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             var array = processor.EnabledNameCollection.Intersect(Api.NameCollection).ToArray();
             if (!Api.ShouldDefine(array)) return;
             TypeDefinition @static;
-            mainModule.Types.Add(@static = mainModule.DefineStatic(Api.Name + "FuncHelper"));
+            mainModule.Types.Add(@static = mainModule.DefineStatic(Api.Name + "RefFuncHelper"));
             foreach (var name in array)
             {
                 if (!processor.IsSpecialType(name, out var isSpecial)) throw new KeyNotFoundException();
@@ -45,14 +45,14 @@ namespace UniNativeLinq.Editor.CodeGenerator
             var T = method.DefineUnmanagedGenericParameter();
             method.GenericParameters.Add(T);
 
-            var func = new GenericInstanceType(mainModule.ImportReference(systemModule.GetType("System", "Func`2")))
+            var func = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "RefWhereIndex`1"))
             {
-                GenericArguments = { T, mainModule.TypeSystem.Boolean }
+                GenericArguments = { T }
             };
 
-            var TPredicate = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "DelegateFuncToStructOperatorFunc`2"))
+            var TPredicate = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "DelegateRefFuncToWhereIndexStructOperator`1"))
             {
-                GenericArguments = { T, mainModule.TypeSystem.Boolean }
+                GenericArguments = { T }
             };
 
             if (isSpecial)

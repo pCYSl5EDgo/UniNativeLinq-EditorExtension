@@ -91,6 +91,20 @@ namespace UniNativeLinq.Editor
         {
             switch (api.Name)
             {
+                case "WhereIndex":
+                    switch (api.Description)
+                    {
+                        case "Operator":
+                            list.Add(new WhereIndexOperator(api));
+                            break;
+                        case "Func":
+                            list.Add(new WhereIndexFunc(api));
+                            break;
+                        case "RefFunc":
+                            list.Add(new WhereIndexRefFunc(api));
+                            break;
+                    }
+                    break;
                 case "Reverse":
                     list.Add(new Reverse(api));
                     break;

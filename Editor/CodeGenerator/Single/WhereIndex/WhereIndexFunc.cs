@@ -7,9 +7,9 @@ using Mono.Cecil.Cil;
 
 namespace UniNativeLinq.Editor.CodeGenerator
 {
-    public sealed class WhereSkipWhileTakeWhileFunc : ITypeDictionaryHolder, IApiExtensionMethodGenerator
+    public sealed class WhereIndexFunc : ITypeDictionaryHolder, IApiExtensionMethodGenerator
     {
-        public WhereSkipWhileTakeWhileFunc(ISingleApi api)
+        public WhereIndexFunc(ISingleApi api)
         {
             Api = api;
         }
@@ -45,14 +45,14 @@ namespace UniNativeLinq.Editor.CodeGenerator
             var T = method.DefineUnmanagedGenericParameter();
             method.GenericParameters.Add(T);
 
-            var func = new GenericInstanceType(mainModule.ImportReference(systemModule.GetType("System", "Func`2")))
+            var func = new GenericInstanceType(mainModule.ImportReference(systemModule.GetType("System", "Func`3")))
             {
-                GenericArguments = { T, mainModule.TypeSystem.Boolean }
+                GenericArguments = { T, mainModule.TypeSystem.Int64, mainModule.TypeSystem.Boolean }
             };
 
-            var TPredicate = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "DelegateFuncToStructOperatorFunc`2"))
+            var TPredicate = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "DelegateFuncToWhereIndexStructOperator`1"))
             {
-                GenericArguments = { T, mainModule.TypeSystem.Boolean }
+                GenericArguments = { T }
             };
 
             if (isSpecial)
