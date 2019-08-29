@@ -7,9 +7,9 @@ using Mono.Cecil.Cil;
 
 namespace UniNativeLinq.Editor.CodeGenerator
 {
-    public sealed class SelectFunc : ITypeDictionaryHolder, IApiExtensionMethodGenerator
+    public sealed class SelectIndexOperator : ITypeDictionaryHolder, IApiExtensionMethodGenerator
     {
-        public SelectFunc(ISingleApi api)
+        public SelectIndexOperator(ISingleApi api)
         {
             Api = api;
         }
@@ -42,21 +42,23 @@ namespace UniNativeLinq.Editor.CodeGenerator
             };
             @static.Methods.Add(method);
 
+
             var T = method.DefineUnmanagedGenericParameter();
             method.GenericParameters.Add(T);
 
             var TResult = method.DefineUnmanagedGenericParameter("TResult");
             method.GenericParameters.Add(TResult);
 
-            var func = new GenericInstanceType(mainModule.ImportReference(systemModule.GetType("System", "Func`2")))
+            var IRefAction = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "ISelectIndex`2"))
             {
                 GenericArguments = { T, TResult }
             };
-
-            var TSelector = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "DelegateFuncToStructOperatorAction`2"))
+            var TSelector = new GenericParameter("TSelector", method)
             {
-                GenericArguments = { T, TResult }
+                HasNotNullableValueTypeConstraint = true,
+                Constraints = { IRefAction }
             };
+            method.GenericParameters.Add(TSelector);
 
             if (isSpecial)
             {
@@ -69,7 +71,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 {
                     case "T[]":
                     case "NativeArray<T>":
-                        GenerateSpecial(method, baseEnumerable, enumerable, TSelector, func);
+                        GenerateSpecial(method, baseEnumerable, enumerable, TSelector);
                         break;
                     default: throw new NotSupportedException(name);
                 }
@@ -82,51 +84,46 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 {
                     GenericArguments = { enumerable, enumerator, T, TResult, TSelector }
                 };
-                GenerateNormal(method, enumerable, TSelector, func);
+                GenerateNormal(method, enumerable, TSelector);
             }
         }
 
-        private void GenerateNormal(MethodDefinition method, TypeReference enumerable, GenericInstanceType selector, GenericInstanceType func)
+        private static void GenerateNormal(MethodDefinition method, TypeReference enumerable, GenericParameter selector)
         {
             method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(enumerable))
             {
                 CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference() }
             });
-            method.Parameters.Add(new ParameterDefinition("selector", ParameterAttributes.None, func));
+            method.Parameters.Add(new ParameterDefinition("selector", ParameterAttributes.In, new ByReferenceType(selector))
+            {
+                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference() }
+            });
 
-            var body = method.Body;
-
-            body.Variables.Add(new VariableDefinition(selector));
-
-            body.GetILProcessor()
-                .LdArg(0)
-                .LdArg(1)
-                .StLoc(0)
-                .LdLocA(0)
+            method.Body.GetILProcessor()
+                .LdArgs(0, 2)
                 .NewObj(method.ReturnType.FindMethod(".ctor", 2))
                 .Ret();
         }
 
-        private void GenerateSpecial(MethodDefinition method, TypeReference baseEnumerable, GenericInstanceType enumerable, GenericInstanceType selector, GenericInstanceType func)
+        private static void GenerateSpecial(MethodDefinition method, TypeReference baseEnumerable, GenericInstanceType enumerable, GenericParameter selector)
         {
             method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.None, baseEnumerable));
-            method.Parameters.Add(new ParameterDefinition("selector", ParameterAttributes.None, func));
+            method.Parameters.Add(new ParameterDefinition("selector", ParameterAttributes.In, new ByReferenceType(selector))
+            {
+                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference() }
+            });
 
             var body = method.Body;
             body.InitLocals = true;
             body.Variables.Add(new VariableDefinition(enumerable));
-            body.Variables.Add(new VariableDefinition(selector));
 
             body.GetILProcessor()
                 .LdLocA(0)
                 .LdArg(0)
                 .Call(enumerable.FindMethod(".ctor", 1))
 
-                .LdArg(1)
-                .StLoc(1)
-
                 .LdLocA(0)
-                .LdLocA(1)
+                .LdArg(1)
                 .NewObj(method.ReturnType.FindMethod(".ctor", 2))
                 .Ret();
         }

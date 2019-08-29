@@ -7,9 +7,9 @@ using Mono.Cecil.Cil;
 
 namespace UniNativeLinq.Editor.CodeGenerator
 {
-    public sealed class SelectFunc : ITypeDictionaryHolder, IApiExtensionMethodGenerator
+    public sealed class SelectIndexFunc : ITypeDictionaryHolder, IApiExtensionMethodGenerator
     {
-        public SelectFunc(ISingleApi api)
+        public SelectIndexFunc(ISingleApi api)
         {
             Api = api;
         }
@@ -48,12 +48,12 @@ namespace UniNativeLinq.Editor.CodeGenerator
             var TResult = method.DefineUnmanagedGenericParameter("TResult");
             method.GenericParameters.Add(TResult);
 
-            var func = new GenericInstanceType(mainModule.ImportReference(systemModule.GetType("System", "Func`2")))
+            var func = new GenericInstanceType(mainModule.ImportReference(systemModule.GetType("System", "Func`3")))
             {
-                GenericArguments = { T, TResult }
+                GenericArguments = { T, mainModule.TypeSystem.Int64, TResult }
             };
 
-            var TSelector = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "DelegateFuncToStructOperatorAction`2"))
+            var TSelector = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "DelegateFuncToSelectIndexStructOperator`2"))
             {
                 GenericArguments = { T, TResult }
             };

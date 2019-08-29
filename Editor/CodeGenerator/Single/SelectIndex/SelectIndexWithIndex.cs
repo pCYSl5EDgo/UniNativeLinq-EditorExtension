@@ -7,9 +7,9 @@ using Mono.Cecil.Cil;
 
 namespace UniNativeLinq.Editor.CodeGenerator
 {
-    public sealed class SelectFunc : ITypeDictionaryHolder, IApiExtensionMethodGenerator
+    public sealed class SelectIndexWithIndex : ITypeDictionaryHolder, IApiExtensionMethodGenerator
     {
-        public SelectFunc(ISingleApi api)
+        public SelectIndexWithIndex(ISingleApi api)
         {
             Api = api;
         }
@@ -45,18 +45,20 @@ namespace UniNativeLinq.Editor.CodeGenerator
             var T = method.DefineUnmanagedGenericParameter();
             method.GenericParameters.Add(T);
 
-            var TResult = method.DefineUnmanagedGenericParameter("TResult");
-            method.GenericParameters.Add(TResult);
-
-            var func = new GenericInstanceType(mainModule.ImportReference(systemModule.GetType("System", "Func`2")))
+            var TResult = new GenericInstanceType(mainModule.ImportReference(systemModule.GetType("System", "ValueTuple`2")))
             {
-                GenericArguments = { T, TResult }
+                GenericArguments = { T, mainModule.TypeSystem.Int64 }
             };
 
-            var TSelector = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "DelegateFuncToStructOperatorAction`2"))
+            var TSelector = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "WithIndex`1"))
             {
-                GenericArguments = { T, TResult }
+                GenericArguments = { T }
             };
+            var TupleElementNamesAttributeConstructor = mainModule.ImportReference(systemModule.GetType("System.Runtime.CompilerServices", "TupleElementNamesAttribute")).FindMethod(".ctor", 1);
+            method.MethodReturnType.CustomAttributes.Add(new CustomAttribute(TupleElementNamesAttributeConstructor, new byte[]
+            {
+                0x01, 0x00, 0x02, 0x00, 0x00, 0x00, 0x07, 0x65, 0x6c, 0x65, 0x6d, 0x65, 0x6e, 0x74, 0x05, 0x69, 0x6e, 0x64, 0x65, 0x78, 0x00, 0x00
+            }));
 
             if (isSpecial)
             {
@@ -69,7 +71,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 {
                     case "T[]":
                     case "NativeArray<T>":
-                        GenerateSpecial(method, baseEnumerable, enumerable, TSelector, func);
+                        GenerateSpecial(method, baseEnumerable, enumerable, TSelector);
                         break;
                     default: throw new NotSupportedException(name);
                 }
@@ -82,52 +84,38 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 {
                     GenericArguments = { enumerable, enumerator, T, TResult, TSelector }
                 };
-                GenerateNormal(method, enumerable, TSelector, func);
+                GenerateNormal(method, enumerable, TSelector);
             }
         }
 
-        private void GenerateNormal(MethodDefinition method, TypeReference enumerable, GenericInstanceType selector, GenericInstanceType func)
+        private static void GenerateNormal(MethodDefinition method, TypeReference enumerable, TypeReference selector)
         {
             method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(enumerable))
             {
                 CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference() }
             });
-            method.Parameters.Add(new ParameterDefinition("selector", ParameterAttributes.None, func));
 
-            var body = method.Body;
-
-            body.Variables.Add(new VariableDefinition(selector));
-
-            body.GetILProcessor()
+            method.Body.GetILProcessor()
                 .LdArg(0)
-                .LdArg(1)
-                .StLoc(0)
-                .LdLocA(0)
-                .NewObj(method.ReturnType.FindMethod(".ctor", 2))
+                .NewObj(method.ReturnType.FindMethod(".ctor", 1))
                 .Ret();
         }
 
-        private void GenerateSpecial(MethodDefinition method, TypeReference baseEnumerable, GenericInstanceType enumerable, GenericInstanceType selector, GenericInstanceType func)
+        private static void GenerateSpecial(MethodDefinition method, TypeReference baseEnumerable, GenericInstanceType enumerable, TypeReference selector)
         {
             method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.None, baseEnumerable));
-            method.Parameters.Add(new ParameterDefinition("selector", ParameterAttributes.None, func));
 
             var body = method.Body;
             body.InitLocals = true;
             body.Variables.Add(new VariableDefinition(enumerable));
-            body.Variables.Add(new VariableDefinition(selector));
 
             body.GetILProcessor()
                 .LdLocA(0)
                 .LdArg(0)
                 .Call(enumerable.FindMethod(".ctor", 1))
 
-                .LdArg(1)
-                .StLoc(1)
-
                 .LdLocA(0)
-                .LdLocA(1)
-                .NewObj(method.ReturnType.FindMethod(".ctor", 2))
+                .NewObj(method.ReturnType.FindMethod(".ctor", 1))
                 .Ret();
         }
     }

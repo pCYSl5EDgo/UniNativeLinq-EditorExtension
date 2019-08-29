@@ -7,9 +7,9 @@ using Mono.Cecil.Cil;
 
 namespace UniNativeLinq.Editor.CodeGenerator
 {
-    public sealed class SelectFunc : ITypeDictionaryHolder, IApiExtensionMethodGenerator
+    public sealed class SelectIndexRefFunc : ITypeDictionaryHolder, IApiExtensionMethodGenerator
     {
-        public SelectFunc(ISingleApi api)
+        public SelectIndexRefFunc(ISingleApi api)
         {
             Api = api;
         }
@@ -48,12 +48,12 @@ namespace UniNativeLinq.Editor.CodeGenerator
             var TResult = method.DefineUnmanagedGenericParameter("TResult");
             method.GenericParameters.Add(TResult);
 
-            var func = new GenericInstanceType(mainModule.ImportReference(systemModule.GetType("System", "Func`2")))
+            var func = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "RefSelectIndex`2"))
             {
                 GenericArguments = { T, TResult }
             };
 
-            var TSelector = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "DelegateFuncToStructOperatorAction`2"))
+            var TSelector = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "DelegateRefFuncToSelectIndexStructOperator`2"))
             {
                 GenericArguments = { T, TResult }
             };
@@ -86,7 +86,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             }
         }
 
-        private void GenerateNormal(MethodDefinition method, TypeReference enumerable, GenericInstanceType selector, GenericInstanceType func)
+        private static void GenerateNormal(MethodDefinition method, TypeReference enumerable, GenericInstanceType selector, GenericInstanceType func)
         {
             method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(enumerable))
             {
@@ -107,7 +107,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .Ret();
         }
 
-        private void GenerateSpecial(MethodDefinition method, TypeReference baseEnumerable, GenericInstanceType enumerable, GenericInstanceType selector, GenericInstanceType func)
+        private static void GenerateSpecial(MethodDefinition method, TypeReference baseEnumerable, GenericInstanceType enumerable, GenericInstanceType selector, GenericInstanceType func)
         {
             method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.None, baseEnumerable));
             method.Parameters.Add(new ParameterDefinition("selector", ParameterAttributes.None, func));

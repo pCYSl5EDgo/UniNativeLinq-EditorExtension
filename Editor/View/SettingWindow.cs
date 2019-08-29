@@ -91,6 +91,23 @@ namespace UniNativeLinq.Editor
         {
             switch (api.Name)
             {
+                case "SelectIndex":
+                    switch (api.Description)
+                    {
+                        case "Operator":
+                            list.Add(new SelectIndexOperator(api));
+                            break;
+                        case "Func":
+                            list.Add(new SelectIndexFunc(api));
+                            break;
+                        case "RefFunc":
+                            list.Add(new SelectIndexRefFunc(api));
+                            break;
+                        case "WithIndex":
+                            list.Add(new SelectIndexWithIndex(api));
+                            break;
+                    }
+                    break;
                 case "WhereIndex":
                     switch (api.Description)
                     {
