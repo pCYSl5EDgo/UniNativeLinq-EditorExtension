@@ -42,6 +42,7 @@ namespace UniNativeLinq.Editor
                 ref var tuple = ref EnabledArray[i];
                 if (tuple.Enumerable != name) continue;
                 tuple.Enabled = value;
+                EditorUtility.SetDirty(this);
                 return true;
             }
             return false;

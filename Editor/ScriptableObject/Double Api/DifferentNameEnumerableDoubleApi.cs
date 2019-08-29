@@ -80,6 +80,7 @@ namespace UniNativeLinq.Editor
                 return false;
             }
             this[index0, index1] = value;
+            EditorUtility.SetDirty(this);
             return true;
         }
 
