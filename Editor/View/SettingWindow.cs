@@ -266,6 +266,7 @@ namespace UniNativeLinq.Editor
                         case "RefFunc":
                             break;
                         case "Operator":
+                            list.Add(new TryGetFirstOperator(api));
                             break;
                         case "None":
                             list.Add(new TryGetFirstNone(api));
