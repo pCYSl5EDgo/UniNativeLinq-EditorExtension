@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor;
 
 namespace UniNativeLinq.Editor
 {
@@ -60,6 +61,7 @@ namespace UniNativeLinq.Editor
             if (!dictionary.TryGetValue(name, out var tuple)) return false;
             hasChanged = true;
             tuple.Enabled = value;
+            EditorUtility.SetDirty(tuple);
             return true;
         }
 
