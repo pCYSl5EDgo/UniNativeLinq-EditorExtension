@@ -7,15 +7,16 @@ using Mono.Cecil.Cil;
 
 namespace UniNativeLinq.Editor.CodeGenerator
 {
-    public sealed class DistinctNone : ITypeDictionaryHolder, IApiExtensionMethodGenerator
+    public sealed class OrderByNoneNumber : ITypeDictionaryHolder, IApiExtensionMethodGenerator
     {
-        public DistinctNone(ISingleApi api)
+        public OrderByNoneNumber(ISingleApi api)
         {
             Api = api;
+            elementTypeName = api.Description.Substring(4);
         }
 
+        private readonly string elementTypeName;
         public readonly ISingleApi Api;
-
         public Dictionary<string, TypeDefinition> Dictionary { private get; set; }
         public void Generate(IEnumerableCollectionProcessor processor, ModuleDefinition mainModule, ModuleDefinition systemModule, ModuleDefinition unityModule)
         {
@@ -24,15 +25,38 @@ namespace UniNativeLinq.Editor.CodeGenerator
             if (!Api.ShouldDefine(array)) return;
             TypeDefinition @static;
             mainModule.Types.Add(@static = mainModule.DefineStatic(Api.Name + Api.Description + "Helper"));
+            TypeReference elementTypeReference;
+            switch (elementTypeName)
+            {
+                case "Double":
+                    elementTypeReference = mainModule.TypeSystem.Double;
+                    break;
+                case "Single":
+                    elementTypeReference = mainModule.TypeSystem.Single;
+                    break;
+                case "Int32":
+                    elementTypeReference = mainModule.TypeSystem.Int32;
+                    break;
+                case "UInt32":
+                    elementTypeReference = mainModule.TypeSystem.UInt32;
+                    break;
+                case "Int64":
+                    elementTypeReference = mainModule.TypeSystem.Int64;
+                    break;
+                case "UInt64":
+                    elementTypeReference = mainModule.TypeSystem.UInt64;
+                    break;
+                default: throw new ArgumentException();
+            }
             foreach (var name in array)
             {
                 if (!processor.IsSpecialType(name, out var isSpecial)) throw new KeyNotFoundException();
                 if (!Api.TryGetEnabled(name, out var apiEnabled) || !apiEnabled) continue;
-                GenerateEach(name, isSpecial, @static, mainModule, systemModule);
+                GenerateEach(name, isSpecial, @static, mainModule, systemModule, elementTypeReference);
             }
         }
 
-        private void GenerateEach(string name, bool isSpecial, TypeDefinition @static, ModuleDefinition mainModule, ModuleDefinition systemModule)
+        private void GenerateEach(string name, bool isSpecial, TypeDefinition @static, ModuleDefinition mainModule, ModuleDefinition systemModule, TypeReference elementTypeReference)
         {
             var returnTypeDefinition = mainModule.GetType("UniNativeLinq", Api.Name + "Enumerable`4");
 
@@ -44,24 +68,14 @@ namespace UniNativeLinq.Editor.CodeGenerator
             };
             @static.Methods.Add(method);
 
-            var T = method.DefineUnmanagedGenericParameter();
-            T.Constraints.Add(new GenericInstanceType(mainModule.ImportReference(systemModule.GetType("System", "IEquatable`1")))
-            {
-                GenericArguments = { T }
-            });
-            method.GenericParameters.Add(T);
-
-            var EqualityComparer = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "DefaultEqualityComparer`1"))
-            {
-                GenericArguments = { T }
-            };
+            var TComparer = mainModule.GetType("UniNativeLinq", "DefaultOrderByAscending" + elementTypeName);
 
             if (isSpecial)
             {
-                var (baseEnumerable, enumerable, enumerator) = T.MakeSpecialTypePair(name);
+                var (baseEnumerable, enumerable, enumerator) = elementTypeReference.MakeSpecialTypePair(name);
                 method.ReturnType = new GenericInstanceType(returnTypeDefinition)
                 {
-                    GenericArguments = { enumerable, enumerator, T, EqualityComparer }
+                    GenericArguments = { enumerable, enumerator, elementTypeReference, TComparer }
                 };
                 switch (name)
                 {
@@ -75,16 +89,29 @@ namespace UniNativeLinq.Editor.CodeGenerator
             else
             {
                 var type = Dictionary[name];
-                var (enumerable, enumerator, _) = T.MakeFromCommonType(method, type, "0");
+                var (enumerable, enumerator, _) = elementTypeReference.MakeFromCommonType(method, type, "0");
                 method.ReturnType = new GenericInstanceType(returnTypeDefinition)
                 {
-                    GenericArguments = { enumerable, enumerator, T, EqualityComparer }
+                    GenericArguments = { enumerable, enumerator, elementTypeReference, TComparer }
                 };
-                GenerateNormal(method, enumerable, T);
+                GenerateNormal(method, enumerable);
             }
         }
 
-        private static void GenerateSpecial(MethodDefinition method, TypeReference baseEnumerable, GenericInstanceType enumerable)
+        private static void GenerateNormal(MethodDefinition method, TypeReference enumerable)
+        {
+            method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(enumerable))
+            {
+                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference() }
+            });
+            method.DefineAllocatorParam();
+            method.Body.GetILProcessor()
+                .LdArgs(0, 2)
+                .NewObj(method.ReturnType.FindMethod(".ctor", 2))
+                .Ret();
+        }
+
+        public void GenerateSpecial(MethodDefinition method, TypeReference baseEnumerable, GenericInstanceType enumerable)
         {
             method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.None, baseEnumerable));
             method.DefineAllocatorParam();
@@ -100,20 +127,6 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
                 .LdLocA(0)
                 .LdArg(1)
-                .NewObj(method.ReturnType.FindMethod(".ctor", 2))
-                .Ret();
-        }
-
-        private static void GenerateNormal(MethodDefinition method, TypeReference enumerable, GenericParameter T)
-        {
-            method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(enumerable))
-            {
-                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference() }
-            });
-            method.DefineAllocatorParam();
-
-            method.Body.GetILProcessor()
-                .LdArgs(0, 2)
                 .NewObj(method.ReturnType.FindMethod(".ctor", 2))
                 .Ret();
         }

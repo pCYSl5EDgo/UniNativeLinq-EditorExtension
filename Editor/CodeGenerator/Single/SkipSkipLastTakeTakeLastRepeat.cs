@@ -91,7 +91,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             method.Parameters.Add(new ParameterDefinition("count", ParameterAttributes.None, method.Module.TypeSystem.Int64));
             if (constructor.Parameters.Count == 3)
             {
-                DefineAllocatorParam(method);
+                method.DefineAllocatorParam();
             }
 
             method.Body.GetILProcessor()
@@ -107,7 +107,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             method.Parameters.Add(new ParameterDefinition("count", ParameterAttributes.None, method.Module.TypeSystem.Int64));
             if (constructor.Parameters.Count == 3)
             {
-                DefineAllocatorParam(method);
+                method.DefineAllocatorParam();
             }
 
             var body = method.Body;
@@ -123,14 +123,6 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .LdArgs(1, method.Parameters.Count - 1)
                 .NewObj(constructor)
                 .Ret();
-        }
-
-        private static void DefineAllocatorParam(MethodDefinition method)
-        {
-            method.Parameters.Add(new ParameterDefinition("allocator", ParameterAttributes.HasDefault | ParameterAttributes.Optional, Helper.Allocator)
-            {
-                Constant = 2,
-            });
         }
     }
 }

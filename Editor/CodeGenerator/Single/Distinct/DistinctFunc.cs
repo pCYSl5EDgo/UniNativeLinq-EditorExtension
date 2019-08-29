@@ -92,7 +92,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
         {
             method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.None, baseEnumerable));
             method.Parameters.Add(new ParameterDefinition("comparer", ParameterAttributes.None, comparerParamType));
-            DefineAllocatorParam(method);
+            method.DefineAllocatorParam();
 
             var body = method.Body;
             body.InitLocals = true;
@@ -121,7 +121,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference() }
             });
             method.Parameters.Add(new ParameterDefinition("comparer", ParameterAttributes.None, comparerParamType));
-            DefineAllocatorParam(method);
+            method.DefineAllocatorParam();
 
             var body = method.Body;
 
@@ -135,14 +135,6 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .LdArg(2)
                 .NewObj(method.ReturnType.FindMethod(".ctor", 3))
                 .Ret();
-        }
-
-        private static void DefineAllocatorParam(MethodDefinition method)
-        {
-            method.Parameters.Add(new ParameterDefinition("allocator", ParameterAttributes.HasDefault | ParameterAttributes.Optional, Helper.Allocator)
-            {
-                Constant = 2,
-            });
         }
     }
 }

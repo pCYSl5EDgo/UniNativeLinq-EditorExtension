@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6fbcd04e384274e42b36563ebcd4c4c1, type: 3}
-  m_Name: OrderBy___RefFunc
+  m_Name: OrderBy___IComparer
   m_EditorClassIdentifier: 
   Name: OrderBy
-  Description: RefFunc
+  Description: IComparer
   EnabledArray:
   - Enumerable: NativeArray<T>
     Enabled: 1

@@ -29,12 +29,22 @@ namespace UniNativeLinq.Editor.CodeGenerator
             Initialize();
         }
 
+        public static void DefineAllocatorParam(this MethodDefinition method)
+        {
+            method.Parameters.Add(new ParameterDefinition("allocator", ParameterAttributes.HasDefault | ParameterAttributes.Optional, Helper.Allocator)
+            {
+                Constant = 2,
+            });
+        }
+
         public static GenericParameter DefineUnmanagedGenericParameter(this MethodDefinition method, string name = "T")
         {
             var x = method.Module.GetType("UniNativeLinq", "NativeEnumerable`1").GenericParameters[0];
             return new GenericParameter(name, method)
             {
                 HasNotNullableValueTypeConstraint = true,
+                HasDefaultConstructorConstraint = true,
+                HasReferenceTypeConstraint = false,
                 Constraints = { x.Constraints[0] },
                 CustomAttributes = { x.CustomAttributes[0] }
             };

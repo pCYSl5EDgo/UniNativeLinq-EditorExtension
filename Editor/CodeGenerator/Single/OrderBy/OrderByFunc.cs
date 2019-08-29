@@ -7,15 +7,13 @@ using Mono.Cecil.Cil;
 
 namespace UniNativeLinq.Editor.CodeGenerator
 {
-    public sealed class DistinctRefFunc : ITypeDictionaryHolder, IApiExtensionMethodGenerator
+    public sealed class OrderByFunc : ITypeDictionaryHolder, IApiExtensionMethodGenerator
     {
-        public DistinctRefFunc(ISingleApi api)
+        public OrderByFunc(ISingleApi api)
         {
             Api = api;
         }
-
         public readonly ISingleApi Api;
-
         public Dictionary<string, TypeDefinition> Dictionary { private get; set; }
         public void Generate(IEnumerableCollectionProcessor processor, ModuleDefinition mainModule, ModuleDefinition systemModule, ModuleDefinition unityModule)
         {
@@ -45,19 +43,16 @@ namespace UniNativeLinq.Editor.CodeGenerator
             @static.Methods.Add(method);
 
             var T = method.DefineUnmanagedGenericParameter();
-            T.Constraints.Add(new GenericInstanceType(mainModule.ImportReference(systemModule.GetType("System", "IEquatable`1")))
-            {
-                GenericArguments = { T }
-            });
             method.GenericParameters.Add(T);
 
-            var ComparerParamType = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "RefFunc`3"))
+            var Func = new GenericInstanceType(mainModule.ImportReference(systemModule.GetType("System", "Func`3")))
             {
-                GenericArguments = { T, T, mainModule.TypeSystem.Boolean }
+                GenericArguments = { T, T, mainModule.TypeSystem.Int32 }
             };
-            var EqualityComparer = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "DelegateRefFuncToStructOperatorFunc`3"))
+
+            var TComparer = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "DelegateFuncToStructOperatorFunc`3"))
             {
-                GenericArguments = { T, T, mainModule.TypeSystem.Boolean }
+                GenericArguments = { T, T, mainModule.TypeSystem.Int32 }
             };
 
             if (isSpecial)
@@ -65,13 +60,13 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 var (baseEnumerable, enumerable, enumerator) = T.MakeSpecialTypePair(name);
                 method.ReturnType = new GenericInstanceType(returnTypeDefinition)
                 {
-                    GenericArguments = { enumerable, enumerator, T, EqualityComparer }
+                    GenericArguments = { enumerable, enumerator, T, TComparer }
                 };
                 switch (name)
                 {
                     case "T[]":
                     case "NativeArray<T>":
-                        GenerateSpecial(method, baseEnumerable, enumerable, T, EqualityComparer, ComparerParamType);
+                        GenerateSpecial(method, baseEnumerable, enumerable, TComparer, Func);
                         break;
                     default: throw new NotSupportedException(name);
                 }
@@ -82,22 +77,46 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 var (enumerable, enumerator, _) = T.MakeFromCommonType(method, type, "0");
                 method.ReturnType = new GenericInstanceType(returnTypeDefinition)
                 {
-                    GenericArguments = { enumerable, enumerator, T, EqualityComparer }
+                    GenericArguments = { enumerable, enumerator, T, TComparer }
                 };
-                GenerateNormal(method, enumerable, T, EqualityComparer, ComparerParamType);
+                GenerateNormal(method, enumerable, TComparer, Func);
             }
         }
 
-        private static void GenerateSpecial(MethodDefinition method, TypeReference baseEnumerable, GenericInstanceType enumerable, GenericParameter T, TypeReference equalityComparer, TypeReference comparerParamType)
+        private static void GenerateNormal(MethodDefinition method, TypeReference enumerable, TypeReference comparer, TypeReference func)
+        {
+            method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(enumerable))
+            {
+                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference() }
+            });
+            method.Parameters.Add(new ParameterDefinition("comparer", ParameterAttributes.None, func));
+            method.DefineAllocatorParam();
+
+            var body = method.Body;
+            body.InitLocals = true;
+            body.Variables.Add(new VariableDefinition(comparer));
+
+            body.GetILProcessor()
+                .LdArg(1)
+                .StLoc(0)
+
+                .LdArg(0)
+                .LdLocA(0)
+                .LdArg(2)
+                .NewObj(method.ReturnType.FindMethod(".ctor", 3))
+                .Ret();
+        }
+
+        private static void GenerateSpecial(MethodDefinition method, TypeReference baseEnumerable, GenericInstanceType enumerable, TypeReference comparer, TypeReference func)
         {
             method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.None, baseEnumerable));
-            method.Parameters.Add(new ParameterDefinition("comparer", ParameterAttributes.None, comparerParamType));
+            method.Parameters.Add(new ParameterDefinition("comparer", ParameterAttributes.None, func));
             method.DefineAllocatorParam();
 
             var body = method.Body;
             body.InitLocals = true;
             body.Variables.Add(new VariableDefinition(enumerable));
-            body.Variables.Add(new VariableDefinition(equalityComparer));
+            body.Variables.Add(new VariableDefinition(comparer));
 
             body.GetILProcessor()
                 .LdLocA(0)
@@ -109,29 +128,6 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
                 .LdLocA(0)
                 .LdLocA(1)
-                .LdArg(2)
-                .NewObj(method.ReturnType.FindMethod(".ctor", 3))
-                .Ret();
-        }
-
-        private static void GenerateNormal(MethodDefinition method, TypeReference enumerable, GenericParameter T, TypeReference equalityComparer, TypeReference comparerParamType)
-        {
-            method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(enumerable))
-            {
-                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference() }
-            });
-            method.Parameters.Add(new ParameterDefinition("comparer", ParameterAttributes.None, comparerParamType));
-            method.DefineAllocatorParam();
-
-            var body = method.Body;
-
-            body.Variables.Add(new VariableDefinition(equalityComparer));
-
-            body.GetILProcessor()
-                .LdArg(1)
-                .StLoc(0)
-                .LdArg(0)
-                .LdLocA(0)
                 .LdArg(2)
                 .NewObj(method.ReturnType.FindMethod(".ctor", 3))
                 .Ret();

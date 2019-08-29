@@ -956,14 +956,6 @@ namespace UniNativeLinq.Editor.CodeGenerator
             }
             return processor;
         }
-        public static ILProcessor LdArgs(this ILProcessor processor, int length)
-        {
-            for (var i = 0; i < length; i++)
-            {
-                processor.LdArg(i);
-            }
-            return processor;
-        }
 
         public static ILProcessor LdArgA(this ILProcessor processor, int index) => processor.Add(Instruction.Create(index <= 255 ? OpCodes.Ldarga_S : OpCodes.Ldarga, processor.Body.Method.Parameters[index]));
 

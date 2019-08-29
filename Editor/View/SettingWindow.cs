@@ -91,6 +91,34 @@ namespace UniNativeLinq.Editor
         {
             switch (api.Name)
             {
+                case "OrderBy":
+                    switch (api.Description)
+                    {
+                        case "NoneDouble":
+                        case "NoneSingle":
+                        case "NoneInt32":
+                        case "NoneUInt32":
+                        case "NoneInt64":
+                        case "NoneUInt64":
+                            list.Add(new OrderByNoneNumber(api));
+                            break;
+                        case "None":
+                            list.Add(new OrderByNone(api));
+                            break;
+                        case "IComparer":
+                            list.Add(new OrderByIComparer(api));
+                            break;
+                        case "Func":
+                            list.Add(new OrderByFunc(api));
+                            break;
+                        case "RefFunc":
+                            list.Add(new OrderByRefFunc(api));
+                            break;
+                        case "Operator":
+                            list.Add(new OrderByOperator(api));
+                            break;
+                    }
+                    break;
                 case "SelectIndex":
                     switch (api.Description)
                     {
@@ -230,7 +258,7 @@ namespace UniNativeLinq.Editor
                             break;
                     }
                     break;
-                case "TryGetFirstNone":
+                case "TryGetFirst":
                     switch (api.Description)
                     {
                         case "Func":
@@ -244,7 +272,7 @@ namespace UniNativeLinq.Editor
                             break;
                     }
                     break;
-                case "TryGetLastNone":
+                case "TryGetLast":
                     switch (api.Description)
                     {
                         case "Func":
@@ -264,6 +292,12 @@ namespace UniNativeLinq.Editor
                 case "TryGetSingle":
                     switch (api.Description)
                     {
+                        case "Func":
+                            list.Add(new TryGetSingleFunc(api));
+                            break;
+                        case "RefFunc":
+                            list.Add(new TryGetSingleRefFunc(api));
+                            break;
                         case "Operator":
                             list.Add(new TryGetSingleOperator(api));
                             break;

@@ -6,6 +6,7 @@ using UnityEngine;
 
 namespace UniNativeLinq.Editor
 {
+    [CreateAssetMenu(menuName = "Linq/NoEnumerableSingleApi")]
     public class NoEnumerableSingleApi : String2BoolArrayTuple, ISingleApi
     {
         string ISingleApi.Name

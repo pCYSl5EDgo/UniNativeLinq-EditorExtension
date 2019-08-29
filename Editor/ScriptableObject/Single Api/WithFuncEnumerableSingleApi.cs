@@ -6,6 +6,7 @@ using UnityEngine;
 
 namespace UniNativeLinq.Editor
 {
+    [CreateAssetMenu(menuName = "Linq/WhereFunc")]
     public sealed class WithFuncEnumerableSingleApi : String2BoolArrayTuple, ISingleApi
     {
         string ISingleApi.Name

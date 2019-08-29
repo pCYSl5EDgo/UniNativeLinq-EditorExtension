@@ -78,7 +78,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
         private static void GenerateSpecial(MethodDefinition method, TypeReference baseEnumerable, GenericInstanceType enumerable)
         {
             method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.None, baseEnumerable));
-            DefineAllocatorParam(method);
+            method.DefineAllocatorParam();
 
             var body = method.Body;
             body.InitLocals = true;
@@ -101,20 +101,12 @@ namespace UniNativeLinq.Editor.CodeGenerator
             {
                 CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference() }
             });
-            DefineAllocatorParam(method);
+            method.DefineAllocatorParam();
 
             method.Body.GetILProcessor()
                 .LdArgs(0, 2)
                 .NewObj(method.ReturnType.FindMethod(".ctor", 2))
                 .Ret();
-        }
-
-        private static void DefineAllocatorParam(MethodDefinition method)
-        {
-            method.Parameters.Add(new ParameterDefinition("allocator", ParameterAttributes.HasDefault | ParameterAttributes.Optional, Helper.Allocator)
-            {
-                Constant = 2,
-            });
         }
     }
 }
