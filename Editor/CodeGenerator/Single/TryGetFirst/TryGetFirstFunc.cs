@@ -7,9 +7,9 @@ using Mono.Cecil.Cil;
 
 namespace UniNativeLinq.Editor.CodeGenerator
 {
-    public sealed class TryGetLastNone : ITypeDictionaryHolder, IApiExtensionMethodGenerator
+    public sealed class TryGetFirstFunc : ITypeDictionaryHolder, IApiExtensionMethodGenerator
     {
-        public TryGetLastNone(ISingleApi api)
+        public TryGetFirstFunc(ISingleApi api)
         {
             Api = api;
         }
@@ -42,16 +42,21 @@ namespace UniNativeLinq.Editor.CodeGenerator
             var T = method.DefineUnmanagedGenericParameter();
             method.GenericParameters.Add(T);
 
+            var TPredicate = new GenericInstanceType(mainModule.ImportReference(systemModule.GetType("System", "Func`2")))
+            {
+                GenericArguments = { T, mainModule.TypeSystem.Boolean }
+            };
+
             if (isSpecial)
             {
-                var (baseEnumerable, _, _) = T.MakeSpecialTypePair(name);
+                var (baseEnumerable, enumerable, enumerator) = T.MakeSpecialTypePair(name);
                 switch (name)
                 {
                     case "T[]":
-                        GenerateArray(method, baseEnumerable, T);
+                        GenerateArray(method, baseEnumerable, T, TPredicate);
                         break;
                     case "NativeArray<T>":
-                        GenerateNativeArray(method, baseEnumerable, T);
+                        GenerateNativeArray(method, baseEnumerable, enumerable, enumerator, T, TPredicate);
                         break;
                     default: throw new NotSupportedException(name);
                 }
@@ -60,41 +65,30 @@ namespace UniNativeLinq.Editor.CodeGenerator
             {
                 var type = Dictionary[name];
                 var (enumerable, enumerator, _) = T.MakeFromCommonType(method, type, "0");
-                var canIndexAccess = type.CanIndexAccess();
-                var canFastCount = type.CanFastCount();
 
                 method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(enumerable))
                 {
                     CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference() }
                 });
                 method.Parameters.Add(new ParameterDefinition("value", ParameterAttributes.Out, new ByReferenceType(T)));
+                method.Parameters.Add(new ParameterDefinition("predicate", ParameterAttributes.None, TPredicate));
 
-
-                if (canFastCount.HasValue && canFastCount.Value && canIndexAccess.HasValue && canIndexAccess.Value)
-                {
-                    GenerateCanIndexAccess(method, T, enumerable);
-                }
-                else
-                {
-                    GenerateNormal(method, T, enumerable, enumerator);
-                }
+                GenerateNormal(method, enumerable, enumerator, TPredicate, T);
             }
         }
 
-        private static void GenerateNormal(MethodDefinition method, GenericParameter T, TypeReference enumerable, TypeReference enumerator)
+        private static void GenerateNormal(MethodDefinition method, TypeReference enumerable, TypeReference enumerator, TypeReference TPredicate, TypeReference T)
         {
             var body = method.Body;
             body.InitLocals = true;
             var enumeratorVariable = new VariableDefinition(enumerator);
             body.Variables.Add(enumeratorVariable);
-            body.Variables.Add(new VariableDefinition(T));
             body.Variables.Add(new VariableDefinition(method.Module.TypeSystem.Boolean));
+            body.Variables.Add(new VariableDefinition(new ByReferenceType(T)));
 
             var loopStart = Instruction.Create(OpCodes.Ldloca_S, enumeratorVariable);
-            var @return = Instruction.Create(OpCodes.Ldloca_S, enumeratorVariable);
+            var fail = Instruction.Create(OpCodes.Ldloca_S, enumeratorVariable);
 
-            var TryMoveNext = enumerator.FindMethod("TryMoveNext");
-            var Dispose = enumerator.FindMethod("Dispose", 0);
             body.GetILProcessor()
                 .LdArg(0)
                 .Call(enumerable.FindMethod("GetEnumerator", 0))
@@ -102,102 +96,141 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
                 .Add(loopStart)
                 .LdLocA(1)
-                .Call(TryMoveNext)
-                .BrFalseS(@return)
-
-                .LdC(true)
+                .Call(enumerator.FindMethod("TryGetNext"))
                 .StLoc(2)
 
-                .LdArg(1)
-                .LdLocA(1)
-                .CpObj(T)
-                .BrS(loopStart)
+                .LdLoc(1)
+                .BrFalseS(fail)
 
-                .Add(@return)
-                .Call(Dispose)
+                .LdArg(2)
                 .LdLoc(2)
-                .Ret();
-        }
+                .LdObj(T)
+                .CallVirtual(TPredicate.FindMethod("Invoke"))
+                .BrFalseS(loopStart)
 
-        private static void GenerateCanIndexAccess(MethodDefinition method, GenericParameter T, TypeReference enumerable)
-        {
-            var notZero = Instruction.Create(OpCodes.Ldarg_1);
-
-            method.Body.GetILProcessor()
-                .LdArg(0)
-                .Call(enumerable.FindMethod("Any", 0))
-                .BrTrueS(notZero)
-
-                .LdC(false)
-                .Ret()
-
-                .Add(notZero)
-                .LdArg(0)
-                .Dup()
-                .Call(enumerable.FindMethod("LongCount", 0))
-                .LdC(1L)
-                .Sub()
-                .Call(enumerable.FindMethod("get_Item"))
+                .LdArg(1)
+                .LdLoc(2)
                 .CpObj(T)
+
+                .LdLocA(0)
+                .Call(enumerator.FindMethod("Dispose", 0))
 
                 .LdC(true)
+                .Ret()
+
+                .Add(fail)
+                .Call(enumerator.FindMethod("Dispose", 0))
+                .LdC(false)
                 .Ret();
         }
 
-        private static void GenerateNativeArray(MethodDefinition method, TypeReference baseEnumerable, GenericParameter T)
+        private static void GenerateNativeArray(MethodDefinition method, TypeReference baseEnumerable, TypeReference enumerable, TypeReference enumerator, GenericParameter T, TypeReference TPredicate)
         {
             method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(baseEnumerable))
             {
                 CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference() }
             });
             method.Parameters.Add(new ParameterDefinition("value", ParameterAttributes.Out, new ByReferenceType(T)));
+            method.Parameters.Add(new ParameterDefinition("predicate", ParameterAttributes.None, TPredicate));
 
-            var notZero = Instruction.Create(OpCodes.Ldarg_1);
+            var loopStart = Instruction.Create(OpCodes.Ldarg_2);
+            var success = Instruction.Create(OpCodes.Ldarg_1);
+
+            var body = method.Body;
+            body.InitLocals = true;
+            body.Variables.Add(new VariableDefinition(method.Module.TypeSystem.Int32));
 
             var getLength = baseEnumerable.FindMethod("get_Length");
+            var getItem = baseEnumerable.FindMethod("get_Item");
+
             method.Body.GetILProcessor()
                 .LdArg(0)
                 .Call(getLength)
-                .BrTrueS(notZero)
+                .BrTrueS(loopStart)
 
                 .LdC(false)
                 .Ret()
 
-                .Add(notZero)
+                .Add(loopStart)
                 .LdArg(0)
-                .Dup()
-                .Call(getLength)
+                .LdLoc(0)
+                .Call(getItem)
+
+                .CallVirtual(TPredicate.FindMethod("Invoke"))
+                .BrTrueS(success)
+
+                .LdLoc(0)
                 .LdC(1)
-                .Sub()
-                .Call(baseEnumerable.FindMethod("get_Item"))
+                .Add()
+                .Dup()
+                .StLoc(0)
+
+                .LdArg(0)
+                .Call(getLength)
+
+                .BltS(loopStart)
+
+                .LdC(false)
+                .Ret()
+
+                .Add(success)
+                .LdArg(0)
+                .LdLoc(0)
+                .Call(getItem)
                 .StObj(T)
 
                 .LdC(true)
                 .Ret();
         }
 
-        private static void GenerateArray(MethodDefinition method, TypeReference baseEnumerable, GenericParameter T)
+        private static void GenerateArray(MethodDefinition method, TypeReference baseEnumerable, GenericParameter T, TypeReference TPredicate)
         {
             method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.None, baseEnumerable));
             method.Parameters.Add(new ParameterDefinition("value", ParameterAttributes.Out, new ByReferenceType(T)));
+            method.Parameters.Add(new ParameterDefinition("predicate", ParameterAttributes.None, TPredicate));
 
-            var notZero = Instruction.Create(OpCodes.Ldarg_1);
+            var loopStart = Instruction.Create(OpCodes.Ldarg_0);
+            var success = Instruction.Create(OpCodes.Ldarg_1);
+
+            var body = method.Body;
+            body.InitLocals = true;
+            body.Variables.Add(new VariableDefinition(method.Module.TypeSystem.IntPtr));
+            body.Variables.Add(new VariableDefinition(T));
 
             method.Body.GetILProcessor()
                 .LdArg(0)
                 .LdLen()
-                .BrTrueS(notZero)
+                .BrTrueS(loopStart)
 
                 .LdC(false)
                 .Ret()
 
-                .Add(notZero)
-                .LdArg(0)
-                .Dup()
-                .LdLen()
+                .Add(loopStart)
+                .LdLoc(0)
+                .LdElem(T)
+                .StLoc(1)
+
+                .LdArg(2)
+                .LdLoc(1)
+                .CallVirtual(TPredicate.FindMethod("Invoke"))
+                .BrTrueS(success)
+
+                .LdLoc(0)
                 .LdC(1)
-                .Sub()
-                .LdElemA(T)
+                .Add()
+                .Dup()
+                .StLoc(0)
+
+                .LdArg(0)
+                .LdLen()
+
+                .BltS(loopStart)
+
+                .LdC(false)
+                .Ret()
+
+                .Add(success)
+                .LdLocA(1)
                 .CpObj(T)
 
                 .LdC(true)

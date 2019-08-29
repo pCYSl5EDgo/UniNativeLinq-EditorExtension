@@ -262,8 +262,10 @@ namespace UniNativeLinq.Editor
                     switch (api.Description)
                     {
                         case "Func":
+                            list.Add(new TryGetFirstFunc(api));
                             break;
                         case "RefFunc":
+                            list.Add(new TryGetFirstRefFunc(api));
                             break;
                         case "Operator":
                             list.Add(new TryGetFirstOperator(api));
@@ -277,10 +279,13 @@ namespace UniNativeLinq.Editor
                     switch (api.Description)
                     {
                         case "Func":
+                            list.Add(new TryGetLastFunc(api));
                             break;
                         case "RefFunc":
+                            list.Add(new TryGetLastRefFunc(api));
                             break;
                         case "Operator":
+                            list.Add(new TryGetLastOperator(api));
                             break;
                         case "None":
                             list.Add(new TryGetLastNone(api));
