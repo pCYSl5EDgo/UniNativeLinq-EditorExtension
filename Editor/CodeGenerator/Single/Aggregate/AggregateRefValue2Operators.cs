@@ -5,7 +5,7 @@ using Mono.Cecil;
 using Mono.Cecil.Cil;
 // ReSharper disable InconsistentNaming
 
-namespace UniNativeLinq.Editor.CodeGenerator.Aggregate
+namespace UniNativeLinq.Editor.CodeGenerator
 {
     /*
         TResult Aggregate<TAccumulate, TResult, TFunc, TResultFunc>(ref TAccumulate seed, in TFunc func, in TResultFunc resultFunc)

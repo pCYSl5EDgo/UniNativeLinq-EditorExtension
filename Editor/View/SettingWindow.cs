@@ -1,12 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using UniNativeLinq.Editor.CodeGenerator;
-using UniNativeLinq.Editor.CodeGenerator.Aggregate;
-using UniNativeLinq.Editor.CodeGenerator.Average;
-using UniNativeLinq.Editor.CodeGenerator.Contains;
-using UniNativeLinq.Editor.CodeGenerator.MinMaxBy;
-using UniNativeLinq.Editor.CodeGenerator.TryGetSingle;
-using UniNativeLinq.Editor.CodeGenerator.Where;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -93,21 +87,69 @@ namespace UniNativeLinq.Editor
             extensionMethodGenerators = list.ToArray();
         }
 
-        private void RegisterEachSingleApi(ISingleApi api, List<IApiExtensionMethodGenerator> list)
+        private static void RegisterEachSingleApi(ISingleApi api, List<IApiExtensionMethodGenerator> list)
         {
             switch (api.Name)
             {
-                case "Where":
+                case "Reverse":
+                    list.Add(new Reverse(api));
+                    break;
+                case "Distinct":
                     switch (api.Description)
                     {
                         case "Operator":
-                            list.Add(new WhereOperator(api));
+                            list.Add(new DistinctOperator(api));
                             break;
                         case "Func":
-                            list.Add(new WhereFunc(api));
+                            list.Add(new DistinctFunc(api));
                             break;
                         case "RefFunc":
-                            list.Add(new WhereRefFunc(api));
+                            list.Add(new DistinctRefFunc(api));
+                            break;
+                        case "None":
+                            list.Add(new DistinctNone(api));
+                            break;
+                    }
+                    break;
+                case "Append":
+                case "Prepend":
+                case "DefaultIfEmpty":
+                    list.Add(new AppendPrependDefaultIfEmpty(api));
+                    break;
+                case "Skip":
+                case "SkipLast":
+                case "Take":
+                case "TakeLast":
+                case "Repeat":
+                    list.Add(new SkipSkipLastTakeTakeLastRepeat(api));
+                    break;
+                case "Select":
+                    switch (api.Description)
+                    {
+                        case "Operator":
+                            list.Add(new SelectOperator(api));
+                            break;
+                        case "Func":
+                            list.Add(new SelectFunc(api));
+                            break;
+                        case "RefAction":
+                            list.Add(new SelectRefAction(api));
+                            break;
+                    }
+                    break;
+                case "Where":
+                case "SkipWhile":
+                case "TakeWhile":
+                    switch (api.Description)
+                    {
+                        case "Operator":
+                            list.Add(new WhereSkipWhileTakeWhileOperator(api));
+                            break;
+                        case "Func":
+                            list.Add(new WhereSkipWhileTakeWhileFunc(api));
+                            break;
+                        case "RefFunc":
+                            list.Add(new WhereSkipWhileTakeWhileRefFunc(api));
                             break;
                     }
                     break;
@@ -157,11 +199,33 @@ namespace UniNativeLinq.Editor
                             break;
                     }
                     break;
-                case "TryGetFirst":
-                    list.Add(new TryGetFirst(api));
+                case "TryGetFirstNone":
+                    switch (api.Description)
+                    {
+                        case "Func":
+                            break;
+                        case "RefFunc":
+                            break;
+                        case "Operator":
+                            break;
+                        case "None":
+                            list.Add(new TryGetFirstNone(api));
+                            break;
+                    }
                     break;
-                case "TryGetLast":
-                    list.Add(new TryGetLast(api));
+                case "TryGetLastNone":
+                    switch (api.Description)
+                    {
+                        case "Func":
+                            break;
+                        case "RefFunc":
+                            break;
+                        case "Operator":
+                            break;
+                        case "None":
+                            list.Add(new TryGetLastNone(api));
+                            break;
+                    }
                     break;
                 case "TryGetElementAt":
                     list.Add(new TryGetElementAt(api));

@@ -5,11 +5,11 @@ using Mono.Cecil;
 using Mono.Cecil.Cil;
 // ReSharper disable InconsistentNaming
 
-namespace UniNativeLinq.Editor.CodeGenerator.Where
+namespace UniNativeLinq.Editor.CodeGenerator
 {
-    public sealed class WhereFunc : ITypeDictionaryHolder, IApiExtensionMethodGenerator
+    public sealed class SelectRefAction : ITypeDictionaryHolder, IApiExtensionMethodGenerator
     {
-        public WhereFunc(ISingleApi api)
+        public SelectRefAction(ISingleApi api)
         {
             Api = api;
         }
@@ -17,11 +17,11 @@ namespace UniNativeLinq.Editor.CodeGenerator.Where
         public Dictionary<string, TypeDefinition> Dictionary { private get; set; }
         public void Generate(IEnumerableCollectionProcessor processor, ModuleDefinition mainModule, ModuleDefinition systemModule, ModuleDefinition unityModule)
         {
-            if (!processor.TryGetEnabled("Where", out var enabled) || !enabled) return;
+            if (!processor.TryGetEnabled("Select", out var enabled) || !enabled) return;
             var array = processor.EnabledNameCollection.Intersect(Api.NameCollection).ToArray();
             if (!Api.ShouldDefine(array)) return;
             TypeDefinition @static;
-            mainModule.Types.Add(@static = mainModule.DefineStatic("WhereFuncHelper"));
+            mainModule.Types.Add(@static = mainModule.DefineStatic("SelectRefActionHelper"));
             foreach (var name in array)
             {
                 if (!processor.IsSpecialType(name, out var isSpecial)) throw new KeyNotFoundException();
@@ -32,9 +32,9 @@ namespace UniNativeLinq.Editor.CodeGenerator.Where
 
         private void GenerateEach(string name, bool isSpecial, TypeDefinition @static, ModuleDefinition mainModule, ModuleDefinition systemModule)
         {
-            var returnTypeDefinition = mainModule.GetType("UniNativeLinq", "WhereEnumerable`4");
+            var returnTypeDefinition = mainModule.GetType("UniNativeLinq", "SelectEnumerable`5");
 
-            var method = new MethodDefinition("Where", Helper.StaticMethodAttributes, mainModule.TypeSystem.Boolean)
+            var method = new MethodDefinition("Select", Helper.StaticMethodAttributes, mainModule.TypeSystem.Boolean)
             {
                 DeclaringType = @static,
                 AggressiveInlining = true,
@@ -45,14 +45,17 @@ namespace UniNativeLinq.Editor.CodeGenerator.Where
             var T = method.DefineUnmanagedGenericParameter();
             method.GenericParameters.Add(T);
 
-            var func = new GenericInstanceType(mainModule.ImportReference(systemModule.GetType("System", "Func`2")))
+            var TResult = method.DefineUnmanagedGenericParameter("TResult");
+            method.GenericParameters.Add(TResult);
+
+            var func = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "RefAction`2"))
             {
-                GenericArguments = { T, mainModule.TypeSystem.Boolean }
+                GenericArguments = { T, TResult }
             };
 
-            var TPredicate = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "DelegateFuncToStructOperatorFunc`2"))
+            var TSelector = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "DelegateRefActionToStructOperatorAction`2"))
             {
-                GenericArguments = { T, mainModule.TypeSystem.Boolean }
+                GenericArguments = { T, TResult }
             };
 
             if (isSpecial)
@@ -60,13 +63,13 @@ namespace UniNativeLinq.Editor.CodeGenerator.Where
                 var (baseEnumerable, enumerable, enumerator) = T.MakeSpecialTypePair(name);
                 method.ReturnType = new GenericInstanceType(returnTypeDefinition)
                 {
-                    GenericArguments = { enumerable, enumerator, T, TPredicate }
+                    GenericArguments = { enumerable, enumerator, T, TResult, TSelector }
                 };
                 switch (name)
                 {
                     case "T[]":
                     case "NativeArray<T>":
-                        GenerateSpecial(method, baseEnumerable, enumerable, TPredicate, func);
+                        GenerateSpecial(method, baseEnumerable, enumerable, TSelector, func);
                         break;
                     default: throw new NotSupportedException(name);
                 }
@@ -77,23 +80,23 @@ namespace UniNativeLinq.Editor.CodeGenerator.Where
                 var (enumerable, enumerator, _) = T.MakeFromCommonType(method, type, "0");
                 method.ReturnType = new GenericInstanceType(returnTypeDefinition)
                 {
-                    GenericArguments = { enumerable, enumerator, T, TPredicate }
+                    GenericArguments = { enumerable, enumerator, T, TResult, TSelector }
                 };
-                GenerateNormal(method, enumerable, TPredicate, func);
+                GenerateNormal(method, enumerable, TSelector, func);
             }
         }
 
-        private void GenerateNormal(MethodDefinition method, TypeReference enumerable, GenericInstanceType predicate, GenericInstanceType func)
+        private void GenerateNormal(MethodDefinition method, TypeReference enumerable, GenericInstanceType selector, GenericInstanceType func)
         {
             method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(enumerable))
             {
                 CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference() }
             });
-            method.Parameters.Add(new ParameterDefinition("predicate", ParameterAttributes.None, func));
+            method.Parameters.Add(new ParameterDefinition("selector", ParameterAttributes.None, func));
 
             var body = method.Body;
 
-            body.Variables.Add(new VariableDefinition(predicate));
+            body.Variables.Add(new VariableDefinition(selector));
 
             body.GetILProcessor()
                 .LdArg(0)
@@ -104,15 +107,15 @@ namespace UniNativeLinq.Editor.CodeGenerator.Where
                 .Ret();
         }
 
-        private void GenerateSpecial(MethodDefinition method, TypeReference baseEnumerable, GenericInstanceType enumerable, GenericInstanceType predicate, GenericInstanceType func)
+        private void GenerateSpecial(MethodDefinition method, TypeReference baseEnumerable, GenericInstanceType enumerable, GenericInstanceType selector, GenericInstanceType func)
         {
             method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.None, baseEnumerable));
-            method.Parameters.Add(new ParameterDefinition("predicate", ParameterAttributes.None, func));
+            method.Parameters.Add(new ParameterDefinition("selector", ParameterAttributes.None, func));
 
             var body = method.Body;
             body.InitLocals = true;
             body.Variables.Add(new VariableDefinition(enumerable));
-            body.Variables.Add(new VariableDefinition(predicate));
+            body.Variables.Add(new VariableDefinition(selector));
 
             body.GetILProcessor()
                 .LdLocA(0)

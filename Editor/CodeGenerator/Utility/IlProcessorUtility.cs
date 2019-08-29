@@ -916,6 +916,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
         public static ILProcessor LdFld(this ILProcessor processor, FieldReference fieldReference) => processor.Add(Instruction.Create(OpCodes.Ldfld, fieldReference));
         public static ILProcessor LdFldA(this ILProcessor processor, FieldReference fieldReference) => processor.Add(Instruction.Create(OpCodes.Ldflda, fieldReference));
 
+
         public static ILProcessor LdArgAs(this ILProcessor processor, ParameterDefinition parameter)
         {
             return processor.Add(Instruction.Create(OpCodes.Ldarga_S, parameter));
@@ -955,7 +956,6 @@ namespace UniNativeLinq.Editor.CodeGenerator
             }
             return processor;
         }
-
         public static ILProcessor LdArgs(this ILProcessor processor, int length)
         {
             for (var i = 0; i < length; i++)
@@ -964,6 +964,8 @@ namespace UniNativeLinq.Editor.CodeGenerator
             }
             return processor;
         }
+
+        public static ILProcessor LdArgA(this ILProcessor processor, int index) => processor.Add(Instruction.Create(index <= 255 ? OpCodes.Ldarga_S : OpCodes.Ldarga, processor.Body.Method.Parameters[index]));
 
         public static ILProcessor LdElemA(this ILProcessor processor, TypeReference type) => processor.Add(Instruction.Create(OpCodes.Ldelema, type));
 

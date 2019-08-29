@@ -5,7 +5,7 @@ using Mono.Cecil;
 using Mono.Cecil.Cil;
 // ReSharper disable InconsistentNaming
 
-namespace UniNativeLinq.Editor.CodeGenerator.TryGetSingle
+namespace UniNativeLinq.Editor.CodeGenerator
 {
     public sealed class TryGetSingleOperator : ITypeDictionaryHolder, IApiExtensionMethodGenerator
     {

@@ -5,7 +5,7 @@ using Mono.Cecil;
 using Mono.Cecil.Cil;
 // ReSharper disable InconsistentNaming
 
-namespace UniNativeLinq.Editor.CodeGenerator.Contains
+namespace UniNativeLinq.Editor.CodeGenerator
 {
     public sealed class ContainsFunc : ITypeDictionaryHolder, IApiExtensionMethodGenerator
     {

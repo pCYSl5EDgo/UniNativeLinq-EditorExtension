@@ -7,21 +7,23 @@ using Mono.Cecil.Cil;
 
 namespace UniNativeLinq.Editor.CodeGenerator
 {
-    public sealed class WhereOperator : ITypeDictionaryHolder, IApiExtensionMethodGenerator
+    public sealed class Reverse : ITypeDictionaryHolder, IApiExtensionMethodGenerator
     {
-        public WhereOperator(ISingleApi api)
+        public Reverse(ISingleApi api)
         {
             Api = api;
         }
+
         public readonly ISingleApi Api;
+
         public Dictionary<string, TypeDefinition> Dictionary { private get; set; }
         public void Generate(IEnumerableCollectionProcessor processor, ModuleDefinition mainModule, ModuleDefinition systemModule, ModuleDefinition unityModule)
         {
-            if (!processor.TryGetEnabled("Where", out var enabled) || !enabled) return;
+            if (!processor.TryGetEnabled(Api.Name, out var enabled) || !enabled) return;
             var array = processor.EnabledNameCollection.Intersect(Api.NameCollection).ToArray();
             if (!Api.ShouldDefine(array)) return;
             TypeDefinition @static;
-            mainModule.Types.Add(@static = mainModule.DefineStatic("WhereOperatorHelper"));
+            mainModule.Types.Add(@static = mainModule.DefineStatic(Api.Name + "Helper"));
             foreach (var name in array)
             {
                 if (!processor.IsSpecialType(name, out var isSpecial)) throw new KeyNotFoundException();
@@ -32,9 +34,9 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
         private void GenerateEach(string name, bool isSpecial, TypeDefinition @static, ModuleDefinition mainModule, ModuleDefinition systemModule)
         {
-            var returnTypeDefinition = mainModule.GetType("UniNativeLinq", "WhereEnumerable`4");
+            var returnTypeDefinition = mainModule.GetType("UniNativeLinq", Api.Name + "Enumerable`3");
 
-            var method = new MethodDefinition("Where", Helper.StaticMethodAttributes, mainModule.TypeSystem.Boolean)
+            var method = new MethodDefinition(Api.Name, Helper.StaticMethodAttributes, mainModule.TypeSystem.Boolean)
             {
                 DeclaringType = @static,
                 AggressiveInlining = true,
@@ -45,29 +47,18 @@ namespace UniNativeLinq.Editor.CodeGenerator
             var T = method.DefineUnmanagedGenericParameter();
             method.GenericParameters.Add(T);
 
-            var IRefFunc = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "IRefFunc`2"))
-            {
-                GenericArguments = { T, mainModule.TypeSystem.Boolean }
-            };
-            var TPredicate = new GenericParameter("TPredicate", method)
-            {
-                HasNotNullableValueTypeConstraint = true,
-                Constraints = { IRefFunc }
-            };
-            method.GenericParameters.Add(TPredicate);
-
             if (isSpecial)
             {
                 var (baseEnumerable, enumerable, enumerator) = T.MakeSpecialTypePair(name);
                 method.ReturnType = new GenericInstanceType(returnTypeDefinition)
                 {
-                    GenericArguments = { enumerable, enumerator, T, TPredicate }
+                    GenericArguments = { enumerable, enumerator, T }
                 };
                 switch (name)
                 {
                     case "T[]":
                     case "NativeArray<T>":
-                        GenerateSpecial(method, baseEnumerable, enumerable, TPredicate);
+                        GenerateSpecial(method, baseEnumerable, enumerable);
                         break;
                     default: throw new NotSupportedException(name);
                 }
@@ -78,36 +69,16 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 var (enumerable, enumerator, _) = T.MakeFromCommonType(method, type, "0");
                 method.ReturnType = new GenericInstanceType(returnTypeDefinition)
                 {
-                    GenericArguments = { enumerable, enumerator, T, TPredicate }
+                    GenericArguments = { enumerable, enumerator, T }
                 };
-                GenerateNormal(method, enumerable, TPredicate);
+                GenerateNormal(method, enumerable, T);
             }
         }
 
-        private static void GenerateNormal(MethodDefinition method, TypeReference enumerable, GenericParameter predicate)
-        {
-            method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(enumerable))
-            {
-                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference() }
-            });
-            method.Parameters.Add(new ParameterDefinition("predicate", ParameterAttributes.In, new ByReferenceType(predicate))
-            {
-                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference() }
-            });
-
-            method.Body.GetILProcessor()
-                .LdArgs(0, 2)
-                .NewObj(method.ReturnType.FindMethod(".ctor", 2))
-                .Ret();
-        }
-
-        private static void GenerateSpecial(MethodDefinition method, TypeReference baseEnumerable, GenericInstanceType enumerable, GenericParameter predicate)
+        private static void GenerateSpecial(MethodDefinition method, TypeReference baseEnumerable, GenericInstanceType enumerable)
         {
             method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.None, baseEnumerable));
-            method.Parameters.Add(new ParameterDefinition("predicate", ParameterAttributes.In, new ByReferenceType(predicate))
-            {
-                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference() }
-            });
+            DefineAllocatorParam(method);
 
             var body = method.Body;
             body.InitLocals = true;
@@ -122,6 +93,28 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .LdArg(1)
                 .NewObj(method.ReturnType.FindMethod(".ctor", 2))
                 .Ret();
+        }
+
+        private static void GenerateNormal(MethodDefinition method, TypeReference enumerable, GenericParameter T)
+        {
+            method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(enumerable))
+            {
+                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference() }
+            });
+            DefineAllocatorParam(method);
+
+            method.Body.GetILProcessor()
+                .LdArgs(0, 2)
+                .NewObj(method.ReturnType.FindMethod(".ctor", 2))
+                .Ret();
+        }
+
+        private static void DefineAllocatorParam(MethodDefinition method)
+        {
+            method.Parameters.Add(new ParameterDefinition("allocator", ParameterAttributes.HasDefault | ParameterAttributes.Optional, Helper.Allocator)
+            {
+                Constant = 2,
+            });
         }
     }
 }

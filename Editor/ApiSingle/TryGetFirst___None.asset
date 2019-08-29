@@ -9,11 +9,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6fbcd04e384274e42b36563ebcd4c4c1, type: 3}
-  m_Name: Select___RefFunc
+  m_Script: {fileID: 11500000, guid: b98f8d701fd45434cb889bded0829d8d, type: 3}
+  m_Name: TryGetFirst___None
   m_EditorClassIdentifier: 
-  Name: Select
-  Description: RefFunc
+  Name: TryGetFirst
+  Description: None
   EnabledArray:
   - Enumerable: NativeArray<T>
     Enabled: 1
@@ -99,6 +99,5 @@ MonoBehaviour:
     Enabled: 1
   - Enumerable: WhereIndex
     Enabled: 1
-  <RelatedEnumerableArray>k__BackingField:
-  - Select
   <IsHided>k__BackingField: 0
+  <ExcludeEnumerableArray>k__BackingField: []

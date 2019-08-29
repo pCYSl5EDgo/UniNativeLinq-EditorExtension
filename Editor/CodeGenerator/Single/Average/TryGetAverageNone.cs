@@ -6,7 +6,7 @@ using Mono.Cecil.Cil;
 // ReSharper disable InconsistentNaming
 
 
-namespace UniNativeLinq.Editor.CodeGenerator.Average
+namespace UniNativeLinq.Editor.CodeGenerator
 {
     public sealed class TryGetAverageNone : ITypeDictionaryHolder, IApiExtensionMethodGenerator
     {
