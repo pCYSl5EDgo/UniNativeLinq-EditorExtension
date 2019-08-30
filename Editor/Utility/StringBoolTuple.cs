@@ -2,7 +2,6 @@
 
 namespace UniNativeLinq.Editor
 {
-    [CreateAssetMenu(menuName = "Linq/StringBoolTuple")]
     public sealed class StringBoolTuple : ScriptableObject
     {
         public string Enumerable;

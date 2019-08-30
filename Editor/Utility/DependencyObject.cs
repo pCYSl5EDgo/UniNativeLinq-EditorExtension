@@ -2,7 +2,6 @@
 
 namespace UniNativeLinq.Editor
 {
-    [CreateAssetMenu(menuName = "Dependency")]
     public class DependencyObject : ScriptableObject, IDependency
     {
         [field: SerializeField] public string Enumerable { get; private set; }

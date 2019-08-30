@@ -92,6 +92,17 @@ namespace UniNativeLinq.Editor
         {
             switch (api.Name)
             {
+                case "RangeRepeat":
+                    switch (api.Description)
+                    {
+                        case "Repeat":
+                            list.Add(new Repeat(api));
+                            break;
+                        case "Range":
+                            list.Add(new Range(api));
+                            break;
+                    }
+                    break;
                 case "ForEach":
                     switch (api.Description)
                     {
@@ -245,13 +256,13 @@ namespace UniNativeLinq.Editor
                         switch (api.Description)
                         {
                             case "Operator":
-                                list.Add(new MinMaxByOperator(api, isMax, keyName));
+                                list.Add(new MinMaxByOperator(api));
                                 break;
                             case "Func":
-                                list.Add(new MinMaxByFunc(api, isMax, keyName));
+                                list.Add(new MinMaxByFunc(api));
                                 break;
                             case "RefFunc":
-                                list.Add(new MinMaxByRefFunc(api, isMax, keyName));
+                                list.Add(new MinMaxByRefFunc(api));
                                 break;
                         }
                     }

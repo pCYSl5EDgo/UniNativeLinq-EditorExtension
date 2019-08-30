@@ -9,11 +9,11 @@ namespace UniNativeLinq.Editor.CodeGenerator
 {
     public sealed class MinMaxByOperator : ITypeDictionaryHolder, IApiExtensionMethodGenerator
     {
-        public MinMaxByOperator(ISingleApi api, bool isMax, string keyName)
+        public MinMaxByOperator(ISingleApi api)
         {
             Api = api;
-            this.isMax = isMax;
-            this.keyName = keyName;
+            isMax = api.Name[1] == 'a';
+            keyName = api.Name.Substring(5);
         }
 
         private readonly bool isMax;
