@@ -333,22 +333,31 @@ namespace UniNativeLinq.Editor
                 case "Aggregate":
                     switch (api.Description)
                     {
-                        case "TResult Aggregate<TAccumulate, TResult, TFunc, TResultFunc>(ref TAccumulate seed, in TFunc func, in TResultFunc resultFunc)":
+                        case "void Aggregate(ref TAccumulate seed, RefAction<T, TAccumulate> func)":
+                            list.Add(new AggregateRefValue1Ref(api));
+                            break;
+                        case "TAccumulate Aggregate(TAccumulate seed, RefAction<T, TAccumulate> func)":
+                            list.Add(new AggregateValue1Ref(api));
+                            break;
+                        case "TResult Aggregate(TAccumulate seed, RefAction<TAccumulate, T, TAccumulate> func, RefFunc<TAccumulate, TResult> resultFunc)":
+                            list.Add(new AggregateValue2Refs(api));
+                            break;
+                        case "TResult Aggregate(ref TAccumulate seed, in TFunc func, in TResultFunc resultFunc)":
                             list.Add(new AggregateRefValue2Operators(api));
                             break;
-                        case "TResult Aggregate<TAccumulate, TResult>(ref TAccumulate seed, RefAction<T, TAccumulate> func, RefFunc<TAccumulate, TResult> resultFunc)":
+                        case "TResult Aggregate(ref TAccumulate seed, RefAction<T, TAccumulate> func, RefFunc<TAccumulate, TResult> resultFunc)":
                             list.Add(new AggregateRefValue2Refs(api));
                             break;
-                        case "TResult Aggregate<TAccumulate, TResult>(TAccumulate seed, Func<TAccumulate, T, TAccumulate> func, Func<TAccumulate, TResult> resultFunc)":
+                        case "TResult Aggregate(TAccumulate seed, Func<TAccumulate, T, TAccumulate> func, Func<TAccumulate, TResult> resultFunc)":
                             list.Add(new AggregateValue2Functions(api));
                             break;
-                        case "void Aggregate<TAccumulate, TResult, TFunc>(ref TAccumulate seed, in TFunc func)":
+                        case "void Aggregate(ref TAccumulate seed, in TFunc func)":
                             list.Add(new AggregateRefValue1Operator(api));
                             break;
-                        case "TAccumulate Aggregate<TAccumulate, TResult, TFunc>(TAccumulate seed, in TFunc func)":
+                        case "TAccumulate Aggregate(TAccumulate seed, in TFunc func)":
                             list.Add(new AggregateValue1Operator(api));
                             break;
-                        case "TAccumulate Aggregate<TAccumulate, TResult, TFunc>(TAccumulate seed, RefAction<T, TAction> func)":
+                        case "TAccumulate Aggregate(TAccumulate seed, Func<TAccumulate, T, TAccumulate> func)":
                             list.Add(new AggregateValue1Function(api));
                             break;
                     }

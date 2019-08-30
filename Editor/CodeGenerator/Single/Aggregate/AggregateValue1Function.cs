@@ -8,7 +8,7 @@ using Mono.Cecil.Cil;
 namespace UniNativeLinq.Editor.CodeGenerator
 {
     /*
-        TAccumulate Aggregate<TAccumulate, TResult, TFunc>(TAccumulate seed, RefAction<T, TAction> func)
+        TAccumulate Aggregate(TAccumulate seed, Func<TAccumulate, T, TAccumulate> func)
     */
     public sealed class AggregateValue1Function : ITypeDictionaryHolder, IApiExtensionMethodGenerator
     {
@@ -53,9 +53,9 @@ namespace UniNativeLinq.Editor.CodeGenerator
             genericParameters.Add(TAccumulate);
             method.ReturnType = TAccumulate;
 
-            var Func = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "RefAction`2"))
+            var Func = new GenericInstanceType(mainModule.ImportReference(systemModule.GetType("System", "Func`3")))
             {
-                GenericArguments = { T, TAccumulate }
+                GenericArguments = { TAccumulate, T, TAccumulate }
             };
 
             if (isSpecial)
@@ -67,7 +67,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                         GenerateArray(method, baseEnumerable, T, TAccumulate, Func);
                         break;
                     case "NativeArray<T>":
-                        GenerateNativeArray(method, baseEnumerable, enumerable, enumerator, T, TAccumulate, Func);
+                        GenerateNativeArray(method, baseEnumerable, TAccumulate, Func);
                         break;
                     default: throw new NotSupportedException(name);
                 }
@@ -85,119 +85,125 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
         private static void GenerateArray(MethodDefinition method, TypeReference baseEnumerable, TypeReference T, TypeReference TAccumulate, TypeReference TFunc)
         {
-            method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.None, baseEnumerable));
-            var paramAccumulate = new ParameterDefinition("accumulate", ParameterAttributes.None, TAccumulate);
-            method.Parameters.Add(paramAccumulate);
-            method.Parameters.Add(new ParameterDefinition("func", ParameterAttributes.None, TFunc));
+            var parameters = method.Parameters;
+            parameters.Add(new ParameterDefinition("@this", ParameterAttributes.None, baseEnumerable));
+            parameters.Add(new ParameterDefinition("accumulate", ParameterAttributes.None, TAccumulate));
+            parameters.Add(new ParameterDefinition("func", ParameterAttributes.None, TFunc));
 
-            var loopStart = Instruction.Create(OpCodes.Ldarg_2);
-            var condition = Instruction.Create(OpCodes.Ldloc_0);
+            var loopStart = Instruction.Create(OpCodes.Ldarg_0);
+
+            var body = method.Body;
+            body.InitLocals = true;
+            body.Variables.Add(new VariableDefinition(method.Module.TypeSystem.IntPtr));
+
+            var end = Instruction.Create(OpCodes.Ldarg_1);
+
+            body.GetILProcessor()
+
+                .Add(loopStart)
+                .LdLen()
+                .LdLoc(0)
+
+                .BeqS(end)
+
+                .LdArg(2)
+                .LdArg(1)
+                .LdArg(0)
+                .LdLoc(0)
+                .Dup()
+                .LdC(1)
+                .Add()
+                .StLoc(0)
+                .LdElem(T)
+                .CallVirtual(TFunc.FindMethod("Invoke"))
+                .StArgS(parameters[1])
+                .BrS(loopStart)
+
+                .Add(end)
+                .Ret();
+        }
+
+        private static void GenerateNativeArray(MethodDefinition method, TypeReference baseEnumerable, TypeReference TAccumulate, TypeReference TFunc)
+        {
+            var parameters = method.Parameters;
+            parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(baseEnumerable))
+            {
+                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
+            });
+            parameters.Add(new ParameterDefinition("accumulate", ParameterAttributes.None, TAccumulate));
+            parameters.Add(new ParameterDefinition("func", ParameterAttributes.None, TFunc));
+
+            var loopStart = Instruction.Create(OpCodes.Ldarg_0);
 
             var body = method.Body;
             body.InitLocals = true;
             body.Variables.Add(new VariableDefinition(method.Module.TypeSystem.Int32));
-            body.Variables.Add(new VariableDefinition(method.Module.TypeSystem.Boolean));
+
+            var end = Instruction.Create(OpCodes.Ldarg_1);
 
             body.GetILProcessor()
-                .BrS(condition)
+
                 .Add(loopStart)
+                .Call(baseEnumerable.FindMethod("get_Length"))
+                .LdLoc(0)
+
+                .BeqS(end)
+
+                .LdArg(2)
+                .LdArg(1)
                 .LdArg(0)
                 .LdLoc(0)
-                .LdElemA(T)
-                .LdArgAs(paramAccumulate)
-                .CallVirtual(TFunc.FindMethod("Invoke"))
-
-                .LdLoc(0)
+                .Dup()
                 .LdC(1)
                 .Add()
                 .StLoc(0)
-
-                .Add(condition)
-                .LdArg(0)
-                .LdLen()
-                .ConvI4()
-                .BltS(loopStart)
-                .LdArg(1)
-                .Ret();
-        }
-
-        private static void GenerateNativeArray(MethodDefinition method, TypeReference baseEnumerable, TypeReference enumerable, TypeReference enumerator, TypeReference T, TypeReference TAccumulate, TypeReference TFunc)
-        {
-            method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.None, baseEnumerable));
-            var paramAccumulate = new ParameterDefinition("accumulate", ParameterAttributes.None, TAccumulate);
-            method.Parameters.Add(paramAccumulate);
-            method.Parameters.Add(new ParameterDefinition("func", ParameterAttributes.None, TFunc));
-
-            var body = method.Body;
-
-            var enumeratorVariable = new VariableDefinition(enumerator);
-            body.Variables.Add(enumeratorVariable);
-            body.Variables.Add(new VariableDefinition(method.Module.TypeSystem.Boolean));
-            body.Variables.Add(new VariableDefinition(new ByReferenceType(T)));
-            body.Variables.Add(new VariableDefinition(enumerable));
-
-            var loopStart = Instruction.Create(OpCodes.Ldarg_2);
-            var condition = Instruction.Create(OpCodes.Ldloca_S, enumeratorVariable);
-
-            body.GetILProcessor()
-                .LdLocA(3)
-                .Dup()
-                .LdArg(0)
-                .Call(enumerable.FindMethod(".ctor", 1))
-                .Call(enumerable.FindMethod("GetEnumerator", 0))
-                .StLoc(0)
-                .BrS(condition)
-                .Add(loopStart)
-                .LdLoc(2)
-                .LdArgAs(paramAccumulate)
+                .Call(baseEnumerable.FindMethod("get_Item"))
                 .CallVirtual(TFunc.FindMethod("Invoke"))
-                .Add(condition)
-                .LdLocA(1)
-                .Call(enumerator.FindMethod("TryGetNext"))
-                .StLoc(2)
-                .LdLoc(1)
-                .BrTrueS(loopStart)
-                .LdArg(1)
+                .StArgS(parameters[1])
+                .BrS(loopStart)
+
+                .Add(end)
                 .Ret();
         }
 
         private static void GenerateNormal(MethodDefinition method, TypeDefinition type, TypeReference T, TypeReference TAccumulate, TypeReference TFunc)
         {
             var (enumerable, enumerator, _) = T.MakeFromCommonType(method, type, "0");
-            method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(enumerable))
+            var parameters = method.Parameters;
+            parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(enumerable))
             {
                 CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
             });
-            var paramAccumulate = new ParameterDefinition("accumulate", ParameterAttributes.None, TAccumulate);
-            method.Parameters.Add(paramAccumulate);
-            method.Parameters.Add(new ParameterDefinition("func", ParameterAttributes.None, TFunc));
+            parameters.Add(new ParameterDefinition("accumulate", ParameterAttributes.None, TAccumulate));
+            parameters.Add(new ParameterDefinition("func", ParameterAttributes.None, TFunc));
 
             var body = method.Body;
 
-            var enumeratorVariable = new VariableDefinition(enumerator);
-            body.Variables.Add(enumeratorVariable);
-            body.Variables.Add(new VariableDefinition(method.Module.TypeSystem.Boolean));
-            body.Variables.Add(new VariableDefinition(new ByReferenceType(T)));
+            var variables = body.Variables;
+            variables.Add(new VariableDefinition(enumerator));
+            variables.Add(new VariableDefinition(T));
 
-            var loopStart = Instruction.Create(OpCodes.Ldarg_2);
-            var condition = Instruction.Create(OpCodes.Ldloca_S, enumeratorVariable);
+            var end = Instruction.Create(OpCodes.Ldloca_S, variables[0]);
+            var loopStart = Instruction.Create(OpCodes.Ldloca_S, variables[0]);
 
             body.GetILProcessor()
                 .LdArg(0)
                 .Call(enumerable.FindMethod("GetEnumerator", 0))
                 .StLoc(0)
-                .BrS(condition)
+
                 .Add(loopStart)
-                .LdLoc(2)
-                .LdArgAs(paramAccumulate)
-                .CallVirtual(TFunc.FindMethod("Invoke"))
-                .Add(condition)
                 .LdLocA(1)
-                .Call(enumerator.FindMethod("TryGetNext"))
-                .StLoc(2)
+                .Call(enumerator.FindMethod("TryMoveNext"))
+                .BrFalseS(end)
+
+                .LdArg(2)
+                .LdArg(1)
                 .LdLoc(1)
-                .BrTrueS(loopStart)
-                .LdLocA(0)
+                .CallVirtual(TFunc.FindMethod("Invoke"))
+                .StArgS(parameters[1])
+                .BrS(loopStart)
+
+                .Add(end)
                 .Call(enumerator.FindMethod("Dispose", 0))
                 .LdArg(1)
                 .Ret();

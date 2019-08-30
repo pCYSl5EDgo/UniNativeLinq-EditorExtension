@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: SelectIndex
   m_EditorClassIdentifier: 
   Enumerable: SelectIndex
-  Enabled: 0
+  Enabled: 1
   IsSpecial: 0
   GenericParameterCount: 5
   RelatedEnumerableArray: []
