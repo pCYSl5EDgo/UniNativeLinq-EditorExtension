@@ -107,7 +107,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.None, baseEnumerable0));
                 method.Parameters.Add(new ParameterDefinition("second", ParameterAttributes.In, new ByReferenceType(enumerable1))
                 {
-                    CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference() }
+                    CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
                 });
                 DefineAllocator(method);
                 body.Variables.Add(new VariableDefinition(concatEnumerable));
@@ -130,7 +130,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 var (concatEnumerable, _, @return) = Epilogue(mainModule, method, enumerable0, enumerator0, enumerable1, enumerator1, T, DefaultEqualityComparer);
                 method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(enumerable0))
                 {
-                    CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference() }
+                    CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
                 });
                 method.Parameters.Add(new ParameterDefinition("second", ParameterAttributes.None, baseEnumerable1));
                 DefineAllocator(method);
@@ -162,11 +162,11 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
             method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(enumerable0))
             {
-                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference() }
+                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
             });
             method.Parameters.Add(new ParameterDefinition("second", ParameterAttributes.In, new ByReferenceType(enumerable1))
             {
-                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference() }
+                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
             });
             DefineAllocator(method);
 

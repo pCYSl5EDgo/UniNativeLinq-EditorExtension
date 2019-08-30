@@ -92,11 +92,11 @@ namespace UniNativeLinq.Editor.CodeGenerator
         {
             method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(enumerable))
             {
-                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference() }
+                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
             });
             method.Parameters.Add(new ParameterDefinition("selector", ParameterAttributes.In, new ByReferenceType(selector))
             {
-                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference() }
+                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
             });
 
             method.Body.GetILProcessor()
@@ -110,7 +110,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.None, baseEnumerable));
             method.Parameters.Add(new ParameterDefinition("selector", ParameterAttributes.In, new ByReferenceType(selector))
             {
-                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference() }
+                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
             });
 
             var body = method.Body;

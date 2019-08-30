@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 // ReSharper disable InconsistentNaming
@@ -10,10 +9,10 @@ namespace UniNativeLinq.Editor.CodeGenerator
 {
     public sealed class TryGetAverageNone : ITypeDictionaryHolder, IApiExtensionMethodGenerator
     {
-        public TryGetAverageNone(ISingleApi api, string returnTypeName)
+        public TryGetAverageNone(ISingleApi api)
         {
             Api = api;
-            this.returnTypeName = returnTypeName;
+            returnTypeName = api.Description;
         }
 
         public readonly ISingleApi Api;
@@ -21,46 +20,32 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
         public Dictionary<string, TypeDefinition> Dictionary { private get; set; }
 
-        public void Generate(IEnumerableCollectionProcessor processor, ModuleDefinition mainModule, ModuleDefinition systemModule, ModuleDefinition unityModule)
+        private TypeReference CalcReturnTypeReference(MethodDefinition method)
         {
-            TypeReference returnType;
             switch (returnTypeName)
             {
                 case "Double":
-                    returnType = mainModule.TypeSystem.Double;
-                    break;
+                    return method.Module.TypeSystem.Double;
                 case "Single":
-                    returnType = mainModule.TypeSystem.Single;
-                    break;
+                    return method.Module.TypeSystem.Single;
                 case "Int32":
-                    returnType = mainModule.TypeSystem.Int32;
-                    break;
+                    return method.Module.TypeSystem.Int32;
                 case "UInt32":
-                    returnType = mainModule.TypeSystem.UInt32;
-                    break;
+                    return method.Module.TypeSystem.UInt32;
                 case "Int64":
-                    returnType = mainModule.TypeSystem.Int64;
-                    break;
+                    return method.Module.TypeSystem.Int64;
                 case "UInt64":
-                    returnType = mainModule.TypeSystem.UInt64;
-                    break;
-                default: return;
-            }
-            var array = processor.EnabledNameCollection.Intersect(Api.NameCollection).ToArray();
-            if (!Api.ShouldDefine(array)) return;
-            TypeDefinition @static;
-            mainModule.Types.Add(@static = mainModule.DefineStatic(nameof(TryGetAverageNone) + returnTypeName + "Helper"));
-
-
-            foreach (var name in array)
-            {
-                if (!processor.IsSpecialType(name, out var isSpecial)) throw new KeyNotFoundException();
-                if (!Api.TryGetEnabled(name, out var apiEnabled) || !apiEnabled) continue;
-                GenerateEach(name, isSpecial, @static, mainModule, systemModule, returnType);
+                    return method.Module.TypeSystem.UInt64;
+                default: throw new Exception();
             }
         }
 
-        private void GenerateEach(string name, bool isSpecial, TypeDefinition @static, ModuleDefinition mainModule, ModuleDefinition systemModule, TypeReference returnType)
+        public void Generate(IEnumerableCollectionProcessor processor, ModuleDefinition mainModule, ModuleDefinition systemModule, ModuleDefinition unityModule)
+        {
+            Api.GenerateSingleNoEnumerable(processor, mainModule, systemModule, unityModule, GenerateEach);
+        }
+
+        private void GenerateEach(string name, bool isSpecial, TypeDefinition @static, ModuleDefinition mainModule, ModuleDefinition systemModule)
         {
             var method = new MethodDefinition("TryGetAverage", Helper.StaticMethodAttributes, mainModule.TypeSystem.Boolean)
             {
@@ -69,10 +54,11 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 CustomAttributes = { Helper.ExtensionAttribute }
             };
             @static.Methods.Add(method);
+            var returnType = CalcReturnTypeReference(method);
 
             if (isSpecial)
             {
-                var (baseEnumerable, specialEnumerable, specialEnumerator) = returnType.MakeSpecialTypePair(name);
+                var (baseEnumerable, _, _) = returnType.MakeSpecialTypePair(name);
                 switch (name)
                 {
                     case "T[]":
@@ -96,7 +82,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
             method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(enumerable))
             {
-                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference() }
+                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
             });
             method.Parameters.Add(new ParameterDefinition("value", ParameterAttributes.Out, new ByReferenceType(returnType)));
 
@@ -208,7 +194,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
         {
             method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(baseEnumerable))
             {
-                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference() }
+                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
             });
             method.Parameters.Add(new ParameterDefinition("value", ParameterAttributes.Out, new ByReferenceType(returnType)));
 

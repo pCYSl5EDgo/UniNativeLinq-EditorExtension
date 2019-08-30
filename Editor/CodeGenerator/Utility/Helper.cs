@@ -50,9 +50,9 @@ namespace UniNativeLinq.Editor.CodeGenerator
             };
         }
 
-        public static CustomAttribute GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference()
+        public static CustomAttribute GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference()
         {
-            return MainModule.GetType("UniNativeLinq", "NegatePredicate`2").Methods[0].Parameters[0].CustomAttributes[0];
+            return IsReadOnlyAttribute;
         }
 
         public static bool? CanIndexAccess(this TypeDefinition type)
@@ -151,10 +151,8 @@ namespace UniNativeLinq.Editor.CodeGenerator
             {
                 AssemblyResolver = defaultAssemblyResolver,
             }).MainModule;
-            var nativeEnumerable = MainModule.GetType("UniNativeLinq.NativeEnumerable");
-            ExtensionAttribute = nativeEnumerable.CustomAttributes.Single();
-            var negateMethodDefinition = MainModule.GetType("UniNativeLinq.NegatePredicate`2").GetConstructors().First();
-            IsReadOnlyAttribute = negateMethodDefinition.Parameters.First().CustomAttributes.First();
+            ExtensionAttribute = new CustomAttribute(MainModule.ImportReference(SystemModule.GetType("System.Runtime.CompilerServices", "ExtensionAttribute")).FindMethod(".ctor"));
+            IsReadOnlyAttribute = MainModule.GetType("UniNativeLinq", "AppendEnumerable`3").Methods.First(x => x.Name == "GetEnumerator" && !x.HasParameters).CustomAttributes[0];
             var nativeEnumerable1 = MainModule.GetType("UniNativeLinq", "NativeEnumerable`1");
             var t = nativeEnumerable1.GenericParameters.First();
             UnManagedAttribute = t.CustomAttributes[0];
@@ -205,8 +203,15 @@ namespace UniNativeLinq.Editor.CodeGenerator
         {
             var typeDefinition = type.ToDefinition();
             var methodDefinition = typeDefinition.Methods.Single(x => x.Name == name);
-            var imported = type.Module.ImportReference(methodDefinition);
-            return type is GenericInstanceType genericInstanceType ? imported.MakeHostInstanceGeneric(genericInstanceType.GenericArguments) : imported;
+            if (methodDefinition.Module == type.Module)
+            {
+                return type is GenericInstanceType genericInstanceType ? methodDefinition.MakeHostInstanceGeneric(genericInstanceType.GenericArguments) : methodDefinition;
+            }
+            else
+            {
+                var imported = type.Module.ImportReference(methodDefinition);
+                return type is GenericInstanceType genericInstanceType ? imported.MakeHostInstanceGeneric(genericInstanceType.GenericArguments) : imported;
+            }
         }
 
         public static MethodReference FindMethod(this TypeReference type, string name, int parameterCount)
@@ -238,14 +243,6 @@ namespace UniNativeLinq.Editor.CodeGenerator
             var methodDefinition = methodDefinitions.Single(x => x.Name == name && predicate(x));
             var imported = type.Module.ImportReference(methodDefinition);
             return type is GenericInstanceType genericInstanceType ? imported.MakeHostInstanceGeneric(genericInstanceType.GenericArguments) : imported;
-        }
-
-        public static GenericInstanceType FindNested(this GenericInstanceType type, string name)
-        {
-            var nestedType = new GenericInstanceType(((TypeDefinition)type.ElementType).NestedTypes.First(x => x.Name.EndsWith(name)));
-            foreach (var argument in type.GenericArguments)
-                nestedType.GenericArguments.Add(argument);
-            return nestedType;
         }
 
         public static List<GenericParameter> FromTypeToMethodParam(this MethodDefinition method, Collection<GenericParameter> typeGenericParameters, string suffix = "")

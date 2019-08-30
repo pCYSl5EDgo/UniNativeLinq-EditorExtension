@@ -108,7 +108,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 var param0 = new ParameterDefinition("@this", ParameterAttributes.None, baseEnumerable);
                 method.Parameters.Add(param0);
                 var param1 = new ParameterDefinition("second", ParameterAttributes.In, new ByReferenceType(enumerable1));
-                param1.CustomAttributes.Add(Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference());
+                param1.CustomAttributes.Add(Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference());
                 method.Parameters.Add(param1);
                 DefineComparer(method, systemModule, T);
                 DefineAllocator(method);
@@ -131,7 +131,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 var (TSetOperation, @return) = Epilogue(mainModule, method, enumerable0, enumerator0, enumerable1, enumerator1, T, TComparer);
 
                 var param0 = new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(enumerable0));
-                param0.CustomAttributes.Add(Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference());
+                param0.CustomAttributes.Add(Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference());
                 method.Parameters.Add(param0);
                 var param1 = new ParameterDefinition("second", ParameterAttributes.None, baseEnumerable);
                 method.Parameters.Add(param1);
@@ -176,7 +176,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             var (enumerable1, enumerator1, _) = T.MakeFromCommonType(method, type1, "1");
             var TComparer = DefineTComparer(mainModule, T);
             var (TSetOperation, @return) = Epilogue(mainModule, method, enumerable0, enumerator0, enumerable1, enumerator1, T, TComparer);
-            var systemRuntimeCompilerServicesReadonlyAttributeTypeReference = Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference();
+            var systemRuntimeCompilerServicesReadonlyAttributeTypeReference = Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference();
             var param0 = new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(enumerable0));
             param0.CustomAttributes.Add(systemRuntimeCompilerServicesReadonlyAttributeTypeReference);
             method.Parameters.Add(param0);

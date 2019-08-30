@@ -9,11 +9,11 @@ namespace UniNativeLinq.Editor.CodeGenerator
 {
     public sealed class TryGetMinMaxOperator : ITypeDictionaryHolder, IApiExtensionMethodGenerator
     {
-        public TryGetMinMaxOperator(ISingleApi api, string processType, bool isMax)
+        public TryGetMinMaxOperator(ISingleApi api)
         {
             Api = api;
-            this.isMax = isMax;
-            this.processType = processType;
+            isMax = Api.Name == "TryGetMax";
+            processType = Api.Description.Split(new[] { " --- " }, StringSplitOptions.RemoveEmptyEntries)[1];
         }
 
         private readonly string processType;
@@ -164,12 +164,12 @@ namespace UniNativeLinq.Editor.CodeGenerator
         {
             method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(baseEnumerable))
             {
-                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference() }
+                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
             });
             method.Parameters.Add(new ParameterDefinition("value", ParameterAttributes.Out, new ByReferenceType(returnTypeReference)));
             method.Parameters.Add(new ParameterDefinition("operator", ParameterAttributes.In, new ByReferenceType(TOperator))
             {
-                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference() }
+                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
             });
 
             var body = method.Body;
@@ -240,7 +240,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             method.Parameters.Add(new ParameterDefinition("value", ParameterAttributes.Out, new ByReferenceType(returnTypeReference)));
             method.Parameters.Add(new ParameterDefinition("operator", ParameterAttributes.In, new ByReferenceType(TOperator))
             {
-                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference() }
+                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
             });
 
             var body = method.Body;
@@ -308,7 +308,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             method.Parameters.Add(new ParameterDefinition("value", ParameterAttributes.Out, new ByReferenceType(returnTypeReference)));
             method.Parameters.Add(new ParameterDefinition("operator", ParameterAttributes.In, new ByReferenceType(TOperator))
             {
-                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference() }
+                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
             });
 
             var body = method.Body;

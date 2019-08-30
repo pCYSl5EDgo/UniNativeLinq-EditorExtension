@@ -328,7 +328,7 @@ namespace UniNativeLinq.Editor
                     }
                     break;
                 case "TryGetAverage":
-                    list.Add(new TryGetAverageNone(api, api.Description));
+                    list.Add(new TryGetAverageNone(api));
                     break;
                 case "Aggregate":
                     switch (api.Description)
@@ -365,16 +365,16 @@ namespace UniNativeLinq.Editor
                         switch (result[0])
                         {
                             case "Func":
-                                list.Add(new TryGetMinMaxFunc(api, result[1], api.Name == "TryGetMax"));
+                                list.Add(new TryGetMinMaxFunc(api));
                                 break;
                             case "RefFunc":
-                                list.Add(new TryGetMinMaxRefFunc(api, result[1], api.Name == "TryGetMax"));
+                                list.Add(new TryGetMinMaxRefFunc(api));
                                 break;
                             case "Operator":
-                                list.Add(new TryGetMinMaxOperator(api, result[1], api.Name == "TryGetMax"));
+                                list.Add(new TryGetMinMaxOperator(api));
                                 break;
                             case "None":
-                                list.Add(new TryGetMinMaxNone(api, result[1], api.Name == "TryGetMax"));
+                                list.Add(new TryGetMinMaxNone(api));
                                 break;
                         }
                     }

@@ -118,11 +118,11 @@ namespace UniNativeLinq.Editor.CodeGenerator
         {
             method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(enumerable))
             {
-                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference() }
+                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
             });
             method.Parameters.Add(new ParameterDefinition("keySelector", ParameterAttributes.In, new ByReferenceType(keySelector))
             {
-                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference() }
+                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
             });
             var allocator = new ParameterDefinition("allocator", ParameterAttributes.HasDefault | ParameterAttributes.Optional, Helper.Allocator)
             {
@@ -141,7 +141,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.None, baseEnumerable));
             method.Parameters.Add(new ParameterDefinition("keySelector", ParameterAttributes.In, new ByReferenceType(keySelector))
             {
-                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference() }
+                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
             });
             var allocator = new ParameterDefinition("allocator", ParameterAttributes.HasDefault | ParameterAttributes.Optional, Helper.Allocator)
             {

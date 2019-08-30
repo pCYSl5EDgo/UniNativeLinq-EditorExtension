@@ -92,7 +92,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             method.Parameters.Add(new ParameterDefinition("accumulate", ParameterAttributes.None, new ByReferenceType(TAccumulate)));
             method.Parameters.Add(new ParameterDefinition("func", ParameterAttributes.In, new ByReferenceType(TFunc))
             {
-                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference() }
+                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
             });
 
             var loopStart = Instruction.Create(OpCodes.Ldarg_2);
@@ -132,7 +132,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             method.Parameters.Add(new ParameterDefinition("accumulate", ParameterAttributes.None, new ByReferenceType(TAccumulate)));
             method.Parameters.Add(new ParameterDefinition("func", ParameterAttributes.In, new ByReferenceType(TFunc))
             {
-                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference() }
+                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
             });
 
             var body = method.Body;
@@ -173,12 +173,12 @@ namespace UniNativeLinq.Editor.CodeGenerator
             var (enumerable, enumerator, _) = T.MakeFromCommonType(method, type, "0");
             method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(enumerable))
             {
-                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference() }
+                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
             });
             method.Parameters.Add(new ParameterDefinition("accumulate", ParameterAttributes.None, new ByReferenceType(TAccumulate)));
             method.Parameters.Add(new ParameterDefinition("func", ParameterAttributes.In, new ByReferenceType(TFunc))
             {
-                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference() }
+                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
             });
 
 

@@ -101,7 +101,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.None, specialType));
                 method.Parameters.Add(new ParameterDefinition("second", ParameterAttributes.In, new ByReferenceType(enumerable1))
                 {
-                    CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference() }
+                    CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
                 });
 
                 body.Variables.Add(new VariableDefinition(enumerable0));
@@ -121,7 +121,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
                 method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(enumerable0))
                 {
-                    CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference() }
+                    CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
                 });
                 method.Parameters.Add(new ParameterDefinition("second", ParameterAttributes.None, specialType));
 
@@ -152,7 +152,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
             var @return = DefineReturn(mainModule, method, enumerable0, enumerator0, enumerable1, enumerator1, T);
 
-            var systemRuntimeCompilerServicesReadonlyAttributeTypeReference = Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference();
+            var systemRuntimeCompilerServicesReadonlyAttributeTypeReference = Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference();
 
             method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(enumerable0))
             {

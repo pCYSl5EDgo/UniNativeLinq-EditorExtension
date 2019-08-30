@@ -75,7 +75,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             var param1 = new ParameterDefinition("second", ParameterAttributes.None, baseTypeReference1);
             method.Parameters.Add(param1);
             var param2 = new ParameterDefinition("action", ParameterAttributes.In, new ByReferenceType(TAction));
-            param2.CustomAttributes.Add(Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference());
+            param2.CustomAttributes.Add(Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference());
             method.Parameters.Add(param2);
 
             method.Body.GetILProcessor()
@@ -115,11 +115,11 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 method.Parameters.Add(param0);
 
                 var param1 = new ParameterDefinition("second", ParameterAttributes.In, new ByReferenceType(enumerable1));
-                param1.CustomAttributes.Add(Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference());
+                param1.CustomAttributes.Add(Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference());
                 method.Parameters.Add(param1);
 
                 var param2 = new ParameterDefinition("action", ParameterAttributes.In, new ByReferenceType(TAction));
-                param2.CustomAttributes.Add(Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference());
+                param2.CustomAttributes.Add(Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference());
                 method.Parameters.Add(param2);
 
                 method.Body.GetILProcessor()
@@ -132,14 +132,14 @@ namespace UniNativeLinq.Editor.CodeGenerator
             else
             {
                 var param0 = new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(enumerable0));
-                param0.CustomAttributes.Add(Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference());
+                param0.CustomAttributes.Add(Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference());
                 method.Parameters.Add(param0);
 
                 var param1 = new ParameterDefinition("second", ParameterAttributes.None, baseTypeReference);
                 method.Parameters.Add(param1);
 
                 var param2 = new ParameterDefinition("action", ParameterAttributes.In, new ByReferenceType(TAction));
-                param2.CustomAttributes.Add(Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference());
+                param2.CustomAttributes.Add(Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference());
                 method.Parameters.Add(param2);
 
                 method.Body.GetILProcessor()
@@ -168,7 +168,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
             var @return = DefineReturn(mainModule, method, enumerable0, enumerator0, element0, enumerable1, enumerator1, element1, T, TAction);
 
-            var systemRuntimeCompilerServicesReadonlyAttributeTypeReference = Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference();
+            var systemRuntimeCompilerServicesReadonlyAttributeTypeReference = Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference();
 
             var param0 = new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(enumerable0));
             param0.CustomAttributes.Add(systemRuntimeCompilerServicesReadonlyAttributeTypeReference);
@@ -179,7 +179,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             method.Parameters.Add(param1);
 
             var param2 = new ParameterDefinition("action", ParameterAttributes.In, new ByReferenceType(TAction));
-            param2.CustomAttributes.Add(Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference());
+            param2.CustomAttributes.Add(Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference());
             method.Parameters.Add(param2);
 
             method.Body.GetILProcessor()

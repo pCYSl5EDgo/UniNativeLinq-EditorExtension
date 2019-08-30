@@ -108,7 +108,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 var param0 = new ParameterDefinition("@this", ParameterAttributes.None, baseEnumerable);
                 method.Parameters.Add(param0);
                 var param1 = new ParameterDefinition("second", ParameterAttributes.In, new ByReferenceType(enumerable1));
-                param1.CustomAttributes.Add(Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference());
+                param1.CustomAttributes.Add(Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference());
                 method.Parameters.Add(param1);
                 DefineAllocator(method);
 
@@ -125,7 +125,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 var @return = Epilogue(mainModule, method, enumerable0, enumerator0, enumerable1, enumerator1, T, TComparer);
 
                 var param0 = new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(enumerable0));
-                param0.CustomAttributes.Add(Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference());
+                param0.CustomAttributes.Add(Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference());
                 method.Parameters.Add(param0);
                 var param1 = new ParameterDefinition("second", ParameterAttributes.None, baseEnumerable);
                 method.Parameters.Add(param1);
@@ -161,7 +161,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 GenericArguments = { T }
             };
             var @return = Epilogue(mainModule, method, enumerable0, enumerator0, enumerable1, enumerator1, T, TComparer);
-            var systemRuntimeCompilerServicesReadonlyAttributeTypeReference = Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference();
+            var systemRuntimeCompilerServicesReadonlyAttributeTypeReference = Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference();
             var param0 = new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(enumerable0));
             param0.CustomAttributes.Add(systemRuntimeCompilerServicesReadonlyAttributeTypeReference);
             method.Parameters.Add(param0);

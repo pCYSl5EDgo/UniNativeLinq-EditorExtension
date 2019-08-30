@@ -166,7 +166,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             var (enumerable, enumerator, _) = T.MakeFromCommonType(method, type, "0");
             method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(enumerable))
             {
-                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference() }
+                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
             });
             var paramAccumulate = new ParameterDefinition("accumulate", ParameterAttributes.None, TAccumulate);
             method.Parameters.Add(paramAccumulate);

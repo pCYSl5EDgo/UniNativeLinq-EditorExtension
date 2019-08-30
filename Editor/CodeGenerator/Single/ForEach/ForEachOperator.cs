@@ -68,11 +68,11 @@ namespace UniNativeLinq.Editor.CodeGenerator.ForEach
         {
             method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(enumerable))
             {
-                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference() }
+                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
             });
             method.Parameters.Add(new ParameterDefinition("action", ParameterAttributes.In, new ByReferenceType(TAction))
             {
-                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference() }
+                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
             });
 
             var body = method.Body;
@@ -111,7 +111,7 @@ namespace UniNativeLinq.Editor.CodeGenerator.ForEach
             method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.None, baseEnumerable));
             method.Parameters.Add(new ParameterDefinition("action", ParameterAttributes.In, new ByReferenceType(TAction))
             {
-                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference() }
+                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
             });
 
             var body = method.Body;
@@ -145,7 +145,7 @@ namespace UniNativeLinq.Editor.CodeGenerator.ForEach
             method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.None, baseEnumerable));
             method.Parameters.Add(new ParameterDefinition("action", ParameterAttributes.In, new ByReferenceType(TAction))
             {
-                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference() }
+                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
             });
 
             var body = method.Body;

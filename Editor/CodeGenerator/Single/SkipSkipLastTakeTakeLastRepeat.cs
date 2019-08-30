@@ -86,7 +86,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             var constructor = method.ReturnType.FindMethod(".ctor");
             method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(enumerable))
             {
-                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference() }
+                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
             });
             method.Parameters.Add(new ParameterDefinition("count", ParameterAttributes.None, method.Module.TypeSystem.Int64));
             if (constructor.Parameters.Count == 3)

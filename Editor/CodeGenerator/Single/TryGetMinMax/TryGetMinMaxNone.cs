@@ -9,11 +9,11 @@ namespace UniNativeLinq.Editor.CodeGenerator
 {
     public sealed class TryGetMinMaxNone : ITypeDictionaryHolder, IApiExtensionMethodGenerator
     {
-        public TryGetMinMaxNone(ISingleApi api, string processType, bool isMax)
+        public TryGetMinMaxNone(ISingleApi api)
         {
             Api = api;
-            this.isMax = isMax;
-            this.processType = processType;
+            isMax = Api.Name == "TryGetMax";
+            processType = Api.Description.Split(new[] { " --- " }, StringSplitOptions.RemoveEmptyEntries)[1];
         }
 
         private readonly string processType;
@@ -150,7 +150,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
         {
             method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(baseEnumerable))
             {
-                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference() }
+                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
             });
             method.Parameters.Add(new ParameterDefinition("value", ParameterAttributes.Out, new ByReferenceType(returnTypeReference)));
 

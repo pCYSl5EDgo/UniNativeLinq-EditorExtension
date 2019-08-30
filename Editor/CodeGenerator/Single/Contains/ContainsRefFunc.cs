@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 // ReSharper disable InconsistentNaming
@@ -17,16 +16,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
         public Dictionary<string, TypeDefinition> Dictionary { private get; set; }
         public void Generate(IEnumerableCollectionProcessor processor, ModuleDefinition mainModule, ModuleDefinition systemModule, ModuleDefinition unityModule)
         {
-            var array = processor.EnabledNameCollection.Intersect(Api.NameCollection).ToArray();
-            if (!Api.ShouldDefine(array)) return;
-            TypeDefinition @static;
-            mainModule.Types.Add(@static = mainModule.DefineStatic(nameof(ContainsRefFunc) + "Helper"));
-            foreach (var name in array)
-            {
-                if (!processor.IsSpecialType(name, out var isSpecial)) throw new KeyNotFoundException();
-                if (!Api.TryGetEnabled(name, out var apiEnabled) || !apiEnabled) continue;
-                GenerateEach(name, isSpecial, @static, mainModule, systemModule);
-            }
+            Api.GenerateSingleNoEnumerable(processor, mainModule, systemModule, unityModule, GenerateEach);
         }
 
         private void GenerateEach(string name, bool isSpecial, TypeDefinition @static, ModuleDefinition mainModule, ModuleDefinition systemModule)
@@ -73,11 +63,11 @@ namespace UniNativeLinq.Editor.CodeGenerator
         {
             method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(enumerable))
             {
-                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference() }
+                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
             });
             method.Parameters.Add(new ParameterDefinition("value", ParameterAttributes.In, new ByReferenceType(T))
             {
-                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference() }
+                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
             });
             method.Parameters.Add(new ParameterDefinition("func", ParameterAttributes.None, TRefFunc));
 
@@ -120,11 +110,11 @@ namespace UniNativeLinq.Editor.CodeGenerator
         {
             method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(enumerable))
             {
-                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference() }
+                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
             });
             method.Parameters.Add(new ParameterDefinition("value", ParameterAttributes.In, new ByReferenceType(T))
             {
-                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference() }
+                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
             });
             method.Parameters.Add(new ParameterDefinition("func", ParameterAttributes.None, TRefFunc));
 
@@ -178,7 +168,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.None, enumerable));
             method.Parameters.Add(new ParameterDefinition("value", ParameterAttributes.In, new ByReferenceType(T))
             {
-                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesReadonlyAttributeTypeReference() }
+                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
             });
             method.Parameters.Add(new ParameterDefinition("func", ParameterAttributes.None, TRefFunc));
 
