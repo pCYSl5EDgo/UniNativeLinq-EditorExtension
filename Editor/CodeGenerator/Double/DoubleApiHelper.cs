@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using Mono.Cecil;
+﻿using Mono.Cecil;
 using Mono.Cecil.Cil;
 
 namespace UniNativeLinq.Editor.CodeGenerator
@@ -19,7 +18,6 @@ namespace UniNativeLinq.Editor.CodeGenerator
             return false;
         }
 
-
         public static TypeDefinition DefineStatic(this ModuleDefinition mainModule, string name)
             => new TypeDefinition("UniNativeLinq",
             name,
@@ -27,29 +25,6 @@ namespace UniNativeLinq.Editor.CodeGenerator
             {
                 CustomAttributes = { Helper.ExtensionAttribute }
             };
-
-        public static (TypeReference element, TypeReference enumerable, TypeReference enumerator) MakeGenericInstanceVariant(this TypeDefinition type, string suffix, MethodDefinition method)
-        {
-            var added0 = method.FromTypeToMethodParam(type.GenericParameters, suffix);
-            var enumerable = type.MakeGenericInstanceType(added0);
-            var enumerator = enumerable.GetEnumeratorTypeOfCollectionType().Replace(added0, suffix);
-            var element = enumerable.GetElementTypeOfCollectionType().Replace(added0, suffix);
-            return (element, enumerable, enumerator);
-        }
-
-        public static (TypeReference enumerable, TypeReference enumerator, TypeReference element) MakeFromCommonType(this TypeReference T, MethodDefinition method, TypeReference type, string suffix)
-        {
-            var added0 = method.FromTypeToMethodParam(type.GenericParameters, nameof(T), T, suffix);
-            foreach (var parameter in added0)
-            {
-                parameter.RewriteConstraints(nameof(T), T);
-            }
-            var enumerable = type.MakeGenericInstanceType(added0.Append(T));
-            var enumerator = enumerable.GetEnumeratorTypeOfCollectionType().Replace(added0, nameof(T), T, suffix);
-            var element = enumerable.GetElementTypeOfCollectionType().Replace(added0, nameof(T), T, suffix);
-
-            return (enumerable, enumerator, element);
-        }
 
         public static ILProcessor CpObjFromArgumentToField(this ILProcessor processor, TypeReference type, int variableIndex, FieldReference to)
         {

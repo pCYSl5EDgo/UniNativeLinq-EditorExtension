@@ -31,28 +31,28 @@ namespace UniNativeLinq.Editor.CodeGenerator
             };
             @static.Methods.Add(method);
 
-            var T = method.DefineUnmanagedGenericParameter();
-            method.GenericParameters.Add(T);
+            var TPrev = method.DefineUnmanagedGenericParameter();
+            method.GenericParameters.Add(TPrev);
 
-            var TResult = method.DefineUnmanagedGenericParameter("TResult");
-            method.GenericParameters.Add(TResult);
+            var T = method.DefineUnmanagedGenericParameter("T");
+            method.GenericParameters.Add(T);
 
             var func = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "RefAction`2"))
             {
-                GenericArguments = { T, TResult }
+                GenericArguments = { TPrev, T }
             };
 
             var TSelector = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "DelegateRefActionToStructOperatorAction`2"))
             {
-                GenericArguments = { T, TResult }
+                GenericArguments = { TPrev, T }
             };
 
             if (isSpecial)
             {
-                var (baseEnumerable, enumerable, enumerator) = T.MakeSpecialTypePair(name);
+                var (baseEnumerable, enumerable, enumerator) = TPrev.MakeSpecialTypePair(name);
                 method.ReturnType = new GenericInstanceType(returnTypeDefinition)
                 {
-                    GenericArguments = { enumerable, enumerator, T, TResult, TSelector }
+                    GenericArguments = { enumerable, enumerator, TPrev, T, TSelector }
                 };
                 switch (name)
                 {
@@ -66,10 +66,10 @@ namespace UniNativeLinq.Editor.CodeGenerator
             else
             {
                 var type = Dictionary[name];
-                var (enumerable, enumerator, _) = T.MakeFromCommonType(method, type, "0");
+                var (enumerable, enumerator, _) = TPrev.MakeFromCommonType(method, type, "0");
                 method.ReturnType = new GenericInstanceType(returnTypeDefinition)
                 {
-                    GenericArguments = { enumerable, enumerator, T, TResult, TSelector }
+                    GenericArguments = { enumerable, enumerator, TPrev, T, TSelector }
                 };
                 GenerateNormal(method, enumerable, TSelector, func);
             }
