@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using UniNativeLinq.Editor.CodeGenerator;
+using UniNativeLinq.Editor.CodeGenerator.ForEach;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -91,6 +92,20 @@ namespace UniNativeLinq.Editor
         {
             switch (api.Name)
             {
+                case "ForEach":
+                    switch (api.Description)
+                    {
+                        case "Action":
+                            list.Add(new ForEachAction(api));
+                            break;
+                        case "RefAction":
+                            list.Add(new ForEachRefAction(api));
+                            break;
+                        case "Operator":
+                            list.Add(new ForEachOperator(api));
+                            break;
+                    }
+                    break;
                 case "OrderBy":
                     switch (api.Description)
                     {

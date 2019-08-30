@@ -83,6 +83,20 @@ namespace UniNativeLinq.Editor.CodeGenerator
             }
         }
 
+        public static void GenerateSingleNoEnumerable(this ISingleApi Api, IEnumerableCollectionProcessor processor, ModuleDefinition mainModule, ModuleDefinition systemModule, ModuleDefinition unityModule, Action<string, bool, TypeDefinition, ModuleDefinition, ModuleDefinition> generateEachAction)
+        {
+            var array = processor.EnabledNameCollection.Intersect(Api.NameCollection).ToArray();
+            if (!Api.ShouldDefine(array)) return;
+            TypeDefinition @static;
+            mainModule.Types.Add(@static = mainModule.DefineStatic(Api.Name + Api.Description + "Helper"));
+            foreach (var name in array)
+            {
+                if (!processor.IsSpecialType(name, out var isSpecial)) throw new KeyNotFoundException();
+                if (!Api.TryGetEnabled(name, out var apiEnabled) || !apiEnabled) continue;
+                generateEachAction(name, isSpecial, @static, mainModule, systemModule);
+            }
+        }
+
         public static (TypeReference baseEnumerable, GenericInstanceType specialEnumerable, GenericInstanceType specialEnumerator) MakeSpecialTypePair(this TypeReference type, string specialName)
         {
             TypeDefinition typeDefinition;
