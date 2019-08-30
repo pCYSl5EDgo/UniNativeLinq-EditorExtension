@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: OrderBy
   m_EditorClassIdentifier: 
   Enumerable: OrderBy
-  Enabled: 1
+  Enabled: 0
   IsSpecial: 0
   GenericParameterCount: 4
   RelatedEnumerableArray: []

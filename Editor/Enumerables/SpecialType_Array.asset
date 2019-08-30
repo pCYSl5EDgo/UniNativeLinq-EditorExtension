@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: SpecialType_Array
   m_EditorClassIdentifier: 
   Enumerable: T[]
-  Enabled: 0
+  Enabled: 1
   IsSpecial: 1
   GenericParameterCount: 0
   RelatedEnumerableArray: []

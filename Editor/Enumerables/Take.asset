@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Take
   m_EditorClassIdentifier: 
   Enumerable: Take
-  Enabled: 0
+  Enabled: 1
   IsSpecial: 0
   GenericParameterCount: 3
   RelatedEnumerableArray: []
