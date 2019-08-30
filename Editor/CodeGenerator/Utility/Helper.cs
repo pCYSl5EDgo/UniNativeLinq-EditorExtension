@@ -97,6 +97,12 @@ namespace UniNativeLinq.Editor.CodeGenerator
             }
         }
 
+        public static void GenerateSingleWithEnumerable(this ISingleApi Api, IEnumerableCollectionProcessor processor, ModuleDefinition mainModule, ModuleDefinition systemModule, ModuleDefinition unityModule, Action<string, bool, TypeDefinition, ModuleDefinition, ModuleDefinition> generateEachAction)
+        {
+            if (!processor.TryGetEnabled(Api.Name, out var enabled) || !enabled) return;
+            Api.GenerateSingleNoEnumerable(processor, mainModule, systemModule, unityModule, generateEachAction);
+        }
+
         public static (TypeReference baseEnumerable, GenericInstanceType specialEnumerable, GenericInstanceType specialEnumerator) MakeSpecialTypePair(this TypeReference type, string specialName)
         {
             TypeDefinition typeDefinition;
