@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b98f8d701fd45434cb889bded0829d8d, type: 3}
-  m_Name: Aggregate___Value1Operator
+  m_Name: Aggregate___Value1Ref
   m_EditorClassIdentifier: 
   Name: Aggregate
-  Description: TAccumulate Aggregate(TAccumulate seed, in TFunc func)
+  Description: TAccumulate Aggregate(TAccumulate seed, RefAction<T, TAccumulate> func)
   EnabledArray:
   - Enumerable: NativeArray<T>
     Enabled: 1

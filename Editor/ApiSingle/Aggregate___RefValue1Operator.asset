@@ -13,8 +13,7 @@ MonoBehaviour:
   m_Name: Aggregate___RefValue1Operator
   m_EditorClassIdentifier: 
   Name: Aggregate
-  Description: void Aggregate<TAccumulate, TResult, TFunc>(ref TAccumulate seed, in
-    TFunc func)
+  Description: void Aggregate(ref TAccumulate seed, in TFunc func)
   EnabledArray:
   - Enumerable: NativeArray<T>
     Enabled: 1

@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: Aggregate___RefValue2Refs
   m_EditorClassIdentifier: 
   Name: Aggregate
-  Description: TResult Aggregate<TAccumulate, TResult>(ref TAccumulate seed, RefAction<T,
-    TAccumulate> func, RefFunc<TAccumulate, TResult> resultFunc)
+  Description: TResult Aggregate(ref TAccumulate seed, RefAction<T, TAccumulate> func,
+    RefFunc<TAccumulate, TResult> resultFunc)
   EnabledArray:
   - Enumerable: NativeArray<T>
     Enabled: 1
