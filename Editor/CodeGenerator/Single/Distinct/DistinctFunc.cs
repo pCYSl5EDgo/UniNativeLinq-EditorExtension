@@ -93,8 +93,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .LdArg(0)
                 .Call(enumerable.FindMethod(".ctor", 1))
 
-                .LdArg(1)
-                .StLoc(1)
+                .LoadFuncArgumentAndStoreToLocalVariableField(1, 1)
 
                 .LdLocA(0)
                 .LdLocA(1)
@@ -117,8 +116,9 @@ namespace UniNativeLinq.Editor.CodeGenerator
             body.Variables.Add(new VariableDefinition(equalityComparer));
 
             body.GetILProcessor()
-                .LdArg(1)
-                .StLoc(0)
+
+                .LoadFuncArgumentAndStoreToLocalVariableField(1, 0)
+
                 .LdArg(0)
                 .LdLocA(0)
                 .LdArg(2)

@@ -130,9 +130,10 @@ namespace UniNativeLinq.Editor.CodeGenerator
             body.Variables.Add(new VariableDefinition(TKeySelector));
 
             body.GetILProcessor()
+
+                .LoadFuncArgumentAndStoreToLocalVariableField(1, 0)
+
                 .LdArg(0)
-                .LdArg(1)
-                .StLoc(0)
                 .LdLocA(0)
                 .LdArg(2)
                 .NewObj(method.ReturnType.FindMethod(".ctor", 3))
@@ -159,8 +160,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .LdArg(0)
                 .Call(enumerable.FindMethod(".ctor", 1))
 
-                .LdArg(1)
-                .StLoc(1)
+                .LoadFuncArgumentAndStoreToLocalVariableField(1, 1)
 
                 .LdLocA(0)
                 .LdLocA(1)

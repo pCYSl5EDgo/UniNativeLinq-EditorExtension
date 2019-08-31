@@ -75,7 +75,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             }
         }
 
-        private void GenerateNormal(MethodDefinition method, TypeReference enumerable, GenericInstanceType selector, GenericInstanceType func)
+        private static void GenerateNormal(MethodDefinition method, TypeReference enumerable, GenericInstanceType selector, GenericInstanceType func)
         {
             method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(enumerable))
             {
@@ -88,15 +88,16 @@ namespace UniNativeLinq.Editor.CodeGenerator
             body.Variables.Add(new VariableDefinition(selector));
 
             body.GetILProcessor()
+
+                .LoadFuncArgumentAndStoreToLocalVariableField(1, 0)
+
                 .LdArg(0)
-                .LdArg(1)
-                .StLoc(0)
                 .LdLocA(0)
                 .NewObj(method.ReturnType.FindMethod(".ctor", 2))
                 .Ret();
         }
 
-        private void GenerateSpecial(MethodDefinition method, TypeReference baseEnumerable, GenericInstanceType enumerable, GenericInstanceType selector, GenericInstanceType func)
+        private static void GenerateSpecial(MethodDefinition method, TypeReference baseEnumerable, GenericInstanceType enumerable, GenericInstanceType selector, GenericInstanceType func)
         {
             method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.None, baseEnumerable));
             method.Parameters.Add(new ParameterDefinition("selector", ParameterAttributes.None, func));
@@ -111,8 +112,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .LdArg(0)
                 .Call(enumerable.FindMethod(".ctor", 1))
 
-                .LdArg(1)
-                .StLoc(1)
+                .LoadFuncArgumentAndStoreToLocalVariableField(1, 1)
 
                 .LdLocA(0)
                 .LdLocA(1)
