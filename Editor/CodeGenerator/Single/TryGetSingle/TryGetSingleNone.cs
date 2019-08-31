@@ -16,10 +16,59 @@ namespace UniNativeLinq.Editor.CodeGenerator
         public Dictionary<string, TypeDefinition> Dictionary { private get; set; }
         public void Generate(IEnumerableCollectionProcessor processor, ModuleDefinition mainModule, ModuleDefinition systemModule, ModuleDefinition unityModule)
         {
-            Api.GenerateSingleNoEnumerable(processor, mainModule, systemModule, unityModule, GenerateEach);
+            Api.GenerateSingleNoEnumerable(processor, mainModule, GenerateEach, GenerateGeneric);
         }
 
-        private void GenerateEach(string name, bool isSpecial, TypeDefinition @static, ModuleDefinition mainModule, ModuleDefinition systemModule)
+        private void GenerateGeneric(TypeDefinition @static, ModuleDefinition mainModule)
+        {
+            var method = new MethodDefinition(Api.Name, Helper.StaticMethodAttributes, mainModule.TypeSystem.Boolean)
+            {
+                DeclaringType = @static,
+                AggressiveInlining = true,
+                CustomAttributes = { Helper.ExtensionAttribute }
+            };
+            @static.Methods.Add(method);
+
+            var (T, TEnumerator, TEnumerable) = method.Define3GenericParameters();
+
+            method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(TEnumerable))
+            {
+                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
+            });
+            method.Parameters.Add(new ParameterDefinition("value", ParameterAttributes.Out, new ByReferenceType(T)));
+
+            var body = method.Body;
+            var enumeratorVariable = new VariableDefinition(TEnumerator);
+            body.Variables.Add(enumeratorVariable);
+
+            var fail = Instruction.Create(OpCodes.Ldloca_S, enumeratorVariable);
+
+            body.GetILProcessor()
+                .LdArg(0)
+                .GetEnumeratorEnumerable(TEnumerable)
+                .StLoc(0)
+
+                .LdLocA(0)
+                .LdArg(1)
+                .TryMoveNextEnumerator(TEnumerator)
+                .BrFalseS(fail)
+
+                .LdLocA(0)
+                .MoveNextEnumerator(TEnumerator)
+                .BrTrueS(fail)
+
+                .LdLocA(0)
+                .DisposeEnumerator(TEnumerator)
+                .LdC(true)
+                .Ret()
+
+                .Add(fail)
+                .DisposeEnumerator(TEnumerator)
+                .LdC(false)
+                .Ret();
+        }
+
+        private void GenerateEach(string name, bool isSpecial, TypeDefinition @static, ModuleDefinition mainModule)
         {
             var method = new MethodDefinition(Api.Name, Helper.StaticMethodAttributes, mainModule.TypeSystem.Boolean)
             {

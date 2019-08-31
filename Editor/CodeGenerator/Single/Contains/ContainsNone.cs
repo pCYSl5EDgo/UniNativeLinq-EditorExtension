@@ -16,12 +16,74 @@ namespace UniNativeLinq.Editor.CodeGenerator
         public Dictionary<string, TypeDefinition> Dictionary { private get; set; }
         public void Generate(IEnumerableCollectionProcessor processor, ModuleDefinition mainModule, ModuleDefinition systemModule, ModuleDefinition unityModule)
         {
-            Api.GenerateSingleNoEnumerable(processor, mainModule, systemModule, unityModule, GenerateEach);
+            Api.GenerateSingleNoEnumerable(processor, mainModule, systemModule, GenerateEach, GenerateGeneric);
+        }
+
+        private void GenerateGeneric(TypeDefinition @static, ModuleDefinition mainModule, ModuleDefinition systemModule)
+        {
+            var method = new MethodDefinition(Api.Name, Helper.StaticMethodAttributes, mainModule.TypeSystem.Boolean)
+            {
+                DeclaringType = @static,
+                AggressiveInlining = true,
+                CustomAttributes = { Helper.ExtensionAttribute }
+            };
+            @static.Methods.Add(method);
+
+            var (T, TEnumerator, TEnumerable) = method.Define3GenericParameters();
+
+            var IEquatable = new GenericInstanceType(mainModule.ImportReference(systemModule.GetType("System", "IEquatable`1")))
+            {
+                GenericArguments = { T }
+            };
+            T.Constraints.Add(IEquatable);
+
+            method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(TEnumerable))
+            {
+                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
+            });
+            method.Parameters.Add(new ParameterDefinition("value", ParameterAttributes.In, new ByReferenceType(T))
+            {
+                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
+            });
+
+            var body = method.Body;
+            body.InitLocals = true;
+            var enumeratorVariable = new VariableDefinition(TEnumerator);
+            body.Variables.Add(enumeratorVariable);
+            body.Variables.Add(new VariableDefinition(T));
+
+            var loopStart = Instruction.Create(OpCodes.Ldloca_S, enumeratorVariable);
+            var fail = InstructionUtility.LoadConstant(false);
+            var dispose = Instruction.Create(OpCodes.Ldloca_S, enumeratorVariable);
+
+            body.GetILProcessor()
+                .LdArg(0)
+                .GetEnumeratorEnumerable(TEnumerable)
+                .StLoc(0)
+
+                .Add(loopStart)
+                .LdLocA(1)
+                .TryMoveNextEnumerator(TEnumerator)
+                .BrFalseS(fail)
+
+                .LdArg(1)
+                .LdLoc(1)
+                .Constrained(T)
+                .CallVirtual(IEquatable.FindMethod("Equals"))
+                .BrFalseS(loopStart)
+
+                .LdC(true)
+                .BrS(dispose)
+
+                .Add(fail)
+                .Add(dispose)
+                .DisposeEnumerator(TEnumerator)
+                .Ret();
         }
 
         private void GenerateEach(string name, bool isSpecial, TypeDefinition @static, ModuleDefinition mainModule, ModuleDefinition systemModule)
         {
-            var method = new MethodDefinition("Contains", Helper.StaticMethodAttributes, mainModule.TypeSystem.Boolean)
+            var method = new MethodDefinition(Api.Name, Helper.StaticMethodAttributes, mainModule.TypeSystem.Boolean)
             {
                 DeclaringType = @static,
                 AggressiveInlining = true,
@@ -55,15 +117,6 @@ namespace UniNativeLinq.Editor.CodeGenerator
             {
                 var type = Dictionary[name];
                 var (enumerable, enumerator, _) = T.MakeFromCommonType(method, type, "0");
-
-                method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(enumerable))
-                {
-                    CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
-                });
-                method.Parameters.Add(new ParameterDefinition("value", ParameterAttributes.In, new ByReferenceType(T))
-                {
-                    CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
-                });
 
                 GenerateNormal(method, T, enumerable, enumerator, IEquatable);
             }

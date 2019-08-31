@@ -15,10 +15,11 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
         public void Generate(IEnumerableCollectionProcessor processor, ModuleDefinition mainModule, ModuleDefinition systemModule, ModuleDefinition unityModule)
         {
-            Api.GenerateSingleNoEnumerable(processor, mainModule, systemModule, unityModule, GenerateEach);
+            Api.GenerateSingleNoEnumerable(processor, mainModule, GenerateEach, GenerateGeneric);
         }
+        private static void GenerateGeneric(TypeDefinition @static, ModuleDefinition mainModule) => mainModule.TypeSystem.UInt32.GenerateSum_Generic(@static);
 
-        private void GenerateEach(string name, bool isSpecial, TypeDefinition @static, ModuleDefinition mainModule, ModuleDefinition systemModule)
+        private void GenerateEach(string name, bool isSpecial, TypeDefinition @static, ModuleDefinition mainModule)
         {
             var returnType = mainModule.TypeSystem.UInt32;
             var method = new MethodDefinition("Sum", Helper.StaticMethodAttributes, returnType)

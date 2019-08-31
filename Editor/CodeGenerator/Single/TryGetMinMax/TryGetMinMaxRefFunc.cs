@@ -27,12 +27,16 @@ namespace UniNativeLinq.Editor.CodeGenerator
             var array = processor.EnabledNameCollection.Intersect(Api.NameCollection).ToArray();
             if (!Api.ShouldDefine(array)) return;
             TypeDefinition @static;
-            mainModule.Types.Add(@static = mainModule.DefineStatic("TryGet" + Name + processType + "RefFuncHelper"));
+            mainModule.Types.Add(@static = mainModule.DefineStatic(Api.Name + processType + "RefFuncHelper"));
+
+            if (Api.TryGetEnabled("TEnumerable", out var genericEnabled) && genericEnabled)
+                GenerateGeneric(@static, mainModule, returnTypeReference);
+
             foreach (var name in array)
             {
                 if (!processor.IsSpecialType(name, out var isSpecial)) throw new KeyNotFoundException();
                 if (!Api.TryGetEnabled(name, out var apiEnabled) || !apiEnabled) continue;
-                GenerateEach(name, isSpecial, @static, mainModule, returnTypeReference, systemModule);
+                GenerateEach(name, isSpecial, @static, mainModule, returnTypeReference);
             }
         }
 
@@ -116,7 +120,81 @@ namespace UniNativeLinq.Editor.CodeGenerator
             }
         }
 
-        private void GenerateEach(string name, bool isSpecial, TypeDefinition @static, ModuleDefinition mainModule, TypeReference returnTypeReference, ModuleDefinition systemModule)
+        private void GenerateGeneric(TypeDefinition @static, ModuleDefinition mainModule, TypeReference returnTypeReference)
+        {
+            var method = new MethodDefinition(Api.Name, Helper.StaticMethodAttributes, mainModule.TypeSystem.Boolean)
+            {
+                DeclaringType = @static,
+                AggressiveInlining = true,
+                CustomAttributes = { Helper.ExtensionAttribute }
+            };
+            @static.Methods.Add(method);
+
+            var (T, TEnumerator, TEnumerable) = method.Define3GenericParameters();
+
+            var TRefFunc = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "RefFunc`2"))
+            {
+                GenericArguments = { T, returnTypeReference }
+            };
+            var Calc = TRefFunc.FindMethod("Invoke");
+
+            method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(TEnumerable))
+            {
+                CustomAttributes = { Helper.IsReadOnlyAttribute }
+            });
+            method.Parameters.Add(new ParameterDefinition("value", ParameterAttributes.Out, new ByReferenceType(returnTypeReference)));
+            method.Parameters.Add(new ParameterDefinition("operator", ParameterAttributes.None, TRefFunc));
+
+            var body = method.Body;
+
+            var enumeratorVariable = new VariableDefinition(TEnumerator);
+            body.Variables.Add(enumeratorVariable);
+            body.Variables.Add(new VariableDefinition(returnTypeReference));
+            body.Variables.Add(new VariableDefinition(T));
+            var condition = Instruction.Create(OpCodes.Ldloca_S, enumeratorVariable);
+            var loopStart = Instruction.Create(OpCodes.Ldarg_1);
+            var shortJump = Instruction.Create(OpCodes.Ldarg_1);
+
+            body.GetILProcessor()
+                .LdArg(0)
+                .GetEnumeratorEnumerable(TEnumerable)
+                .StLoc(0)
+                .LdLocA(0)
+                .LdLocA(2)
+                .TryMoveNextEnumerator(TEnumerator)
+                .BrTrueS(shortJump)
+                .LdLocA(0)
+                .DisposeEnumerator(TEnumerator)
+                .LdC(false)
+                .Ret()
+                .Add(shortJump)
+                .LdArg(2)
+                .LdLocA(2)
+                .CallVirtual(Calc)
+                .StObj(returnTypeReference)
+                .BrS(condition)
+                .Add(loopStart)
+                .LdArg(2)
+                .LdLocA(2)
+                .CallVirtual(Calc)
+                .StLoc(1)
+                .Add(Instruction.Create(OpCodeLdInd))
+                .LdLoc(1)
+                .Add(Instruction.Create(isMax ? OpCodeBgeS : OpCodeBleS, condition))
+                .LdArg(1)
+                .LdLocA(1)
+                .CpObj(returnTypeReference)
+                .Add(condition)
+                .LdLocA(2)
+                .TryMoveNextEnumerator(TEnumerator)
+                .BrTrueS(loopStart)
+                .LdLocA(0)
+                .DisposeEnumerator(TEnumerator)
+                .LdC(true)
+                .Ret();
+        }
+
+        private void GenerateEach(string name, bool isSpecial, TypeDefinition @static, ModuleDefinition mainModule, TypeReference returnTypeReference)
         {
             var method = new MethodDefinition("TryGet" + Name, Helper.StaticMethodAttributes, mainModule.TypeSystem.Boolean)
             {

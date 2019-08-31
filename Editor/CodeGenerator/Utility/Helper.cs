@@ -6,7 +6,6 @@ using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
 using Mono.Collections.Generic;
-using UnityEngine;
 
 // ReSharper disable InconsistentNaming
 
@@ -28,6 +27,44 @@ namespace UniNativeLinq.Editor.CodeGenerator
         static Helper()
         {
             Initialize();
+        }
+
+        public static ILProcessor GetEnumeratorEnumerable(this ILProcessor processor, GenericParameter TEnumerable) => processor.Constrained(TEnumerable).CallVirtual(TEnumerable.Constraints.First(x => x.ToDefinition().Name == "IRefEnumerable`2").FindMethod("GetEnumerator"));
+        public static ILProcessor MoveNextEnumerator(this ILProcessor processor, GenericParameter TEnumerator) => processor.Constrained(TEnumerator).CallVirtual(MainModule.ImportReference(SystemModule.GetType("System.Collections", "IEnumerator")).FindMethod("MoveNext"));
+        public static ILProcessor DisposeEnumerator(this ILProcessor processor, GenericParameter TEnumerator) => processor.Constrained(TEnumerator).CallVirtual(MainModule.ImportReference(SystemModule.GetType("System", "IDisposable")).FindMethod("Dispose"));
+        public static ILProcessor TryGetNextEnumerator(this ILProcessor processor, GenericParameter TEnumerator) => processor.Constrained(TEnumerator).CallVirtual(TEnumerator.Constraints.First(x => x.ToDefinition().Name == "IRefEnumerator`1").FindMethod("TryGetNext"));
+        public static ILProcessor TryMoveNextEnumerator(this ILProcessor processor, GenericParameter TEnumerator) => processor.Constrained(TEnumerator).CallVirtual(TEnumerator.Constraints.First(x => x.ToDefinition().Name == "IRefEnumerator`1").FindMethod("TryMoveNext"));
+        public static ILProcessor GetCurrentEnumerator(this ILProcessor processor, GenericParameter TEnumerator) => processor.Constrained(TEnumerator).CallVirtual(TEnumerator.Constraints.First(x => x.ToDefinition().Name == "IRefEnumerator`1").FindMethod("get_Current"));
+
+        public static (GenericParameter T, GenericParameter TEnumerator, GenericParameter TEnumerable) Define3GenericParameters(this MethodDefinition method)
+        {
+            var genericParameters = method.GenericParameters;
+
+            var T = method.DefineUnmanagedGenericParameter();
+            genericParameters.Add(T);
+
+            var IRefEnumerator = new GenericInstanceType(method.Module.GetType("UniNativeLinq", "IRefEnumerator`1"))
+            {
+                GenericArguments = { T }
+            };
+            var TEnumerator = new GenericParameter("TEnumerator", method)
+            {
+                HasNotNullableValueTypeConstraint = true,
+                Constraints = { IRefEnumerator }
+            };
+            method.GenericParameters.Add(TEnumerator);
+
+            var IRefEnumerable = new GenericInstanceType(method.Module.GetType("UniNativeLinq", "IRefEnumerable`2"))
+            {
+                GenericArguments = { TEnumerator, T }
+            };
+            var TEnumerable = new GenericParameter("TEnumerable", method)
+            {
+                HasNotNullableValueTypeConstraint = true,
+                Constraints = { IRefEnumerable }
+            };
+            method.GenericParameters.Add(TEnumerable);
+            return (T, TEnumerator, TEnumerable);
         }
 
         public static ILProcessor LoadFuncArgumentAndStoreToLocalVariableField(this ILProcessor processor, int argumentIndex, int variableIndex)
@@ -90,24 +127,55 @@ namespace UniNativeLinq.Editor.CodeGenerator
             }
         }
 
-        public static void GenerateSingleNoEnumerable(this ISingleApi Api, IEnumerableCollectionProcessor processor, ModuleDefinition mainModule, ModuleDefinition systemModule, ModuleDefinition unityModule, Action<string, bool, TypeDefinition, ModuleDefinition, ModuleDefinition> generateEachAction)
+        public static void GenerateSingleNoEnumerable(this ISingleApi Api, IEnumerableCollectionProcessor processor, ModuleDefinition mainModule, ModuleDefinition systemModule, Action<string, bool, TypeDefinition, ModuleDefinition, ModuleDefinition> generateEachAction, Action<TypeDefinition, ModuleDefinition, ModuleDefinition> GenerateGeneric)
         {
             var array = processor.EnabledNameCollection.Intersect(Api.NameCollection).ToArray();
             if (!Api.ShouldDefine(array)) return;
             TypeDefinition @static;
             mainModule.Types.Add(@static = mainModule.DefineStatic(Api.Name + Api.Description + "Helper"));
+
+            if (Api.TryGetEnabled("TEnumerable", out var apiEnabled) && apiEnabled)
+                GenerateGeneric(@static, mainModule, systemModule);
+
+            foreach (var name in array)
+            {
+                if (!processor.IsSpecialType(name, out var isSpecial)) throw new KeyNotFoundException();
+                if (!Api.TryGetEnabled(name, out apiEnabled) || !apiEnabled) continue;
+                generateEachAction(name, isSpecial, @static, mainModule, systemModule);
+            }
+        }
+
+        public static void GenerateSingleNoEnumerable(this ISingleApi Api, IEnumerableCollectionProcessor processor, ModuleDefinition mainModule, Action<string, bool, TypeDefinition, ModuleDefinition> generateEachAction, Action<TypeDefinition, ModuleDefinition> GenerateGeneric)
+        {
+            var array = processor.EnabledNameCollection.Intersect(Api.NameCollection).ToArray();
+            if (!Api.ShouldDefine(array)) return;
+            TypeDefinition @static;
+            mainModule.Types.Add(@static = mainModule.DefineStatic(Api.Name + Api.Description + "Helper"));
+
+            GenerateGeneric(@static, mainModule);
+
             foreach (var name in array)
             {
                 if (!processor.IsSpecialType(name, out var isSpecial)) throw new KeyNotFoundException();
                 if (!Api.TryGetEnabled(name, out var apiEnabled) || !apiEnabled) continue;
-                generateEachAction(name, isSpecial, @static, mainModule, systemModule);
+                generateEachAction(name, isSpecial, @static, mainModule);
             }
         }
 
         public static void GenerateSingleWithEnumerable(this ISingleApi Api, IEnumerableCollectionProcessor processor, ModuleDefinition mainModule, ModuleDefinition systemModule, ModuleDefinition unityModule, Action<string, bool, TypeDefinition, ModuleDefinition, ModuleDefinition> generateEachAction)
         {
             if (!processor.TryGetEnabled(Api.Name, out var enabled) || !enabled) return;
-            Api.GenerateSingleNoEnumerable(processor, mainModule, systemModule, unityModule, generateEachAction);
+            var array = processor.EnabledNameCollection.Intersect(Api.NameCollection).ToArray();
+            if (!Api.ShouldDefine(array)) return;
+            TypeDefinition @static;
+            mainModule.Types.Add(@static = mainModule.DefineStatic(Api.Name + Api.Description + "Helper"));
+
+            foreach (var name in array)
+            {
+                if (!processor.IsSpecialType(name, out var isSpecial)) throw new KeyNotFoundException();
+                if (!Api.TryGetEnabled(name, out var apiEnabled) || !apiEnabled) continue;
+                generateEachAction(name, isSpecial, @static, mainModule, systemModule);
+            }
         }
 
         public static (TypeReference element, TypeReference enumerable, TypeReference enumerator) MakeGenericInstanceVariant(this TypeDefinition type, string suffix, MethodDefinition method)

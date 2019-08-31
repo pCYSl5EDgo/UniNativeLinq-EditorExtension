@@ -64,6 +64,7 @@ namespace UniNativeLinq.Editor
                         ref var tuple = ref EnabledArray[i];
                         tuple.Enabled = true;
                     }
+                    EditorUtility.SetDirty(this);
                 }
                 else if (GUILayout.Button("Deselect All"))
                 {
@@ -72,6 +73,7 @@ namespace UniNativeLinq.Editor
                         ref var tuple = ref EnabledArray[i];
                         tuple.Enabled = false;
                     }
+                    EditorUtility.SetDirty(this);
                 }
                 else if (GUILayout.Button("Hide and Deselect All"))
                 {
@@ -81,6 +83,7 @@ namespace UniNativeLinq.Editor
                         ref var tuple = ref EnabledArray[i];
                         tuple.Enabled = false;
                     }
+                    EditorUtility.SetDirty(this);
                 }
             }
 

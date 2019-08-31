@@ -1,5 +1,6 @@
 ﻿using Mono.Cecil;
 using Mono.Cecil.Cil;
+// ReSharper disable InconsistentNaming
 
 namespace UniNativeLinq.Editor.CodeGenerator
 {
@@ -73,6 +74,71 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .Call(getLength)
                 .ConvI4()
                 .BltS(loopStart)
+                .LdLoc(0)
+                .Ret();
+        }
+
+        public static void GenerateSum_Generic(this TypeReference returnType, TypeDefinition @static)
+        {
+            var method = new MethodDefinition("Sum", Helper.StaticMethodAttributes, returnType)
+            {
+                DeclaringType = @static,
+                AggressiveInlining = true,
+                CustomAttributes = { Helper.ExtensionAttribute }
+            };
+            @static.Methods.Add(method);
+
+            var IRefEnumerator = new GenericInstanceType(method.Module.GetType("UniNativeLinq", "IRefEnumerator`1"))
+            {
+                GenericArguments = { returnType }
+            };
+            var TEnumerator = new GenericParameter("TEnumerator", method)
+            {
+                HasNotNullableValueTypeConstraint = true,
+                Constraints = { IRefEnumerator }
+            };
+            method.GenericParameters.Add(TEnumerator);
+
+            var IRefEnumerable = new GenericInstanceType(method.Module.GetType("UniNativeLinq", "IRefEnumerable`2"))
+            {
+                GenericArguments = { TEnumerator, returnType }
+            };
+            var TEnumerable = new GenericParameter("TEnumerable", method)
+            {
+                HasNotNullableValueTypeConstraint = true,
+                Constraints = { IRefEnumerable }
+            };
+            method.GenericParameters.Add(TEnumerable);
+
+            method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(TEnumerable))
+            {
+                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
+            });
+            var body = method.Body;
+            body.InitLocals = true;
+            body.Variables.Add(new VariableDefinition(returnType));
+            var enumeratorVariable = new VariableDefinition(TEnumerator);
+            body.Variables.Add(enumeratorVariable);
+            body.Variables.Add(new VariableDefinition(returnType));
+
+            var @return = Instruction.Create(OpCodes.Ldloca_S, enumeratorVariable);
+            var loopStart = body.Variables.LoadLocalA(1);
+
+            body.GetILProcessor()
+                .LdArg(0)
+                .GetEnumeratorEnumerable(TEnumerable)
+                .StLoc(1)
+                .Add(loopStart)
+                .LdLocA(2)
+                .TryMoveNextEnumerator(TEnumerator)
+                .BrFalseS(@return)
+                .LdLoc(0)
+                .LdLoc(2)
+                .Add()
+                .StLoc(0)
+                .BrS(loopStart)
+                .Add(@return)
+                .DisposeEnumerator(TEnumerator)
                 .LdLoc(0)
                 .Ret();
         }

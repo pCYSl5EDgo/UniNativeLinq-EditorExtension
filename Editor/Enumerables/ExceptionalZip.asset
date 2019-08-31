@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: ExceptionalZip
   m_EditorClassIdentifier: 
   Enumerable: ExceptionalZip
-  Enabled: 0
+  Enabled: 1
   IsSpecial: 0
   GenericParameterCount: 8
   RelatedEnumerableArray: []

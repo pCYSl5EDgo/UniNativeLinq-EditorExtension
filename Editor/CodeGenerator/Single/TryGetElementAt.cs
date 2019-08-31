@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+// ReSharper disable InconsistentNaming
 
 namespace UniNativeLinq.Editor.CodeGenerator
 {
@@ -15,10 +16,80 @@ namespace UniNativeLinq.Editor.CodeGenerator
         public Dictionary<string, TypeDefinition> Dictionary { private get; set; }
         public void Generate(IEnumerableCollectionProcessor processor, ModuleDefinition mainModule, ModuleDefinition systemModule, ModuleDefinition unityModule)
         {
-            Api.GenerateSingleNoEnumerable(processor, mainModule, systemModule, unityModule, GenerateEach);
+            Api.GenerateSingleNoEnumerable(processor, mainModule, GenerateEach, GenerateGeneric);
         }
 
-        private void GenerateEach(string name, bool isSpecial, TypeDefinition @static, ModuleDefinition mainModule, ModuleDefinition systemModule)
+        private static void GenerateGeneric(TypeDefinition @static, ModuleDefinition mainModule)
+        {
+            var method = new MethodDefinition("TryGetElementAt", Helper.StaticMethodAttributes, mainModule.TypeSystem.Boolean)
+            {
+                DeclaringType = @static,
+                AggressiveInlining = true,
+                CustomAttributes = { Helper.ExtensionAttribute }
+            };
+            @static.Methods.Add(method);
+
+            var (T, TEnumerator, TEnumerable) = method.Define3GenericParameters();
+
+            method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(TEnumerable))
+            {
+                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
+            });
+            var paramIndex = new ParameterDefinition("index", ParameterAttributes.None, method.Module.TypeSystem.Int64);
+            method.Parameters.Add(paramIndex);
+            method.Parameters.Add(new ParameterDefinition("value", ParameterAttributes.Out, new ByReferenceType(T)));
+
+            var body = method.Body;
+            var enumeratorVariable = new VariableDefinition(TEnumerator);
+            body.Variables.Add(enumeratorVariable);
+
+            var notZero = Instruction.Create(OpCodes.Ldarg_0);
+            var success = Instruction.Create(OpCodes.Ldarg_1);
+            var loopStart = Instruction.Create(OpCodes.Ldloca_S, enumeratorVariable);
+            var @return = Instruction.Create(OpCodes.Ldarg_2);
+
+            body.GetILProcessor()
+                .LdArg(1)
+                .LdC(0)
+                .BgeS(notZero)
+
+                .LdC(false)
+                .Ret()
+
+                .Add(notZero)
+                .GetEnumeratorEnumerable(TEnumerable)
+                .StLoc(0)
+
+                .Add(loopStart)
+                .MoveNextEnumerator(TEnumerator)
+                .BrTrueS(success)
+
+                .LdLocA(0)
+                .DisposeEnumerator(TEnumerator)
+                .LdC(false)
+                .Ret()
+
+                .Add(success)
+                .LdC(0L)
+                .BeqS(@return)
+
+                .LdArg(1)
+                .LdC(1L)
+                .Sub()
+                .StArgS(paramIndex)
+                .BrS(loopStart)
+
+                .Add(@return)
+                .LdLocA(0)
+                .GetCurrentEnumerator(TEnumerator)
+                .CpObj(T)
+                .LdLocA(0)
+                .DisposeEnumerator(TEnumerator)
+                .LdC(true)
+                .Ret();
+        }
+
+        private void GenerateEach(string name, bool isSpecial, TypeDefinition @static, ModuleDefinition mainModule)
         {
             var method = new MethodDefinition("TryGetElementAt", Helper.StaticMethodAttributes, mainModule.TypeSystem.Boolean)
             {
@@ -79,7 +150,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             }
         }
 
-        private void GenerateNormalCanFastCount(MethodDefinition method, GenericParameter T, TypeReference enumerable, TypeReference enumerator, ParameterDefinition paramIndex)
+        private static void GenerateNormalCanFastCount(MethodDefinition method, GenericParameter T, TypeReference enumerable, TypeReference enumerator, ParameterDefinition paramIndex)
         {
             var body = method.Body;
 
@@ -133,7 +204,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .Ret();
         }
 
-        private void GenerateCanIndexAccess(MethodDefinition method, GenericParameter T, TypeReference enumerable)
+        private static void GenerateCanIndexAccess(MethodDefinition method, GenericParameter T, TypeReference enumerable)
         {
             var notMinus = Instruction.Create(OpCodes.Ldarg_0);
             var fail = Instruction.Create(OpCodes.Ldc_I4_0);
@@ -162,7 +233,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .Ret();
         }
 
-        private void GenerateNormal(MethodDefinition method, GenericParameter T, TypeReference enumerable, TypeReference enumerator, ParameterDefinition paramIndex)
+        private static void GenerateNormal(MethodDefinition method, GenericParameter T, TypeReference enumerable, TypeReference enumerator, ParameterDefinition paramIndex)
         {
             var body = method.Body;
 
@@ -216,7 +287,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .Ret();
         }
 
-        private void GenerateNativeArray(MethodDefinition method, TypeReference baseEnumerable, GenericParameter T)
+        private static void GenerateNativeArray(MethodDefinition method, TypeReference baseEnumerable, GenericParameter T)
         {
             method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(baseEnumerable))
             {
@@ -251,7 +322,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .Ret();
         }
 
-        private void GenerateArray(MethodDefinition method, TypeReference baseEnumerable, GenericParameter T)
+        private static void GenerateArray(MethodDefinition method, TypeReference baseEnumerable, GenericParameter T)
         {
             method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.None, baseEnumerable));
             method.Parameters.Add(new ParameterDefinition("index", ParameterAttributes.None, method.Module.TypeSystem.Int64));

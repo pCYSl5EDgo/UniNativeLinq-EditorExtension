@@ -28,11 +28,15 @@ namespace UniNativeLinq.Editor.CodeGenerator
             if (!Api.ShouldDefine(array)) return;
             TypeDefinition @static;
             mainModule.Types.Add(@static = mainModule.DefineStatic("TryGet" + Name + processType + "OperatorHelper"));
+
+            if (Api.TryGetEnabled("TEnumerable", out var genericEnabled) && genericEnabled)
+                GenerateGeneric(@static, mainModule, returnTypeReference);
+
             foreach (var name in array)
             {
                 if (!processor.IsSpecialType(name, out var isSpecial)) throw new KeyNotFoundException();
                 if (!Api.TryGetEnabled(name, out var apiEnabled) || !apiEnabled) continue;
-                GenerateEach(name, isSpecial, @static, mainModule, returnTypeReference, systemModule);
+                GenerateEach(name, isSpecial, @static, mainModule, returnTypeReference);
             }
         }
 
@@ -115,10 +119,94 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 }
             }
         }
-
-        private void GenerateEach(string name, bool isSpecial, TypeDefinition @static, ModuleDefinition mainModule, TypeReference returnTypeReference, ModuleDefinition systemModule)
+        private void GenerateGeneric(TypeDefinition @static, ModuleDefinition mainModule, TypeReference returnTypeReference)
         {
-            var method = new MethodDefinition("TryGet" + Name, Helper.StaticMethodAttributes, mainModule.TypeSystem.Boolean)
+            var method = new MethodDefinition(Api.Name, Helper.StaticMethodAttributes, mainModule.TypeSystem.Boolean)
+            {
+                DeclaringType = @static,
+                AggressiveInlining = true,
+                CustomAttributes = { Helper.ExtensionAttribute }
+            };
+            @static.Methods.Add(method);
+
+            var (T, TEnumerator, TEnumerable) = method.Define3GenericParameters();
+
+            TypeReference IRefFunc = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "IRefFunc`2"))
+            {
+                GenericArguments = { T, returnTypeReference }
+            };
+            var TOperator = new GenericParameter("TOperator", method)
+            {
+                HasNotNullableValueTypeConstraint = true,
+                Constraints = { IRefFunc }
+            };
+            method.GenericParameters.Add(TOperator);
+            var Calc = IRefFunc.FindMethod("Calc");
+
+            method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(TEnumerable))
+            {
+                CustomAttributes = { Helper.IsReadOnlyAttribute }
+            });
+            method.Parameters.Add(new ParameterDefinition("value", ParameterAttributes.Out, new ByReferenceType(returnTypeReference)));
+            method.Parameters.Add(new ParameterDefinition("operator", ParameterAttributes.In, new ByReferenceType(TOperator))
+            {
+                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
+            });
+
+            var body = method.Body;
+
+            var enumeratorVariable = new VariableDefinition(TEnumerator);
+            body.Variables.Add(enumeratorVariable);
+            body.Variables.Add(new VariableDefinition(returnTypeReference));
+            body.Variables.Add(new VariableDefinition(T));
+            var condition = Instruction.Create(OpCodes.Ldloca_S, enumeratorVariable);
+            var loopStart = Instruction.Create(OpCodes.Ldarg_1);
+            var shortJump = Instruction.Create(OpCodes.Ldarg_1);
+
+            body.GetILProcessor()
+                .LdArg(0)
+                .GetEnumeratorEnumerable(TEnumerable)
+                .StLoc(0)
+                .LdLocA(0)
+                .LdLocA(2)
+                .TryMoveNextEnumerator(TEnumerator)
+                .BrTrueS(shortJump)
+                .LdLocA(0)
+                .DisposeEnumerator(TEnumerator)
+                .LdC(false)
+                .Ret()
+                .Add(shortJump)
+                .LdArg(2)
+                .LdLocA(2)
+                .Constrained(TOperator)
+                .CallVirtual(Calc)
+                .StObj(returnTypeReference)
+                .BrS(condition)
+                .Add(loopStart)
+                .LdArg(2)
+                .LdLocA(2)
+                .Constrained(TOperator)
+                .CallVirtual(Calc)
+                .StLoc(1)
+                .Add(Instruction.Create(OpCodeLdInd))
+                .LdLoc(1)
+                .Add(Instruction.Create(isMax ? OpCodeBgeS : OpCodeBleS, condition))
+                .LdArg(1)
+                .LdLocA(1)
+                .CpObj(returnTypeReference)
+                .Add(condition)
+                .LdLocA(2)
+                .TryMoveNextEnumerator(TEnumerator)
+                .BrTrueS(loopStart)
+                .LdLocA(0)
+                .DisposeEnumerator(TEnumerator)
+                .LdC(true)
+                .Ret();
+        }
+
+        private void GenerateEach(string name, bool isSpecial, TypeDefinition @static, ModuleDefinition mainModule, TypeReference returnTypeReference)
+        {
+            var method = new MethodDefinition(Api.Name, Helper.StaticMethodAttributes, mainModule.TypeSystem.Boolean)
             {
                 DeclaringType = @static,
                 AggressiveInlining = true,

@@ -42,10 +42,149 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
         public void Generate(IEnumerableCollectionProcessor processor, ModuleDefinition mainModule, ModuleDefinition systemModule, ModuleDefinition unityModule)
         {
-            Api.GenerateSingleNoEnumerable(processor, mainModule, systemModule, unityModule, GenerateEach);
+            Api.GenerateSingleNoEnumerable(processor, mainModule, GenerateEach, GenerateGeneric);
         }
 
-        private void GenerateEach(string name, bool isSpecial, TypeDefinition @static, ModuleDefinition mainModule, ModuleDefinition systemModule)
+        private void GenerateGeneric(TypeDefinition @static, ModuleDefinition mainModule)
+        {
+            var method = new MethodDefinition("TryGetAverage", Helper.StaticMethodAttributes, mainModule.TypeSystem.Boolean)
+            {
+                DeclaringType = @static,
+                AggressiveInlining = true,
+                CustomAttributes = { Helper.ExtensionAttribute }
+            };
+            @static.Methods.Add(method);
+            var returnType = CalcReturnTypeReference(method);
+
+            var IRefEnumerator = new GenericInstanceType(method.Module.GetType("UniNativeLinq", "IRefEnumerator`1"))
+            {
+                GenericArguments = { returnType }
+            };
+            var TEnumerator = new GenericParameter("TEnumerator", method)
+            {
+                HasNotNullableValueTypeConstraint = true,
+                Constraints = { IRefEnumerator }
+            };
+            method.GenericParameters.Add(TEnumerator);
+
+            var IRefEnumerable = new GenericInstanceType(method.Module.GetType("UniNativeLinq", "IRefEnumerable`2"))
+            {
+                GenericArguments = { TEnumerator, returnType }
+            };
+            var TEnumerable = new GenericParameter("TEnumerable", method)
+            {
+                HasNotNullableValueTypeConstraint = true,
+                Constraints = { IRefEnumerable }
+            };
+            method.GenericParameters.Add(TEnumerable);
+
+            method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(TEnumerable))
+            {
+                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
+            });
+            method.Parameters.Add(new ParameterDefinition("value", ParameterAttributes.Out, new ByReferenceType(returnType)));
+
+            var body = method.Body;
+            body.InitLocals = true;
+            var enumeratorVariable = new VariableDefinition(TEnumerator);
+            body.Variables.Add(enumeratorVariable);                                         // 0
+            body.Variables.Add(new VariableDefinition(returnType));                         // 1
+            body.Variables.Add(new VariableDefinition(returnType));                         // 2
+            body.Variables.Add(new VariableDefinition(method.Module.TypeSystem.Int64));     // 3
+
+            var firstSuccess = InstructionUtility.LoadConstant(1L);
+            var @return = Instruction.Create(OpCodes.Ldarg_1);
+            var loopStart = Instruction.Create(OpCodes.Ldloca_S, enumeratorVariable);
+
+            var processor = body.GetILProcessor()
+                .LdArg(0)
+                .GetEnumeratorEnumerable(TEnumerable)
+                .StLoc(0)
+
+                .LdLocA(0)
+                .LdLocA(1)
+                .TryMoveNextEnumerator(TEnumerator)
+                .BrTrueS(firstSuccess[0])
+
+                .LdLocA(0)
+                .DisposeEnumerator(TEnumerator)
+                .LdC(false)
+                .Ret()
+
+                .AddRange(firstSuccess)
+                .StLoc(3)
+
+                .Add(loopStart)
+                .LdLocA(2)
+                .TryMoveNextEnumerator(TEnumerator)
+                .BrFalseS(@return)
+
+                .LdLoc(3)
+                .LdC(1L)
+                .Add()
+                .StLoc(3)
+
+                .LdLoc(1)
+                .LdLoc(2)
+                .Add()
+                .StLoc(1)
+
+                .BrS(loopStart)
+
+                .Add(@return)
+                .LdLoc(1);
+
+            switch (returnTypeName)
+            {
+                case "Double":
+                    processor
+                        .LdLoc(3)
+                        .ConvR8()
+                        .Div();
+                    break;
+                case "Single":
+                    processor
+                        .LdLoc(3)
+                        .ConvR4()
+                        .Div();
+                    break;
+                case "Int32":
+                    processor
+                        .ConvI8()
+                        .LdLoc(3)
+                        .Div()
+                        .ConvI4();
+                    break;
+                case "UInt32":
+                    processor
+                        .ConvU8()
+                        .LdLoc(3)
+                        .DivUn()
+                        .ConvU4();
+                    break;
+                case "Int64":
+                    processor
+                        .Div();
+                    break;
+                case "UInt64":
+                    processor
+                        .LdLoc(3)
+                        .ConvU8()
+                        .DivUn();
+                    break;
+            }
+
+            processor
+                .StObj(returnType)
+
+                .LdLocA(0)
+                .DisposeEnumerator(TEnumerator)
+
+                .LdC(true)
+                .Ret();
+        }
+
+        private void GenerateEach(string name, bool isSpecial, TypeDefinition @static, ModuleDefinition mainModule)
         {
             var method = new MethodDefinition("TryGetAverage", Helper.StaticMethodAttributes, mainModule.TypeSystem.Boolean)
             {

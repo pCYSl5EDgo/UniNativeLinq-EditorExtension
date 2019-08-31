@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+
 // ReSharper disable InconsistentNaming
 
 namespace UniNativeLinq.Editor.CodeGenerator
@@ -26,15 +27,19 @@ namespace UniNativeLinq.Editor.CodeGenerator
             if (!Api.ShouldDefine(array)) return;
             TypeDefinition @static;
             mainModule.Types.Add(@static = mainModule.DefineStatic(nameof(AggregateValue2Refs) + "Helper"));
+
+            if (Api.TryGetEnabled("TEnumerable", out var genericEnabled) && genericEnabled)
+                GenerateGeneric(@static, mainModule);
+
             foreach (var name in array)
             {
                 if (!processor.IsSpecialType(name, out var isSpecial)) throw new KeyNotFoundException();
                 if (!Api.TryGetEnabled(name, out var apiEnabled) || !apiEnabled) continue;
-                GenerateEach(name, isSpecial, @static, mainModule, systemModule);
+                GenerateEach(name, isSpecial, @static, mainModule);
             }
         }
 
-        private void GenerateEach(string name, bool isSpecial, TypeDefinition @static, ModuleDefinition mainModule, ModuleDefinition systemModule)
+        private void GenerateEach(string name, bool isSpecial, TypeDefinition @static, ModuleDefinition mainModule)
         {
             var method = new MethodDefinition("Aggregate", Helper.StaticMethodAttributes, mainModule.TypeSystem.Boolean)
             {
@@ -56,12 +61,12 @@ namespace UniNativeLinq.Editor.CodeGenerator
             genericParameters.Add(TResult);
             method.ReturnType = TResult;
 
-            var Func = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "RefAction`2"))
+            var TFunc = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "RefAction`2"))
             {
                 GenericArguments = { T, TAccumulate }
             };
 
-            var ResultFunc = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "RefFunc`2"))
+            var TResultFunc = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "RefFunc`2"))
             {
                 GenericArguments = { TAccumulate, TResult }
             };
@@ -72,21 +77,94 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 switch (name)
                 {
                     case "T[]":
-                        GenerateArray(method, baseEnumerable, T, TAccumulate, Func, ResultFunc);
+                        GenerateArray(method, baseEnumerable, T, TAccumulate, TFunc, TResultFunc);
                         break;
                     case "NativeArray<T>":
-                        GenerateNativeArray(method, baseEnumerable, enumerable, enumerator, T, TAccumulate, Func, ResultFunc);
+                        GenerateNativeArray(method, baseEnumerable, enumerable, enumerator, T, TAccumulate, TFunc, TResultFunc);
                         break;
                     default: throw new NotSupportedException(name);
                 }
             }
             else
             {
-                GenerateNormal(method, Dictionary[name], T, TAccumulate, Func, ResultFunc);
+                var (enumerable, enumerator, _) = T.MakeFromCommonType(method, Dictionary[name], "0");
+                GenerateNormal(method, enumerable, enumerator, T, TAccumulate, TFunc, TResultFunc);
             }
         }
 
-        private void GenerateArray(MethodDefinition method, TypeReference baseEnumerable, TypeReference T, TypeReference TAccumulate, TypeReference TFunc, TypeReference TResultFunc)
+        private static void GenerateGeneric(TypeDefinition @static, ModuleDefinition mainModule)
+        {
+            var method = new MethodDefinition("Aggregate", Helper.StaticMethodAttributes, mainModule.TypeSystem.Boolean)
+            {
+                DeclaringType = @static,
+                AggressiveInlining = true,
+                CustomAttributes = { Helper.ExtensionAttribute }
+            };
+            @static.Methods.Add(method);
+
+            var (T, TEnumerator, TEnumerable) = method.Define3GenericParameters();
+
+            var genericParameters = method.GenericParameters;
+
+            var TAccumulate = new GenericParameter("TAccumulate", method);
+            genericParameters.Add(TAccumulate);
+
+            var TResult = new GenericParameter("TResult", method);
+            genericParameters.Add(TResult);
+            method.ReturnType = TResult;
+
+            var TFunc = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "RefAction`2"))
+            {
+                GenericArguments = { T, TAccumulate }
+            };
+
+            var TResultFunc = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "RefFunc`2"))
+            {
+                GenericArguments = { TAccumulate, TResult }
+            };
+
+            method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(TEnumerable))
+            {
+                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
+            });
+            method.Parameters.Add(new ParameterDefinition("accumulate", ParameterAttributes.None, TAccumulate));
+            method.Parameters.Add(new ParameterDefinition("func", ParameterAttributes.None, TFunc));
+            method.Parameters.Add(new ParameterDefinition("resultFunc", ParameterAttributes.None, TResultFunc));
+
+            var body = method.Body;
+
+            var enumeratorVariable = new VariableDefinition(TEnumerator);
+            body.Variables.Add(enumeratorVariable);
+            body.Variables.Add(new VariableDefinition(method.Module.TypeSystem.Boolean));
+            body.Variables.Add(new VariableDefinition(new ByReferenceType(T)));
+
+            var loopStart = Instruction.Create(OpCodes.Ldarg_2);
+            var condition = Instruction.Create(OpCodes.Ldloca_S, enumeratorVariable);
+
+            body.GetILProcessor()
+                .LdArg(0)
+                .GetEnumeratorEnumerable(TEnumerable)
+                .StLoc(0)
+                .BrS(condition)
+                .Add(loopStart)
+                .LdLoc(2)
+                .LdArgA(1)
+                .CallVirtual(TFunc.FindMethod("Invoke"))
+                .Add(condition)
+                .LdLocA(1)
+                .TryGetNextEnumerator(TEnumerator)
+                .StLoc(2)
+                .LdLoc(1)
+                .BrTrueS(loopStart)
+                .LdLocA(0)
+                .DisposeEnumerator(TEnumerator)
+                .LdArg(3)
+                .LdArgA(1)
+                .CallVirtual(TResultFunc.FindMethod("Invoke"))
+                .Ret();
+        }
+
+        private static void GenerateArray(MethodDefinition method, TypeReference baseEnumerable, TypeReference T, TypeReference TAccumulate, TypeReference TFunc, TypeReference TResultFunc)
         {
             method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.None, baseEnumerable));
             method.Parameters.Add(new ParameterDefinition("accumulate", ParameterAttributes.None, TAccumulate));
@@ -127,7 +205,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .Ret();
         }
 
-        private void GenerateNativeArray(MethodDefinition method, TypeReference baseEnumerable, TypeReference enumerable, TypeReference enumerator, TypeReference T, TypeReference TAccumulate, TypeReference TFunc, TypeReference TResultFunc)
+        private static void GenerateNativeArray(MethodDefinition method, TypeReference baseEnumerable, TypeReference enumerable, TypeReference enumerator, TypeReference T, TypeReference TAccumulate, TypeReference TFunc, TypeReference TResultFunc)
         {
             method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.None, baseEnumerable));
             method.Parameters.Add(new ParameterDefinition("accumulate", ParameterAttributes.None, TAccumulate));
@@ -169,9 +247,8 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .Ret();
         }
 
-        private void GenerateNormal(MethodDefinition method, TypeDefinition type, TypeReference T, TypeReference TAccumulate, TypeReference TFunc, TypeReference TResultFunc)
+        private static void GenerateNormal(MethodDefinition method, TypeReference enumerable, TypeReference enumerator, TypeReference T, TypeReference TAccumulate, TypeReference TFunc, TypeReference TResultFunc)
         {
-            var (enumerable, enumerator, _) = T.MakeFromCommonType(method, type, "0");
             method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(enumerable))
             {
                 CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }

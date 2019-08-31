@@ -16,10 +16,82 @@ namespace UniNativeLinq.Editor.CodeGenerator
         public Dictionary<string, TypeDefinition> Dictionary { private get; set; }
         public void Generate(IEnumerableCollectionProcessor processor, ModuleDefinition mainModule, ModuleDefinition systemModule, ModuleDefinition unityModule)
         {
-            Api.GenerateSingleNoEnumerable(processor, mainModule, systemModule, unityModule, GenerateEach);
+            Api.GenerateSingleNoEnumerable(processor, mainModule, GenerateEach, GenerateGeneric);
         }
 
-        private void GenerateEach(string name, bool isSpecial, TypeDefinition @static, ModuleDefinition mainModule, ModuleDefinition systemModule)
+        private void GenerateGeneric(TypeDefinition @static, ModuleDefinition mainModule)
+        {
+            var method = new MethodDefinition(Api.Name, Helper.StaticMethodAttributes, mainModule.TypeSystem.Boolean)
+            {
+                DeclaringType = @static,
+                AggressiveInlining = true,
+                CustomAttributes = { Helper.ExtensionAttribute }
+            };
+            @static.Methods.Add(method);
+
+            var (T, TEnumerator, TEnumerable) = method.Define3GenericParameters();
+
+            var IEquatable = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "IRefFunc`3"))
+            {
+                GenericArguments = { T, T, mainModule.TypeSystem.Boolean }
+            };
+            var TOperator = new GenericParameter("TOperator", method)
+            {
+                HasNotNullableValueTypeConstraint = true,
+                Constraints = { IEquatable }
+            };
+            method.GenericParameters.Add(TOperator);
+
+            method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(TEnumerable))
+            {
+                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
+            });
+            method.Parameters.Add(new ParameterDefinition("value", ParameterAttributes.In, new ByReferenceType(T))
+            {
+                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
+            });
+            method.Parameters.Add(new ParameterDefinition("func", ParameterAttributes.In, new ByReferenceType(TOperator))
+            {
+                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
+            });
+
+            var body = method.Body;
+            body.InitLocals = true;
+            var enumeratorVariable = new VariableDefinition(TEnumerator);
+            body.Variables.Add(enumeratorVariable);
+            body.Variables.Add(new VariableDefinition(T));
+
+            var loopStart = Instruction.Create(OpCodes.Ldloca_S, enumeratorVariable);
+            var fail = InstructionUtility.LoadConstant(false);
+            var dispose = Instruction.Create(OpCodes.Ldloca_S, enumeratorVariable);
+
+            body.GetILProcessor()
+                .LdArg(0)
+                .GetEnumeratorEnumerable(TEnumerable)
+                .StLoc(0)
+
+                .Add(loopStart)
+                .LdLocA(1)
+                .TryMoveNextEnumerator(TEnumerator)
+                .BrFalseS(fail)
+
+                .LdArg(2)
+                .LdArg(1)
+                .LdLocA(1)
+                .Constrained(TOperator)
+                .CallVirtual(IEquatable.FindMethod("Calc"))
+                .BrFalseS(loopStart)
+
+                .LdC(true)
+                .BrS(dispose)
+
+                .Add(fail)
+                .Add(dispose)
+                .DisposeEnumerator(TEnumerator)
+                .Ret();
+        }
+
+        private void GenerateEach(string name, bool isSpecial, TypeDefinition @static, ModuleDefinition mainModule)
         {
             var method = new MethodDefinition("Contains", Helper.StaticMethodAttributes, mainModule.TypeSystem.Boolean)
             {

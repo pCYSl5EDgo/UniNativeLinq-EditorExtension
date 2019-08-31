@@ -16,7 +16,59 @@ namespace UniNativeLinq.Editor.CodeGenerator.ForEach
         public Dictionary<string, TypeDefinition> Dictionary { private get; set; }
         public void Generate(IEnumerableCollectionProcessor processor, ModuleDefinition mainModule, ModuleDefinition systemModule, ModuleDefinition unityModule)
         {
-            Api.GenerateSingleNoEnumerable(processor, mainModule, systemModule, unityModule, GenerateEach);
+            Api.GenerateSingleNoEnumerable(processor, mainModule, systemModule, GenerateEach, GenerateGeneric);
+        }
+
+        private void GenerateGeneric(TypeDefinition @static, ModuleDefinition mainModule, ModuleDefinition systemModule)
+        {
+            var method = new MethodDefinition(Api.Name, Helper.StaticMethodAttributes, mainModule.TypeSystem.Void)
+            {
+                DeclaringType = @static,
+                AggressiveInlining = true,
+                CustomAttributes = { Helper.ExtensionAttribute }
+            };
+            @static.Methods.Add(method);
+
+            var (T, TEnumerator, TEnumerable) = method.Define3GenericParameters();
+
+            var action = new GenericInstanceType(mainModule.ImportReference(systemModule.GetType("System", "Action`1")))
+            {
+                GenericArguments = { T }
+            };
+
+            method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(TEnumerable))
+            {
+                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
+            });
+            method.Parameters.Add(new ParameterDefinition("action", ParameterAttributes.None, action));
+
+            var body = method.Body;
+            body.InitLocals = true;
+            var variables = body.Variables;
+            variables.Add(new VariableDefinition(TEnumerator));
+            variables.Add(new VariableDefinition(T));
+
+            var closing = Instruction.Create(OpCodes.Ldloca_S, variables[0]);
+            var loopStart = Instruction.Create(OpCodes.Ldloca_S, variables[0]);
+
+            body.GetILProcessor()
+                .LdArg(0)
+                .GetEnumeratorEnumerable(TEnumerable)
+                .StLoc(0)
+
+                .Add(loopStart)
+                .LdLocA(1)
+                .TryMoveNextEnumerator(TEnumerator)
+                .BrFalseS(closing)
+
+                .LdArg(1)
+                .LdLoc(1)
+                .CallVirtual(action.FindMethod("Invoke"))
+                .BrS(loopStart)
+
+                .Add(closing)
+                .DisposeEnumerator(TEnumerator)
+                .Ret();
         }
 
         private void GenerateEach(string name, bool isSpecial, TypeDefinition @static, ModuleDefinition mainModule, ModuleDefinition systemModule)

@@ -21,8 +21,16 @@ namespace UniNativeLinq.Editor
         public int Count => EnabledArray.Length;
         public IEnumerable<(string Name, bool Enabled)> NameEnabledTupleCollection => EnabledArray.Select(x => (x.Enumerable, x.Enabled));
         public IEnumerable<string> EnabledNameCollection => EnabledArray.Where(x => x.Enabled).Select(x => x.Enumerable);
+
+        public bool EnableGenericApi;
+
         public bool TryGetEnabled(string name, out bool value)
         {
+            if (name == "TEnumerable")
+            {
+                value = EnableGenericApi;
+                return true;
+            }
             for (var i = 0; i < EnabledArray.Length; i++)
             {
                 ref var tuple = ref EnabledArray[i];
@@ -36,6 +44,12 @@ namespace UniNativeLinq.Editor
 
         public bool TrySetEnabled(string name, bool value)
         {
+            if (name == "TEnumerable")
+            {
+                EnableGenericApi = value;
+                EditorUtility.SetDirty(this);
+                return true;
+            }
             for (var i = 0; i < EnabledArray.Length; i++)
             {
                 ref var tuple = ref EnabledArray[i];
@@ -57,31 +71,43 @@ namespace UniNativeLinq.Editor
             {
                 if (GUILayout.Button("Select All"))
                 {
+                    EnableGenericApi = true;
                     for (var i = 0; i < EnabledArray.Length; i++)
                     {
                         ref var tuple = ref EnabledArray[i];
                         tuple.Enabled = true;
                     }
+                    EditorUtility.SetDirty(this);
                 }
                 else if (GUILayout.Button("Deselect All"))
                 {
+                    EnableGenericApi = false;
                     for (var i = 0; i < EnabledArray.Length; i++)
                     {
                         ref var tuple = ref EnabledArray[i];
                         tuple.Enabled = false;
                     }
+                    EditorUtility.SetDirty(this);
                 }
                 else if (GUILayout.Button("Hide and Deselect All"))
                 {
                     IsHided = true;
+                    EnableGenericApi = false;
                     for (var i = 0; i < EnabledArray.Length; i++)
                     {
                         ref var tuple = ref EnabledArray[i];
                         tuple.Enabled = false;
                     }
+                    EditorUtility.SetDirty(this);
                 }
             }
-
+            using (IndentScope.Create())
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                EditorGUILayout.LabelField(new GUIContent("TEnumerable"));
+                var guiContent = new GUIContent("TEnumerable : " + EnableGenericApi, Description);
+                TrySetEnabled("TEnumerable", EditorGUILayout.ToggleLeft(guiContent, EnableGenericApi, GUI.skin.button));
+            }
             for (var i = 0; i < EnabledArray.Length; i++)
             {
                 ref var tuple = ref EnabledArray[i];

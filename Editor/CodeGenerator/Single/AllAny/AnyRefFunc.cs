@@ -17,10 +17,65 @@ namespace UniNativeLinq.Editor.CodeGenerator
         public Dictionary<string, TypeDefinition> Dictionary { private get; set; }
         public void Generate(IEnumerableCollectionProcessor processor, ModuleDefinition mainModule, ModuleDefinition systemModule, ModuleDefinition unityModule)
         {
-            Api.GenerateSingleNoEnumerable(processor, mainModule, systemModule, unityModule, GenerateEach);
+            Api.GenerateSingleNoEnumerable(processor, mainModule, GenerateEach, GenerateGeneric);
         }
 
-        private void GenerateEach(string name, bool isSpecial, TypeDefinition @static, ModuleDefinition mainModule, ModuleDefinition systemModule)
+        private void GenerateGeneric(TypeDefinition @static, ModuleDefinition mainModule)
+        {
+            var method = new MethodDefinition(Api.Name, Helper.StaticMethodAttributes, mainModule.TypeSystem.Boolean)
+            {
+                DeclaringType = @static,
+                AggressiveInlining = true,
+                CustomAttributes = { Helper.ExtensionAttribute }
+            };
+            @static.Methods.Add(method);
+
+            var (T, TEnumerator, TEnumerable) = method.Define3GenericParameters();
+
+            var TFunc = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "RefFunc`2"))
+            {
+                GenericArguments = { T, mainModule.TypeSystem.Boolean }
+            };
+
+            method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(TEnumerable))
+            {
+                CustomAttributes = { Helper.IsReadOnlyAttribute }
+            });
+            method.Parameters.Add(new ParameterDefinition("func", ParameterAttributes.None, TFunc));
+
+            var body = method.Body;
+
+            var enumeratorVariable = new VariableDefinition(TEnumerator);
+            body.Variables.Add(enumeratorVariable);
+
+            var condition = Instruction.Create(OpCodes.Ldloca_S, enumeratorVariable);
+            var loopStart = Instruction.Create(OpCodes.Ldarg_1);
+
+
+            body.GetILProcessor()
+                .LdArg(0)
+                .GetEnumeratorEnumerable(TEnumerable)
+                .StLoc(0)
+                .BrS(condition)
+                .Add(loopStart)
+                .LdLocA(0)
+                .GetCurrentEnumerator(TEnumerator)
+                .CallVirtual(TFunc.FindMethod("Invoke", 1))
+                .BrBoolS(condition, IsAll)
+                .LdLocA(0)
+                .DisposeEnumerator(TEnumerator)
+                .LdC(!IsAll)
+                .Ret()
+                .Add(condition)
+                .MoveNextEnumerator(TEnumerator)
+                .BrTrueS(loopStart)
+                .LdLocA(0)
+                .DisposeEnumerator(TEnumerator)
+                .LdC(IsAll)
+                .Ret();
+        }
+
+        private void GenerateEach(string name, bool isSpecial, TypeDefinition @static, ModuleDefinition mainModule)
         {
             var method = new MethodDefinition("Any", Helper.StaticMethodAttributes, mainModule.TypeSystem.Boolean)
             {
@@ -46,7 +101,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                         GenerateArray(mainModule, method, Func, T, T.MakeSpecialTypePair(name));
                         break;
                     case "NativeArray<T>":
-                        GenerateNativeArray(method, Func, T, T.MakeSpecialTypePair(name));
+                        GenerateNativeArray(method, Func, T.MakeSpecialTypePair(name));
                         break;
                     default: throw new NotSupportedException(name);
                 }
@@ -57,7 +112,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             }
         }
 
-        private void GenerateNativeArray(MethodDefinition method, TypeReference TFunc, TypeReference T, (TypeReference baseEnumerable, GenericInstanceType specialEnumerable, GenericInstanceType specialEnumerator) tuple)
+        private static void GenerateNativeArray(MethodDefinition method, TypeReference TFunc, (TypeReference baseEnumerable, GenericInstanceType specialEnumerable, GenericInstanceType specialEnumerator) tuple)
         {
             var (baseEnumerable, enumerable, enumerator) = tuple;
             method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.None, baseEnumerable));
@@ -97,7 +152,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .Ret();
         }
 
-        private void GenerateArray(ModuleDefinition mainModule, MethodDefinition method, TypeReference TFunc, GenericParameter T, (TypeReference baseEnumerable, GenericInstanceType specialEnumerable, GenericInstanceType specialEnumerator) makeSpecialTypePair)
+        private static void GenerateArray(ModuleDefinition mainModule, MethodDefinition method, TypeReference TFunc, GenericParameter T, (TypeReference baseEnumerable, GenericInstanceType specialEnumerable, GenericInstanceType specialEnumerator) makeSpecialTypePair)
         {
             method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.None, makeSpecialTypePair.baseEnumerable));
             method.Parameters.Add(new ParameterDefinition("func", ParameterAttributes.None, TFunc));
@@ -131,7 +186,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .Ret();
         }
 
-        private void GenerateNormal(MethodDefinition method, TypeDefinition type, TypeReference TFunc, TypeReference T)
+        private static void GenerateNormal(MethodDefinition method, TypeDefinition type, TypeReference TFunc, TypeReference T)
         {
             var (enumerable, enumerator, _) = T.MakeFromCommonType(method, type, "0");
 

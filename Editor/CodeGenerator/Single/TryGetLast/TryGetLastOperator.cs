@@ -16,10 +16,81 @@ namespace UniNativeLinq.Editor.CodeGenerator
         public Dictionary<string, TypeDefinition> Dictionary { private get; set; }
         public void Generate(IEnumerableCollectionProcessor processor, ModuleDefinition mainModule, ModuleDefinition systemModule, ModuleDefinition unityModule)
         {
-            Api.GenerateSingleNoEnumerable(processor, mainModule, systemModule, unityModule, GenerateEach);
+            Api.GenerateSingleNoEnumerable(processor, mainModule, GenerateEach, GenerateGeneric);
         }
 
-        private void GenerateEach(string name, bool isSpecial, TypeDefinition @static, ModuleDefinition mainModule, ModuleDefinition systemModule)
+        private void GenerateGeneric(TypeDefinition @static, ModuleDefinition mainModule)
+        {
+            var method = new MethodDefinition(Api.Name, Helper.StaticMethodAttributes, mainModule.TypeSystem.Boolean)
+            {
+                DeclaringType = @static,
+                AggressiveInlining = true,
+                CustomAttributes = { Helper.ExtensionAttribute }
+            };
+            @static.Methods.Add(method);
+
+            var (T, TEnumerator, TEnumerable) = method.Define3GenericParameters();
+
+            var predicate = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "IRefFunc`2"))
+            {
+                GenericArguments = { T, mainModule.TypeSystem.Boolean }
+            };
+
+            var TPredicate = method.DefineUnmanagedGenericParameter("TPredicate");
+            TPredicate.Constraints.Add(predicate);
+            method.GenericParameters.Add(TPredicate);
+
+            method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(TEnumerable))
+            {
+                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
+            });
+            method.Parameters.Add(new ParameterDefinition("value", ParameterAttributes.Out, new ByReferenceType(T)));
+            method.Parameters.Add(new ParameterDefinition("TPredicate", ParameterAttributes.In, new ByReferenceType(TPredicate))
+            {
+                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
+            });
+
+            var body = method.Body;
+            body.InitLocals = true;
+            var enumeratorVariable = new VariableDefinition(TEnumerator);
+            body.Variables.Add(enumeratorVariable);
+            body.Variables.Add(new VariableDefinition(T));
+            body.Variables.Add(new VariableDefinition(method.Module.TypeSystem.Boolean));
+
+            var loopStart = Instruction.Create(OpCodes.Ldloca_S, enumeratorVariable);
+            var @return = Instruction.Create(OpCodes.Ldloca_S, enumeratorVariable);
+
+            body.GetILProcessor()
+                .LdArg(0)
+                .GetEnumeratorEnumerable(TEnumerable)
+                .StLoc(0)
+
+                .Add(loopStart)
+                .LdLocA(1)
+                .TryMoveNextEnumerator(TEnumerator)
+                .BrFalseS(@return)
+
+                .LdArg(2)
+                .LdLocA(1)
+                .Constrained(TPredicate)
+                .CallVirtual(predicate.FindMethod("Calc"))
+                .BrFalseS(loopStart)
+
+                .LdC(true)
+                .StLoc(2)
+
+                .LdArg(1)
+                .LdLocA(1)
+                .CpObj(T)
+                .BrS(loopStart)
+
+                .Add(@return)
+                .DisposeEnumerator(TEnumerator)
+                .LdLoc(2)
+                .Ret();
+        }
+
+        private void GenerateEach(string name, bool isSpecial, TypeDefinition @static, ModuleDefinition mainModule)
         {
             var method = new MethodDefinition(Api.Name, Helper.StaticMethodAttributes, mainModule.TypeSystem.Boolean)
             {
@@ -43,14 +114,14 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
             if (isSpecial)
             {
-                var (baseEnumerable, enumerable, enumerator) = T.MakeSpecialTypePair(name);
+                var (baseEnumerable, enumerable, _) = T.MakeSpecialTypePair(name);
                 switch (name)
                 {
                     case "T[]":
                         GenerateArray(method, baseEnumerable, T, TPredicate, predicate);
                         break;
                     case "NativeArray<T>":
-                        GenerateNativeArray(method, baseEnumerable, enumerable, enumerator, T, TPredicate, predicate);
+                        GenerateNativeArray(method, baseEnumerable, enumerable, T, TPredicate, predicate);
                         break;
                     default: throw new NotSupportedException(name);
                 }
@@ -84,12 +155,12 @@ namespace UniNativeLinq.Editor.CodeGenerator
             }
         }
 
-        private void GenerateCanIndexAccess(MethodDefinition method, TypeReference enumerable, TypeReference TPredicate, TypeReference predicate, TypeReference T)
+        private static void GenerateCanIndexAccess(MethodDefinition method, TypeReference enumerable, TypeReference TPredicate, TypeReference predicate, TypeReference T)
         {
             var body = method.Body;
             body.InitLocals = true;
             body.Variables.Add(new VariableDefinition(method.Module.TypeSystem.Int64));
-            
+
             var fail = InstructionUtility.LoadConstant(false);
             var success = Instruction.Create(OpCodes.Ldarg_1);
             var loopStart = Instruction.Create(OpCodes.Ldarg_2);
@@ -172,7 +243,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .Ret();
         }
 
-        private static void GenerateNativeArray(MethodDefinition method, TypeReference baseEnumerable, TypeReference enumerable, TypeReference enumerator, GenericParameter T, TypeReference TPredicate, TypeReference predicate)
+        private static void GenerateNativeArray(MethodDefinition method, TypeReference baseEnumerable, TypeReference enumerable, GenericParameter T, TypeReference TPredicate, TypeReference predicate)
         {
             method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.None, baseEnumerable));
             method.Parameters.Add(new ParameterDefinition("value", ParameterAttributes.Out, new ByReferenceType(T)));

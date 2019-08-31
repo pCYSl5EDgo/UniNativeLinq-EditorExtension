@@ -18,16 +18,19 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
         private readonly string processType;
         private readonly bool isMax;
-        private string Name => isMax ? "Max" : "Min";
         public readonly ISingleApi Api;
         public Dictionary<string, TypeDefinition> Dictionary { private get; set; }
         public void Generate(IEnumerableCollectionProcessor processor, ModuleDefinition mainModule, ModuleDefinition systemModule, ModuleDefinition unityModule)
         {
-            var returnTypeReference = InvokeulateReturnType(mainModule);
+            var returnTypeReference = CalculateReturnType(mainModule);
             var array = processor.EnabledNameCollection.Intersect(Api.NameCollection).ToArray();
             if (!Api.ShouldDefine(array)) return;
             TypeDefinition @static;
-            mainModule.Types.Add(@static = mainModule.DefineStatic("TryGet" + Name + processType + "FuncHelper"));
+            mainModule.Types.Add(@static = mainModule.DefineStatic(Api.Name + processType + "FuncHelper"));
+
+            if (Api.TryGetEnabled("TEnumerable", out var genericEnabled) && genericEnabled)
+                GenerateGeneric(@static, mainModule, systemModule, returnTypeReference);
+
             foreach (var name in array)
             {
                 if (!processor.IsSpecialType(name, out var isSpecial)) throw new KeyNotFoundException();
@@ -36,7 +39,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             }
         }
 
-        private TypeReference InvokeulateReturnType(ModuleDefinition mainModule)
+        private TypeReference CalculateReturnType(ModuleDefinition mainModule)
         {
             switch (processType)
             {
@@ -116,9 +119,83 @@ namespace UniNativeLinq.Editor.CodeGenerator
             }
         }
 
+        private void GenerateGeneric(TypeDefinition @static, ModuleDefinition mainModule, ModuleDefinition systemModule, TypeReference returnTypeReference)
+        {
+            var method = new MethodDefinition(Api.Name, Helper.StaticMethodAttributes, mainModule.TypeSystem.Boolean)
+            {
+                DeclaringType = @static,
+                AggressiveInlining = true,
+                CustomAttributes = { Helper.ExtensionAttribute }
+            };
+            @static.Methods.Add(method);
+
+            var (T, TEnumerator, TEnumerable) = method.Define3GenericParameters();
+
+            var Func = new GenericInstanceType(mainModule.ImportReference(systemModule.GetType("System", "Func`2")))
+            {
+                GenericArguments = { T, returnTypeReference }
+            };
+            var Invoke = Func.FindMethod("Invoke");
+
+            method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(TEnumerable))
+            {
+                CustomAttributes = { Helper.IsReadOnlyAttribute }
+            });
+            method.Parameters.Add(new ParameterDefinition("value", ParameterAttributes.Out, new ByReferenceType(returnTypeReference)));
+            method.Parameters.Add(new ParameterDefinition("operator", ParameterAttributes.None, Func));
+
+            var body = method.Body;
+
+            var enumeratorVariable = new VariableDefinition(TEnumerator);
+            body.Variables.Add(enumeratorVariable);
+            body.Variables.Add(new VariableDefinition(returnTypeReference));
+            body.Variables.Add(new VariableDefinition(T));
+            var condition = Instruction.Create(OpCodes.Ldloca_S, enumeratorVariable);
+            var loopStart = Instruction.Create(OpCodes.Ldarg_1);
+            var shortJump = Instruction.Create(OpCodes.Ldarg_1);
+
+            body.GetILProcessor()
+                .LdArg(0)
+                .GetEnumeratorEnumerable(TEnumerable)
+                .StLoc(0)
+                .LdLocA(0)
+                .LdLocA(2)
+                .TryMoveNextEnumerator(TEnumerator)
+                .BrTrueS(shortJump)
+                .LdLocA(0)
+                .DisposeEnumerator(TEnumerator)
+                .LdC(false)
+                .Ret()
+                .Add(shortJump)
+                .LdArg(2)
+                .LdLoc(2)
+                .CallVirtual(Invoke)
+                .StObj(returnTypeReference)
+                .BrS(condition)
+                .Add(loopStart)
+                .LdArg(2)
+                .LdLoc(2)
+                .CallVirtual(Invoke)
+                .StLoc(1)
+                .Add(Instruction.Create(OpCodeLdInd))
+                .LdLoc(1)
+                .Add(Instruction.Create(isMax ? OpCodeBgeS : OpCodeBleS, condition))
+                .LdArg(1)
+                .LdLocA(1)
+                .CpObj(returnTypeReference)
+                .Add(condition)
+                .LdLocA(2)
+                .TryMoveNextEnumerator(TEnumerator)
+                .BrTrueS(loopStart)
+                .LdLocA(0)
+                .DisposeEnumerator(TEnumerator)
+                .LdC(true)
+                .Ret();
+        }
+
         private void GenerateEach(string name, bool isSpecial, TypeDefinition @static, ModuleDefinition mainModule, ModuleDefinition systemModule, TypeReference returnTypeReference)
         {
-            var method = new MethodDefinition("TryGet" + Name, Helper.StaticMethodAttributes, mainModule.TypeSystem.Boolean)
+            var method = new MethodDefinition(Api.Name, Helper.StaticMethodAttributes, mainModule.TypeSystem.Boolean)
             {
                 DeclaringType = @static,
                 AggressiveInlining = true,
@@ -143,7 +220,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                         GenerateArray(mainModule, method, returnTypeReference, baseEnumerable, T, Func, Invoke);
                         break;
                     case "NativeArray<T>":
-                        GenerateNativeArray(mainModule, method, returnTypeReference, baseEnumerable, T, Func, Invoke);
+                        GenerateNativeArray(mainModule, method, returnTypeReference, baseEnumerable, Func, Invoke);
                         break;
                     default: throw new NotSupportedException(name);
                 }
@@ -154,7 +231,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             }
         }
 
-        private void GenerateNativeArray(ModuleDefinition mainModule, MethodDefinition method, TypeReference returnTypeReference, TypeReference baseEnumerable, TypeReference T, TypeReference TFunc, MethodReference Invoke)
+        private void GenerateNativeArray(ModuleDefinition mainModule, MethodDefinition method, TypeReference returnTypeReference, TypeReference baseEnumerable, TypeReference TFunc, MethodReference Invoke)
         {
             method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(baseEnumerable))
             {

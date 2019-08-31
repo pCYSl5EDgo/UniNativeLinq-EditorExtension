@@ -28,6 +28,10 @@ namespace UniNativeLinq.Editor.CodeGenerator
             if (!Api.ShouldDefine(array)) return;
             TypeDefinition @static;
             mainModule.Types.Add(@static = mainModule.DefineStatic("TryGet" + Name + processType + "NoneHelper"));
+
+            if (Api.TryGetEnabled("TEnumerable", out var genericEnabled) && genericEnabled)
+                GenerateGeneric(@static, mainModule, returnTypeReference);
+
             foreach (var name in array)
             {
                 if (!processor.IsSpecialType(name, out var isSpecial)) throw new KeyNotFoundException();
@@ -114,6 +118,62 @@ namespace UniNativeLinq.Editor.CodeGenerator
                     default: return default;
                 }
             }
+        }
+
+        private void GenerateGeneric(TypeDefinition @static, ModuleDefinition mainModule, TypeReference returnTypeReference)
+        {
+            var method = new MethodDefinition("TryGet" + Name, Helper.StaticMethodAttributes, mainModule.TypeSystem.Boolean)
+            {
+                DeclaringType = @static,
+                AggressiveInlining = true,
+                CustomAttributes = { Helper.ExtensionAttribute }
+            };
+            @static.Methods.Add(method);
+
+            var (_, TEnumerator, TEnumerable) = method.Define3GenericParameters();
+
+            method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(TEnumerable))
+            {
+                CustomAttributes = { Helper.IsReadOnlyAttribute }
+            });
+            method.Parameters.Add(new ParameterDefinition("value", ParameterAttributes.Out, new ByReferenceType(returnTypeReference)));
+
+            var body = method.Body;
+
+            var enumeratorVariable = new VariableDefinition(TEnumerator);
+            body.Variables.Add(enumeratorVariable);
+            body.Variables.Add(new VariableDefinition(returnTypeReference));
+            var condition = Instruction.Create(OpCodes.Ldloca_S, enumeratorVariable);
+            var loopStart = Instruction.Create(OpCodes.Ldarg_1);
+
+
+            body.GetILProcessor()
+                .LdArg(0)
+                .GetEnumeratorEnumerable(TEnumerable)
+                .StLoc(0)
+                .LdLocA(0)
+                .LdArg(1)
+                .TryMoveNextEnumerator(TEnumerator)
+                .BrTrueS(condition)
+                .LdLocA(0)
+                .DisposeEnumerator(TEnumerator)
+                .LdC(false)
+                .Ret()
+                .Add(loopStart)
+                .Add(Instruction.Create(OpCodeLdInd))
+                .LdLoc(1)
+                .Add(Instruction.Create(isMax ? OpCodeBgeS : OpCodeBleS, condition))
+                .LdArg(1)
+                .LdLoc(1)
+                .StObj(returnTypeReference)
+                .Add(condition)
+                .LdLocA(1)
+                .TryMoveNextEnumerator(TEnumerator)
+                .BrTrueS(loopStart)
+                .LdLocA(0)
+                .DisposeEnumerator(TEnumerator)
+                .LdC(true)
+                .Ret();
         }
 
         private void GenerateEach(string name, bool isSpecial, TypeDefinition @static, ModuleDefinition mainModule, TypeReference returnTypeReference)

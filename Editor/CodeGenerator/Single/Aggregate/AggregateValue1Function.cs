@@ -26,6 +26,10 @@ namespace UniNativeLinq.Editor.CodeGenerator
             if (!Api.ShouldDefine(array)) return;
             TypeDefinition @static;
             mainModule.Types.Add(@static = mainModule.DefineStatic(nameof(AggregateValue1Function) + "Helper"));
+
+            if (Api.TryGetEnabled("TEnumerable", out var genericEnabled) && genericEnabled)
+                GenerateGeneric(@static, mainModule, systemModule);
+
             foreach (var name in array)
             {
                 if (!processor.IsSpecialType(name, out var isSpecial)) throw new KeyNotFoundException();
@@ -60,7 +64,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
             if (isSpecial)
             {
-                var (baseEnumerable, enumerable, enumerator) = T.MakeSpecialTypePair(name);
+                var (baseEnumerable, _, _) = T.MakeSpecialTypePair(name);
                 switch (name)
                 {
                     case "T[]":
@@ -163,6 +167,69 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .BrS(loopStart)
 
                 .Add(end)
+                .Ret();
+        }
+
+        private static void GenerateGeneric(TypeDefinition @static, ModuleDefinition mainModule, ModuleDefinition systemModule)
+        {
+            var method = new MethodDefinition("Aggregate", Helper.StaticMethodAttributes, mainModule.TypeSystem.Void)
+            {
+                DeclaringType = @static,
+                AggressiveInlining = true,
+                CustomAttributes = { Helper.ExtensionAttribute }
+            };
+            @static.Methods.Add(method);
+
+            var genericParameters = method.GenericParameters;
+
+            var (T, TEnumerator, TEnumerable) = method.Define3GenericParameters();
+
+            var TAccumulate = new GenericParameter("TAccumulate", method);
+            genericParameters.Add(TAccumulate);
+            method.ReturnType = TAccumulate;
+
+            var TFunc = new GenericInstanceType(mainModule.ImportReference(systemModule.GetType("System", "Func`3")))
+            {
+                GenericArguments = { TAccumulate, T, TAccumulate }
+            };
+
+            var parameters = method.Parameters;
+            parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(TEnumerable))
+            {
+                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
+            });
+            parameters.Add(new ParameterDefinition("accumulate", ParameterAttributes.None, TAccumulate));
+            parameters.Add(new ParameterDefinition("func", ParameterAttributes.None, TFunc));
+
+            var body = method.Body;
+
+            var variables = body.Variables;
+            variables.Add(new VariableDefinition(TEnumerator));
+            variables.Add(new VariableDefinition(T));
+
+            var end = Instruction.Create(OpCodes.Ldloca_S, variables[0]);
+            var loopStart = Instruction.Create(OpCodes.Ldloca_S, variables[0]);
+
+            var processor = body.GetILProcessor()
+                .LdArg(0)
+                .GetEnumeratorEnumerable(TEnumerable)
+                .StLoc(0);
+
+            processor.Add(loopStart)
+                .LdLocA(1)
+                .TryMoveNextEnumerator(TEnumerator)
+                .BrFalseS(end);
+
+            processor.LdArg(2)
+                .LdArg(1)
+                .LdLoc(1)
+                .CallVirtual(TFunc.FindMethod("Invoke"))
+                .StArgS(parameters[1])
+                .BrS(loopStart);
+
+            processor.Add(end)
+                .DisposeEnumerator(TEnumerator)
+                .LdArg(1)
                 .Ret();
         }
 
