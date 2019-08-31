@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
@@ -14,32 +13,12 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
         public void Generate(IEnumerableCollectionProcessor processor, ModuleDefinition mainModule, ModuleDefinition systemModule, ModuleDefinition unityModule)
         {
-            if (!processor.TryGetEnabled("SetOperation", out var enabled) || !enabled) return;
-            var array = processor.EnabledNameCollection.Intersect(Api.NameCollection).ToArray();
-            if (!Api.ShouldDefine(array)) return;
-            TypeDefinition @static;
-            mainModule.Types.Add(@static = mainModule.DefineStatic(nameof(ExceptOperator) + "Helper"));
-            var count = Api.Count;
-            for (var row = 0; row < count; row++)
-            {
-                var rowName = Api.NameCollection[row];
-                if (!processor.IsSpecialType(rowName, out var isRowSpecial)) throw new KeyNotFoundException();
-
-                for (var column = 0; column < count; column++)
-                {
-                    var columnName = Api.NameCollection[column];
-                    if (!processor.IsSpecialType(columnName, out var isColumnSpecial)) throw new KeyNotFoundException();
-
-                    if (!Api.TryGetEnabled(rowName, columnName, out var apiEnabled) || !apiEnabled) continue;
-
-                    GenerateEachPair(rowName, isRowSpecial, columnName, isColumnSpecial, @static, mainModule, systemModule);
-                }
-            }
+            Api.HelpExceptIntersect(processor, mainModule, GenerateEachPair);
         }
 
-        private void GenerateEachPair(string rowName, bool isRowSpecial, string columnName, bool isColumnSpecial, TypeDefinition @static, ModuleDefinition mainModule, ModuleDefinition systemModule)
+        private void GenerateEachPair(string rowName, bool isRowSpecial, string columnName, bool isColumnSpecial, TypeDefinition @static, ModuleDefinition mainModule)
         {
-            var method = new MethodDefinition("Except", Helper.StaticMethodAttributes, mainModule.TypeSystem.Boolean)
+            var method = new MethodDefinition(Api.Name, Helper.StaticMethodAttributes, mainModule.TypeSystem.Boolean)
             {
                 DeclaringType = @static,
                 AggressiveInlining = true,
@@ -48,25 +27,25 @@ namespace UniNativeLinq.Editor.CodeGenerator
             @static.Methods.Add(method);
             if (isRowSpecial && isColumnSpecial)
             {
-                GenerateSpecialSpecial(rowName, columnName, mainModule, method, systemModule);
+                GenerateSpecialSpecial(rowName, columnName, mainModule, method);
             }
             else if (isRowSpecial)
             {
-                GenerateSpecialNormal(specialName: rowName, type: Dictionary[columnName], mainModule, method, specialIndex: 0, systemModule);
+                GenerateSpecialNormal(specialName: rowName, type: Dictionary[columnName], mainModule, method, specialIndex: 0);
             }
             else if (isColumnSpecial)
             {
-                GenerateSpecialNormal(specialName: columnName, type: Dictionary[rowName], mainModule, method, specialIndex: 1, systemModule);
+                GenerateSpecialNormal(specialName: columnName, type: Dictionary[rowName], mainModule, method, specialIndex: 1);
             }
             else
             {
-                GenerateNormalNormal(Dictionary[rowName], Dictionary[columnName], mainModule, method, systemModule);
+                GenerateNormalNormal(Dictionary[rowName], Dictionary[columnName], mainModule, method);
             }
         }
 
-        private void GenerateSpecialSpecial(string rowName, string columnName, ModuleDefinition mainModule, MethodDefinition method, ModuleDefinition systemModule)
+        private void GenerateSpecialSpecial(string rowName, string columnName, ModuleDefinition mainModule, MethodDefinition method)
         {
-            var T = DefineT(method, systemModule);
+            var T = DefineT(method);
             var (baseEnumerable0, enumerable0, enumerator0) = T.MakeSpecialTypePair(rowName);
             var (baseEnumerable1, enumerable1, enumerator1) = T.MakeSpecialTypePair(columnName);
             var TComparer = DefineTComparer(mainModule, method, T);
@@ -85,17 +64,16 @@ namespace UniNativeLinq.Editor.CodeGenerator
             body.GetILProcessor()
                 .LdConvArg(enumerable0, 0)
                 .LdConvArg(enumerable1, 1)
-                .LdArg(2)
-                .StLoc(0)
+                .LoadFuncArgumentAndStoreToLocalVariableField(2, 0)
                 .LdLocA(0)
                 .LdArg(3)
                 .NewObj(@return.FindMethod(".ctor", 4))
                 .Ret();
         }
 
-        private void GenerateSpecialNormal(string specialName, TypeDefinition type, ModuleDefinition mainModule, MethodDefinition method, int specialIndex, ModuleDefinition systemModule)
+        private void GenerateSpecialNormal(string specialName, TypeDefinition type, ModuleDefinition mainModule, MethodDefinition method, int specialIndex)
         {
-            var T = DefineT(method, systemModule);
+            var T = DefineT(method);
             var TComparer = DefineTComparer(mainModule, method, T);
             var body = method.Body;
 
@@ -117,8 +95,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 body.GetILProcessor()
                     .LdConvArg(enumerable0, 0)
                     .LdArg(1)
-                    .LdArg(2)
-                    .StLoc(0)
+                    .LoadFuncArgumentAndStoreToLocalVariableField(2, 0)
                     .LdLocA(0)
                     .LdArg(3)
                     .NewObj(@return.FindMethod(".ctor", 4))
@@ -142,8 +119,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 body.GetILProcessor()
                     .LdArg(0)
                     .LdConvArg(enumerable1, 1)
-                    .LdArg(2)
-                    .StLoc(0)
+                    .LoadFuncArgumentAndStoreToLocalVariableField(2, 0)
                     .LdLocA(0)
                     .LdArg(3)
                     .NewObj(@return.FindMethod(".ctor", 4))
@@ -177,9 +153,9 @@ namespace UniNativeLinq.Editor.CodeGenerator
             method.Parameters.Add(allocator);
         }
 
-        private void GenerateNormalNormal(TypeDefinition type0, TypeDefinition type1, ModuleDefinition mainModule, MethodDefinition method, ModuleDefinition systemModule)
+        private void GenerateNormalNormal(TypeDefinition type0, TypeDefinition type1, ModuleDefinition mainModule, MethodDefinition method)
         {
-            var T = DefineT(method, systemModule);
+            var T = DefineT(method);
 
             var (enumerable0, enumerator0, _) = T.MakeFromCommonType(method, type0, "0");
             var (enumerable1, enumerator1, _) = T.MakeFromCommonType(method, type1, "1");
@@ -200,8 +176,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
             body.GetILProcessor()
                 .LdArgs(0, 2)
-                .LdArg(2)
-                .StLoc(0)
+                .LoadFuncArgumentAndStoreToLocalVariableField(2, 0)
                 .LdLocA(0)
                 .LdArg(3)
                 .NewObj(@return.FindMethod(".ctor", 4))
@@ -213,9 +188,9 @@ namespace UniNativeLinq.Editor.CodeGenerator
             method.Parameters.Add(new ParameterDefinition("comparer", ParameterAttributes.None, TComparer));
         }
 
-        private static (GenericInstanceType TSetOperation, GenericInstanceType @return) Epilogue(ModuleDefinition mainModule, MethodDefinition method, TypeReference enumerable0, TypeReference enumerator0, TypeReference enumerable1, TypeReference enumerator1, TypeReference T, TypeReference TComparer)
+        private (GenericInstanceType TSetOperation, GenericInstanceType @return) Epilogue(ModuleDefinition mainModule, IMethodSignature method, TypeReference enumerable0, TypeReference enumerator0, TypeReference enumerable1, TypeReference enumerator1, TypeReference T, TypeReference TComparer)
         {
-            var TSetOperation = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "ExceptOperation`6"))
+            var TSetOperation = new GenericInstanceType(mainModule.GetType("UniNativeLinq", Api.Name + "Operation`6"))
             {
                 GenericArguments =
                 {
@@ -243,7 +218,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             return (TSetOperation, @return);
         }
 
-        private static GenericParameter DefineT(MethodDefinition method, ModuleDefinition systemModule)
+        private static GenericParameter DefineT(MethodDefinition method)
         {
             var T = method.DefineUnmanagedGenericParameter();
             method.GenericParameters.Add(T);

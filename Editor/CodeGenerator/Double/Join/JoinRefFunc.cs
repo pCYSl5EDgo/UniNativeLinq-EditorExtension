@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
@@ -15,27 +14,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
         public void Generate(IEnumerableCollectionProcessor processor, ModuleDefinition mainModule, ModuleDefinition systemModule, ModuleDefinition unityModule)
         {
-            if (!processor.TryGetEnabled("Join", out var enabled) || !enabled) return;
-            var array = processor.EnabledNameCollection.Intersect(Api.NameCollection).ToArray();
-            if (!Api.ShouldDefine(array)) return;
-            TypeDefinition @static;
-            mainModule.Types.Add(@static = mainModule.DefineStatic(nameof(JoinRefFunc) + "Helper"));
-            var count = Api.Count;
-            for (var row = 0; row < count; row++)
-            {
-                var rowName = Api.NameCollection[row];
-                if (!processor.IsSpecialType(rowName, out var isRowSpecial)) throw new KeyNotFoundException();
-
-                for (var column = 0; column < count; column++)
-                {
-                    var columnName = Api.NameCollection[column];
-                    if (!processor.IsSpecialType(columnName, out var isColumnSpecial)) throw new KeyNotFoundException();
-
-                    if (!Api.TryGetEnabled(rowName, columnName, out var apiEnabled) || !apiEnabled) continue;
-
-                    GenerateEachPair(rowName, isRowSpecial, columnName, isColumnSpecial, @static, mainModule, systemModule);
-                }
-            }
+            Api.HelpWithGenerate(processor, mainModule, systemModule, GenerateEachPair);
         }
 
         private void GenerateEachPair(string rowName, bool isRowSpecial, string columnName, bool isColumnSpecial, TypeDefinition @static, ModuleDefinition mainModule, ModuleDefinition systemModule)
@@ -49,28 +28,28 @@ namespace UniNativeLinq.Editor.CodeGenerator
             @static.Methods.Add(method);
             if (isRowSpecial && isColumnSpecial)
             {
-                GenerateSpecialSpecial(rowName, columnName, mainModule, systemModule, method);
+                GenerateSpecialSpecial(rowName, columnName, mainModule, method);
             }
             else if (isRowSpecial)
             {
-                GenerateSpecialNormal(rowName, Dictionary[columnName], mainModule, systemModule, method, 0);
+                GenerateSpecialNormal(rowName, Dictionary[columnName], mainModule, method, 0);
             }
             else if (isColumnSpecial)
             {
-                GenerateSpecialNormal(columnName, Dictionary[rowName], mainModule, systemModule, method, 1);
+                GenerateSpecialNormal(columnName, Dictionary[rowName], mainModule, method, 1);
             }
             else
             {
-                GenerateNormalNormal(Dictionary[rowName], Dictionary[columnName], mainModule, systemModule, method);
+                GenerateNormalNormal(Dictionary[rowName], Dictionary[columnName], mainModule, method);
             }
         }
 
-        private void GenerateSpecialSpecial(string rowName, string columnName, ModuleDefinition mainModule, ModuleDefinition systemModule, MethodDefinition method)
+        private void GenerateSpecialSpecial(string rowName, string columnName, ModuleDefinition mainModule, MethodDefinition method)
         {
-            var (key, keyEqualityComparer, T) = Prepare(method, mainModule, systemModule);
+            var (key, keyEqualityComparer, T) = Prepare(method, mainModule);
 
-            var (element0, baseEnumerable0, enumerable0, enumerator0, keySelector0) = DefineWithSpecial(rowName, method, key, 0, systemModule);
-            var (element1, baseEnumerable1, enumerable1, enumerator1, keySelector1) = DefineWithSpecial(columnName, method, key, 1, systemModule);
+            var (element0, baseEnumerable0, enumerable0, enumerator0, keySelector0) = DefineWithSpecial(rowName, method, key, 0);
+            var (element1, baseEnumerable1, enumerable1, enumerator1, keySelector1) = DefineWithSpecial(columnName, method, key, 1);
 
             ParameterDefinition outer = new ParameterDefinition(nameof(outer), ParameterAttributes.None, baseEnumerable0);
             method.Parameters.Add(outer);
@@ -78,7 +57,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             ParameterDefinition inner = new ParameterDefinition(nameof(inner), ParameterAttributes.None, baseEnumerable1);
             method.Parameters.Add(inner);
 
-            Epilogue(method, mainModule, systemModule, element0, element1, T, enumerable0, enumerator0, enumerable1, enumerator1, key, keySelector0, keySelector1, keyEqualityComparer, out var @return, out var tSelector);
+            Epilogue(method, mainModule, element0, element1, T, enumerable0, enumerator0, enumerable1, enumerator1, key, keySelector0, keySelector1, keyEqualityComparer, out var @return, out var tSelector);
 
             var body = method.Body;
             DefineVariables(body, keySelector0, keySelector1, keyEqualityComparer, tSelector);
@@ -86,8 +65,10 @@ namespace UniNativeLinq.Editor.CodeGenerator
             body.GetILProcessor()
                 .LdConvArg(enumerable0, 0)
                 .LdConvArg(enumerable1, 1)
-                .LdArgs(2, 4)
-                .StLocs(3, -4)
+                .LoadFuncArgumentAndStoreToLocalVariableField(2, 0)
+                .LoadFuncArgumentAndStoreToLocalVariableField(3, 1)
+                .LoadFuncArgumentAndStoreToLocalVariableField(4, 2)
+                .LoadFuncArgumentAndStoreToLocalVariableField(5, 3)
                 .LdLocAs(4)
                 .LdArg(6)
                 .NewObj(@return.FindMethod(".ctor"))
@@ -103,9 +84,9 @@ namespace UniNativeLinq.Editor.CodeGenerator
             variableDefinitions.Add(new VariableDefinition(tSelector));
         }
 
-        private void GenerateSpecialNormal(string specialName, TypeDefinition type0, ModuleDefinition mainModule, ModuleDefinition systemModule, MethodDefinition method, int specialIndex)
+        private void GenerateSpecialNormal(string specialName, TypeDefinition type0, ModuleDefinition mainModule, MethodDefinition method, int specialIndex)
         {
-            var (key, keyEqualityComparer, T) = Prepare(method, mainModule, systemModule);
+            var (key, keyEqualityComparer, T) = Prepare(method, mainModule);
 
             GenericInstanceType enumerable0;
             TypeReference enumerator0;
@@ -119,7 +100,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
             if (specialIndex == 0)
             {
-                (element0, baseEnumerable, enumerable0, enumerator0, keySelector0) = DefineWithSpecial(specialName, method, key, specialIndex, systemModule);
+                (element0, baseEnumerable, enumerable0, enumerator0, keySelector0) = DefineWithSpecial(specialName, method, key, specialIndex);
                 Routine(type0, method, "1", key, out enumerable1, out enumerator1, out element1, out keySelector1);
 
                 ParameterDefinition outer = new ParameterDefinition(nameof(outer), ParameterAttributes.None, baseEnumerable);
@@ -132,7 +113,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             else
             {
                 Routine(type0, method, "0", key, out enumerable0, out enumerator0, out element0, out keySelector0);
-                (element1, baseEnumerable, enumerable1, enumerator1, keySelector1) = DefineWithSpecial(specialName, method, key, specialIndex, systemModule);
+                (element1, baseEnumerable, enumerable1, enumerator1, keySelector1) = DefineWithSpecial(specialName, method, key, specialIndex);
 
                 ParameterDefinition outer = new ParameterDefinition(nameof(outer), ParameterAttributes.In, new ByReferenceType(enumerable0));
                 outer.CustomAttributes.Add(Helper.IsReadOnlyAttribute);
@@ -142,7 +123,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 method.Parameters.Add(inner);
             }
 
-            Epilogue(method, mainModule, systemModule, element0, element1, T, enumerable0, enumerator0, enumerable1, enumerator1, key, keySelector0, keySelector1, keyEqualityComparer, out var @return, out var tSelector);
+            Epilogue(method, mainModule, element0, element1, T, enumerable0, enumerator0, enumerable1, enumerator1, key, keySelector0, keySelector1, keyEqualityComparer, out var @return, out var tSelector);
 
             var body = method.Body;
             var processor = body.GetILProcessor();
@@ -163,15 +144,17 @@ namespace UniNativeLinq.Editor.CodeGenerator
             }
 
             processor
-                .LdArgs(2, 4)
-                .StLocs(3, -4)
+                .LoadFuncArgumentAndStoreToLocalVariableField(2, 0)
+                .LoadFuncArgumentAndStoreToLocalVariableField(3, 1)
+                .LoadFuncArgumentAndStoreToLocalVariableField(4, 2)
+                .LoadFuncArgumentAndStoreToLocalVariableField(5, 3)
                 .LdLocAs(4)
                 .LdArg(6)
                 .NewObj(@return.FindMethod(".ctor"))
                 .Ret();
         }
 
-        private static (TypeReference element0, TypeReference baseEnumerable, GenericInstanceType enumerable0, TypeReference enumerator0, GenericInstanceType keySelector0) DefineWithSpecial(string specialName, MethodDefinition method, GenericParameter key, int specialIndex, ModuleDefinition systemModule)
+        private static (TypeReference element0, TypeReference baseEnumerable, GenericInstanceType enumerable0, TypeReference enumerator0, GenericInstanceType keySelector0) DefineWithSpecial(string specialName, MethodDefinition method, TypeReference key, int specialIndex)
         {
             TypeReference element = method.DefineUnmanagedGenericParameter("TSpecial" + specialIndex);
             method.GenericParameters.Add((GenericParameter)element);
@@ -187,9 +170,9 @@ namespace UniNativeLinq.Editor.CodeGenerator
             return (element, baseEnumerable, enumerable, enumerator, keySelector);
         }
 
-        private void GenerateNormalNormal(TypeDefinition type0, TypeDefinition type1, ModuleDefinition mainModule, ModuleDefinition systemModule, MethodDefinition method)
+        private static void GenerateNormalNormal(TypeDefinition type0, TypeDefinition type1, ModuleDefinition mainModule, MethodDefinition method)
         {
-            var (key, keyEqualityComparer, T) = Prepare(method, mainModule, systemModule);
+            var (key, keyEqualityComparer, T) = Prepare(method, mainModule);
 
             Routine(type0, method, "0", key, out var enumerable0, out var enumerator0, out var element0, out var keySelector0);
 
@@ -197,14 +180,16 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
             DefineOuterInner(method, enumerable0, enumerable1);
 
-            Epilogue(method, mainModule, systemModule, element0, element1, T, enumerable0, enumerator0, enumerable1, enumerator1, key, keySelector0, keySelector1, keyEqualityComparer, out var @return, out var tSelector);
+            Epilogue(method, mainModule, element0, element1, T, enumerable0, enumerator0, enumerable1, enumerator1, key, keySelector0, keySelector1, keyEqualityComparer, out var @return, out var tSelector);
 
             var body = method.Body;
             DefineVariables(body, keySelector0, keySelector1, keyEqualityComparer, tSelector);
             body.GetILProcessor()
                 .LdArgs(0, 2)
-                .LdArgs(2, 4)
-                .StLocs(3, -4)
+                .LoadFuncArgumentAndStoreToLocalVariableField(2, 0)
+                .LoadFuncArgumentAndStoreToLocalVariableField(3, 1)
+                .LoadFuncArgumentAndStoreToLocalVariableField(4, 2)
+                .LoadFuncArgumentAndStoreToLocalVariableField(5, 3)
                 .LdLocAs(4)
                 .LdArg(6)
                 .NewObj(@return.FindMethod(".ctor"))
@@ -222,7 +207,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             method.Parameters.Add(inner);
         }
 
-        private static (GenericParameter TKey, GenericInstanceType TKeyEqualityComparer, GenericParameter T) Prepare(MethodDefinition method, ModuleDefinition mainModule, ModuleDefinition systemModule)
+        private static (GenericParameter TKey, GenericInstanceType TKeyEqualityComparer, GenericParameter T) Prepare(MethodDefinition method, ModuleDefinition mainModule)
         {
             GenericParameter TKey = new GenericParameter(nameof(TKey), method) { HasNotNullableValueTypeConstraint = true };
             TKey.CustomAttributes.Add(Helper.UnManagedAttribute);
@@ -256,10 +241,10 @@ namespace UniNativeLinq.Editor.CodeGenerator
             };
         }
 
-        private static void Epilogue(MethodDefinition method, ModuleDefinition mainModule, ModuleDefinition systemModule,
-            TypeReference element0, TypeReference element1, GenericParameter T, GenericInstanceType enumerable0,
-            TypeReference enumerator0, GenericInstanceType enumerable1, TypeReference enumerator1, GenericParameter key,
-            GenericInstanceType tKeySelector0, GenericInstanceType tKeySelector1, TypeReference tKeyEqualityComparer,
+        private static void Epilogue(IMethodSignature method, ModuleDefinition mainModule,
+            TypeReference element0, TypeReference element1, TypeReference T, TypeReference enumerable0,
+            TypeReference enumerator0, TypeReference enumerable1, TypeReference enumerator1, TypeReference key,
+            TypeReference tKeySelector0, TypeReference tKeySelector1, TypeReference tKeyEqualityComparer,
             out GenericInstanceType @return, out GenericInstanceType tSelector)
         {
             tSelector = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "DelegateRefFuncToStructOperatorFunc`3"))

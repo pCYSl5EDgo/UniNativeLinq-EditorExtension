@@ -1,46 +1,24 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using Mono.Cecil;
-using Mono.Cecil.Cil;
 
 // ReSharper disable InconsistentNaming
 
 namespace UniNativeLinq.Editor.CodeGenerator
 {
-    public sealed class ExceptionalZipRefFunc : IApiExtensionMethodGenerator, ITypeDictionaryHolder
+    public sealed class ZipNone : IApiExtensionMethodGenerator, ITypeDictionaryHolder
     {
         public readonly IDoubleApi Api;
-        public ExceptionalZipRefFunc(IDoubleApi api) => Api = api;
+        public ZipNone(IDoubleApi api) => Api = api;
         public Dictionary<string, TypeDefinition> Dictionary { private get; set; }
 
         public void Generate(IEnumerableCollectionProcessor processor, ModuleDefinition mainModule, ModuleDefinition systemModule, ModuleDefinition unityModule)
         {
-            if (!processor.TryGetEnabled("ExceptionalZip", out var enabled) || !enabled) return;
-            var array = processor.EnabledNameCollection.Intersect(Api.NameCollection).ToArray();
-            if (!Api.ShouldDefine(array)) return;
-            TypeDefinition @static;
-            mainModule.Types.Add(@static = mainModule.DefineStatic(nameof(ExceptionalZipRefFunc) + "Helper"));
-            var count = Api.Count;
-            for (var row = 0; row < count; row++)
-            {
-                var rowName = Api.NameCollection[row];
-                if (!processor.IsSpecialType(rowName, out var isRowSpecial)) throw new KeyNotFoundException();
-
-                for (var column = 0; column < count; column++)
-                {
-                    var columnName = Api.NameCollection[column];
-                    if (!processor.IsSpecialType(columnName, out var isColumnSpecial)) throw new KeyNotFoundException();
-
-                    if (!Api.TryGetEnabled(rowName, columnName, out var apiEnabled) || !apiEnabled) continue;
-
-                    GenerateEachPair(rowName, isRowSpecial, columnName, isColumnSpecial, @static, mainModule, systemModule);
-                }
-            }
+            Api.HelpWithGenerate(processor, mainModule, systemModule, GenerateEachPair);
         }
 
         private void GenerateEachPair(string rowName, bool isRowSpecial, string columnName, bool isColumnSpecial, TypeDefinition @static, ModuleDefinition mainModule, ModuleDefinition systemModule)
         {
-            var method = new MethodDefinition("ExceptionalZip", Helper.StaticMethodAttributes, mainModule.TypeSystem.Boolean)
+            var method = new MethodDefinition(Api.Name, Helper.StaticMethodAttributes, mainModule.TypeSystem.Boolean)
             {
                 DeclaringType = @static,
                 AggressiveInlining = true,
@@ -67,25 +45,20 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
         private void GenerateSpecialSpecial(string rowName, string columnName, ModuleDefinition mainModule, ModuleDefinition systemModule, MethodDefinition method)
         {
-            var (element0, enumerable0, enumerator0, baseTypeReference0) = DefineWithSpecial(rowName, method, 0, systemModule);
-            var (element1, enumerable1, enumerator1, baseTypeReference1) = DefineWithSpecial(columnName, method, 1, systemModule);
-            var (T, TAction, Func) = Prepare(element0, element1, mainModule, systemModule, method);
+            var (element0, enumerable0, enumerator0, baseTypeReference0) = DefineWithSpecial(rowName, method, 0);
+            var (element1, enumerable1, enumerator1, baseTypeReference1) = DefineWithSpecial(columnName, method, 1);
+            var (T, TAction) = Prepare(element0, element1, mainModule, systemModule);
             var @return = DefineReturn(mainModule, method, enumerable0, enumerator0, element0, enumerable1, enumerator1, element1, T, TAction);
             var param0 = new ParameterDefinition("@this", ParameterAttributes.None, baseTypeReference0);
             method.Parameters.Add(param0);
             var param1 = new ParameterDefinition("second", ParameterAttributes.None, baseTypeReference1);
             method.Parameters.Add(param1);
-            var param2 = new ParameterDefinition("action", ParameterAttributes.None, Func);
-            method.Parameters.Add(param2);
-            method.Body.Variables.Add(new VariableDefinition(TAction));
 
-            method.Body.GetILProcessor()
+            method.Body
+                .GetILProcessor()
                 .LdConvArg(enumerable0, 0)
                 .LdConvArg(enumerable1, 1)
-                .LdArg(2)
-                .StLoc(0)
-                .LdLocA(0)
-                .NewObj(@return.FindMethod(".ctor", 3))
+                .NewObj(@return.FindMethod(".ctor", 2))
                 .Ret();
         }
 
@@ -100,15 +73,15 @@ namespace UniNativeLinq.Editor.CodeGenerator
             TypeReference enumerator1;
             if (specialIndex == 0)
             {
-                (element0, enumerable0, enumerator0, baseTypeReference) = DefineWithSpecial(specialName, method, 0, systemModule);
+                (element0, enumerable0, enumerator0, baseTypeReference) = DefineWithSpecial(specialName, method, 0);
                 (element1, enumerable1, enumerator1) = type0.MakeGenericInstanceVariant("1", method);
             }
             else
             {
                 (element0, enumerable0, enumerator0) = type0.MakeGenericInstanceVariant("0", method);
-                (element1, enumerable1, enumerator1, baseTypeReference) = DefineWithSpecial(specialName, method, 1, systemModule);
+                (element1, enumerable1, enumerator1, baseTypeReference) = DefineWithSpecial(specialName, method, 1);
             }
-            var (T, TAction, Func) = Prepare(element0, element1, mainModule, systemModule, method);
+            var (T, TAction) = Prepare(element0, element1, mainModule, systemModule);
 
             var @return = DefineReturn(mainModule, method, enumerable0, enumerator0, element0, enumerable1, enumerator1, element1, T, TAction);
 
@@ -121,18 +94,11 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 param1.CustomAttributes.Add(Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference());
                 method.Parameters.Add(param1);
 
-                var param2 = new ParameterDefinition("action", ParameterAttributes.None, Func);
-                method.Parameters.Add(param2);
-
-                method.Body.Variables.Add(new VariableDefinition(TAction));
-
-                method.Body.GetILProcessor()
+                method.Body
+                    .GetILProcessor()
                     .LdConvArg(enumerable0, 0)
                     .LdArg(1)
-                    .LdArg(2)
-                    .StLoc(0)
-                    .LdLocA(0)
-                    .NewObj(@return.FindMethod(".ctor", 3))
+                    .NewObj(@return.FindMethod(".ctor", 2))
                     .Ret();
             }
             else
@@ -144,23 +110,16 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 var param1 = new ParameterDefinition("second", ParameterAttributes.None, baseTypeReference);
                 method.Parameters.Add(param1);
 
-                var param2 = new ParameterDefinition("action", ParameterAttributes.None, Func);
-                method.Parameters.Add(param2);
-
-                method.Body.Variables.Add(new VariableDefinition(TAction));
-
-                method.Body.GetILProcessor()
+                method.Body
+                    .GetILProcessor()
                     .LdArg(0)
                     .LdConvArg(enumerable1, 1)
-                    .LdArg(2)
-                    .StLoc(0)
-                    .LdLocA(0)
-                    .NewObj(@return.FindMethod(".ctor",3 ))
+                    .NewObj(@return.FindMethod(".ctor", 2))
                     .Ret();
             }
         }
 
-        private static (TypeReference elemenet, TypeReference enumerable, TypeReference enumerator, TypeReference baseTypeReference) DefineWithSpecial(string specialName, MethodDefinition method, int specialIndex, ModuleDefinition systemModule)
+        private static (TypeReference elemenet, TypeReference enumerable, TypeReference enumerator, TypeReference baseTypeReference) DefineWithSpecial(string specialName, MethodDefinition method, int specialIndex)
         {
             var element = method.DefineUnmanagedGenericParameter("TSpecial" + specialIndex);
             method.GenericParameters.Add(element);
@@ -173,7 +132,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             var (element0, enumerable0, enumerator0) = type0.MakeGenericInstanceVariant("0", method);
             var (element1, enumerable1, enumerator1) = type1.MakeGenericInstanceVariant("1", method);
 
-            var (T, TAction, Func) = Prepare(element0, element1, mainModule, systemModule, method);
+            var (T, TAction) = Prepare(element0, element1, mainModule, systemModule);
 
             var @return = DefineReturn(mainModule, method, enumerable0, enumerator0, element0, enumerable1, enumerator1, element1, T, TAction);
 
@@ -187,23 +146,16 @@ namespace UniNativeLinq.Editor.CodeGenerator
             param1.CustomAttributes.Add(systemRuntimeCompilerServicesReadonlyAttributeTypeReference);
             method.Parameters.Add(param1);
 
-            var param2 = new ParameterDefinition("action", ParameterAttributes.None, Func);
-            method.Parameters.Add(param2);
-
-            method.Body.Variables.Add(new VariableDefinition(TAction));
-
-            method.Body.GetILProcessor()
+            method.Body
+                .GetILProcessor()
                 .LdArgs(0, 2)
-                .LdArg(2)
-                .StLoc(0)
-                .LdLocA(0)
-                .NewObj(@return.FindMethod(".ctor", 3))
+                .NewObj(@return.FindMethod(".ctor", 2))
                 .Ret();
         }
 
-        private static GenericInstanceType DefineReturn(ModuleDefinition mainModule, MethodDefinition method, TypeReference enumerable0, TypeReference enumerator0, TypeReference element0, TypeReference enumerable1, TypeReference enumerator1, TypeReference element1, TypeReference T, TypeReference TAction)
+        private TypeReference DefineReturn(ModuleDefinition mainModule, MethodDefinition method, TypeReference enumerable0, TypeReference enumerator0, TypeReference element0, TypeReference enumerable1, TypeReference enumerator1, TypeReference element1, TypeReference T, TypeReference TAction)
         {
-            var @return = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "ExceptionalZipEnumerable`8"))
+            return method.ReturnType = new GenericInstanceType(mainModule.GetType("UniNativeLinq", Api.Name + "Enumerable`8"))
             {
                 GenericArguments =
                 {
@@ -217,26 +169,21 @@ namespace UniNativeLinq.Editor.CodeGenerator
                     TAction,
                 }
             };
-            method.ReturnType = @return;
-            return @return;
         }
 
-        private (TypeReference, TypeReference, TypeReference) Prepare(TypeReference element0, TypeReference element1, ModuleDefinition mainModule, ModuleDefinition systemModule, MethodDefinition method)
+        private static (TypeReference, TypeReference) Prepare(TypeReference element0, TypeReference element1, ModuleDefinition mainModule, ModuleDefinition systemModule)
         {
-            var T = method.DefineUnmanagedGenericParameter();
-            method.GenericParameters.Add(T);
-
-            var TAction = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "DelegateRefActionToStructOperatorAction`3"))
+            var T = new GenericInstanceType(mainModule.ImportReference(systemModule.GetType("System", "ValueTuple`2")))
             {
-                GenericArguments = { element0, element1, T }
+                GenericArguments = { element0, element1 }
             };
 
-            var Func = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "RefAction`3"))
+            var TAction = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "ZipValueTuple`2"))
             {
-                GenericArguments = { element0, element1, T }
+                GenericArguments = { element0, element1 }
             };
 
-            return (T, TAction, Func);
+            return (T, TAction);
         }
     }
 }

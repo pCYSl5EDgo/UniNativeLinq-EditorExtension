@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using Mono.Cecil;
 
 // ReSharper disable InconsistentNaming
@@ -13,32 +12,12 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
         public void Generate(IEnumerableCollectionProcessor processor, ModuleDefinition mainModule, ModuleDefinition systemModule, ModuleDefinition unityModule)
         {
-            if (!processor.TryGetEnabled("SetOperation", out var enabled) || !enabled) return;
-            var array = processor.EnabledNameCollection.Intersect(Api.NameCollection).ToArray();
-            if (!Api.ShouldDefine(array)) return;
-            TypeDefinition @static;
-            mainModule.Types.Add(@static = mainModule.DefineStatic(nameof(ExceptNone) + "Helper"));
-            var count = Api.Count;
-            for (var row = 0; row < count; row++)
-            {
-                var rowName = Api.NameCollection[row];
-                if (!processor.IsSpecialType(rowName, out var isRowSpecial)) throw new KeyNotFoundException();
-
-                for (var column = 0; column < count; column++)
-                {
-                    var columnName = Api.NameCollection[column];
-                    if (!processor.IsSpecialType(columnName, out var isColumnSpecial)) throw new KeyNotFoundException();
-
-                    if (!Api.TryGetEnabled(rowName, columnName, out var apiEnabled) || !apiEnabled) continue;
-
-                    GenerateEachPair(rowName, isRowSpecial, columnName, isColumnSpecial, @static, mainModule, systemModule);
-                }
-            }
+            Api.HelpExceptIntersect(processor, mainModule, systemModule, GenerateEachPair);
         }
 
         private void GenerateEachPair(string rowName, bool isRowSpecial, string columnName, bool isColumnSpecial, TypeDefinition @static, ModuleDefinition mainModule, ModuleDefinition systemModule)
         {
-            var method = new MethodDefinition("Except", Helper.StaticMethodAttributes, mainModule.TypeSystem.Boolean)
+            var method = new MethodDefinition(Api.Name, Helper.StaticMethodAttributes, mainModule.TypeSystem.Boolean)
             {
                 DeclaringType = @static,
                 AggressiveInlining = true,
@@ -178,9 +157,9 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .Ret();
         }
 
-        private static TypeReference Epilogue(ModuleDefinition mainModule, MethodDefinition method, TypeReference enumerable0, TypeReference enumerator0, TypeReference enumerable1, TypeReference enumerator1, TypeReference T, TypeReference TComparer)
+        private TypeReference Epilogue(ModuleDefinition mainModule, MethodDefinition method, TypeReference enumerable0, TypeReference enumerator0, TypeReference enumerable1, TypeReference enumerator1, TypeReference T, TypeReference TComparer)
         {
-            var TSetOperation = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "ExceptOperation`6"))
+            var TSetOperation = new GenericInstanceType(mainModule.GetType("UniNativeLinq", Api.Name + "Operation`6"))
             {
                 GenericArguments =
                 {

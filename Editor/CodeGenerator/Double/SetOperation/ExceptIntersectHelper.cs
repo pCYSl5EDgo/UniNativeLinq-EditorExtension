@@ -2,45 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using Mono.Cecil;
-using Mono.Cecil.Cil;
-// ReSharper disable InconsistentNaming
 
 namespace UniNativeLinq.Editor.CodeGenerator
 {
-    public static class DoubleApiHelper
+    public static class ExceptIntersectHelper
     {
-        public static bool ShouldDefine(this IDoubleApi api, string[] array)
+        // ReSharper disable once InconsistentNaming
+        public static void HelpExceptIntersect(this IDoubleApi Api, IEnumerableCollectionProcessor processor, ModuleDefinition mainModule, Action<string, bool, string, bool, TypeDefinition, ModuleDefinition> GenerateEachPair)
         {
-            foreach (var element0 in array)
-            {
-                foreach (var element1 in array)
-                {
-                    if (!api.TryGetEnabled(element0, element1, out var apiEnabled) || !apiEnabled) continue;
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        public static TypeDefinition DefineStatic(this ModuleDefinition mainModule, string name)
-            => new TypeDefinition("UniNativeLinq",
-            name,
-            Helper.StaticExtensionClassTypeAttributes, mainModule.TypeSystem.Object)
-            {
-                CustomAttributes = { Helper.ExtensionAttribute }
-            };
-
-        public static ILProcessor CpObjFromArgumentToField(this ILProcessor processor, TypeReference type, int variableIndex, FieldReference to)
-        {
-            return processor
-                .LdFldA(to)
-                .LdArg(variableIndex)
-                .CpObj(type);
-        }
-
-        public static void HelpWithGenerate(this IDoubleApi Api, IEnumerableCollectionProcessor processor, ModuleDefinition mainModule, Action<string, bool, string, bool, TypeDefinition, ModuleDefinition> GenerateEachPair)
-        {
-            if (!processor.TryGetEnabled(Api.Name, out var enabled) || !enabled) return;
+            if (!processor.TryGetEnabled("SetOperation", out var enabled) || !enabled) return;
             var array = processor.EnabledNameCollection.Intersect(Api.NameCollection).ToArray();
             if (!Api.ShouldDefine(array)) return;
             TypeDefinition @static;
@@ -63,9 +33,10 @@ namespace UniNativeLinq.Editor.CodeGenerator
             }
         }
 
-        public static void HelpWithGenerate(this IDoubleApi Api, IEnumerableCollectionProcessor processor, ModuleDefinition mainModule, ModuleDefinition systemModule, Action<string, bool, string, bool, TypeDefinition, ModuleDefinition, ModuleDefinition> GenerateEachPair)
+        // ReSharper disable once InconsistentNaming
+        public static void HelpExceptIntersect(this IDoubleApi Api, IEnumerableCollectionProcessor processor, ModuleDefinition mainModule, ModuleDefinition systemModule, Action<string, bool, string, bool, TypeDefinition, ModuleDefinition, ModuleDefinition> GenerateEachPair)
         {
-            if (!processor.TryGetEnabled(Api.Name, out var enabled) || !enabled) return;
+            if (!processor.TryGetEnabled("SetOperation", out var enabled) || !enabled) return;
             var array = processor.EnabledNameCollection.Intersect(Api.NameCollection).ToArray();
             if (!Api.ShouldDefine(array)) return;
             TypeDefinition @static;

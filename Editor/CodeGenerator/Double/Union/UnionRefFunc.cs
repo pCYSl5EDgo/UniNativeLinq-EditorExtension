@@ -66,7 +66,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             }
         }
 
-        private void GenerateSpecialSpecial(string rowName, string columnName, ModuleDefinition mainModule, ModuleDefinition systemModule, MethodDefinition method)
+        private static void GenerateSpecialSpecial(string rowName, string columnName, ModuleDefinition mainModule, ModuleDefinition systemModule, MethodDefinition method)
         {
             var T = DefineT(mainModule, systemModule, method);
             var TEqualityComparer = DefineEqualityComparer(mainModule, T);
@@ -92,15 +92,14 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .LdFldA(concatEnumerable.FindField(ConcatSecondEnumerable))
                 .LdArg(1)
                 .Call(enumerable1.FindMethod(".ctor"))
-                .LdArg(2)
-                .StLoc(1)
+                .LoadFuncArgumentAndStoreToLocalVariableField(2, 1)
                 .LdLocA(1)
                 .LdArg(3)
                 .NewObj(@return.FindMethod(".ctor", 3))
                 .Ret();
         }
 
-        private void GenerateSpecialNormal(string specialName, TypeDefinition type, ModuleDefinition mainModule, ModuleDefinition systemModule, MethodDefinition method, int specialIndex)
+        private static void GenerateSpecialNormal(string specialName, TypeDefinition type, ModuleDefinition mainModule, ModuleDefinition systemModule, MethodDefinition method, int specialIndex)
         {
             var T = DefineT(mainModule, systemModule, method);
             var TEqualityComparer = DefineEqualityComparer(mainModule, T);
@@ -129,8 +128,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                     .LdArg(0)
                     .Call(enumerable0.FindMethod(".ctor"))
                     .CpObjFromArgumentToField(enumerable1, 1, concatEnumerable.FindField(ConcatSecondEnumerable))
-                    .LdArg(2)
-                    .StLoc(1)
+                    .LoadFuncArgumentAndStoreToLocalVariableField(2, 1)
                     .LdLocA(1)
                     .LdArg(3)
                     .NewObj(@return.FindMethod(".ctor", 3))
@@ -158,8 +156,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                     .LdFldA(concatEnumerable.FindField(ConcatSecondEnumerable))
                     .LdArg(1)
                     .Call(enumerable1.FindMethod(".ctor"))
-                    .LdArg(2)
-                    .StLoc(1)
+                    .LoadFuncArgumentAndStoreToLocalVariableField(2, 1)
                     .LdLocA(1)
                     .LdArg(3)
                     .NewObj(@return.FindMethod(".ctor", 3))
@@ -167,7 +164,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             }
         }
 
-        private void GenerateNormalNormal(TypeDefinition type0, TypeDefinition type1, ModuleDefinition mainModule, ModuleDefinition systemModule, MethodDefinition method)
+        private static void GenerateNormalNormal(TypeDefinition type0, TypeDefinition type1, ModuleDefinition mainModule, ModuleDefinition systemModule, MethodDefinition method)
         {
             var T = DefineT(mainModule, systemModule, method);
             var TEqualityComparer = DefineEqualityComparer(mainModule, T);
@@ -197,8 +194,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .Dup(2)
                 .CpObjFromArgumentToField(enumerable0, 0, concatEnumerable.FindField(ConcatFirstEnumerable))
                 .CpObjFromArgumentToField(enumerable1, 1, concatEnumerable.FindField(ConcatSecondEnumerable))
-                .LdArg(2)
-                .StLoc(1)
+                .LoadFuncArgumentAndStoreToLocalVariableField(2, 1)
                 .LdLocA(1)
                 .LdArg(3)
                 .NewObj(@return.FindMethod(".ctor", 3))
@@ -206,7 +202,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
         }
 
 
-        private TypeReference DefineArgumentComparer(ModuleDefinition mainModule, GenericParameter T)
+        private static TypeReference DefineArgumentComparer(ModuleDefinition mainModule, GenericParameter T)
         {
             return new GenericInstanceType(mainModule.GetType("UniNativeLinq", "RefFunc`3"))
             {

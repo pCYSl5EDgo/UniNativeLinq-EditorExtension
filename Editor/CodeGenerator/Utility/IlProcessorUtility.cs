@@ -1079,6 +1079,8 @@ namespace UniNativeLinq.Editor.CodeGenerator
             return processor.Add(Instruction.Create(OpCodes.Stloc, index));
         }
 
+        public static ILProcessor StFld(this ILProcessor processor, FieldReference field) => processor.Add(Instruction.Create(OpCodes.Stfld, field));
+
         public static ILProcessor StObj(this ILProcessor processor, TypeReference type)
         {
             switch (type.FullName)

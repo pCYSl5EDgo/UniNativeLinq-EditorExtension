@@ -6,6 +6,7 @@ using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
 using Mono.Collections.Generic;
+using UnityEngine;
 
 // ReSharper disable InconsistentNaming
 
@@ -28,6 +29,12 @@ namespace UniNativeLinq.Editor.CodeGenerator
         {
             Initialize();
         }
+
+        public static ILProcessor LoadFuncArgumentAndStoreToLocalVariableField(this ILProcessor processor, int argumentIndex, int variableIndex)
+            => processor
+                .LdLocA(variableIndex)
+                .LdArg(argumentIndex)
+                .StFld(processor.Body.Variables[variableIndex].VariableType.FindField("Func"));
 
         public static void DefineAllocatorParam(this MethodDefinition method)
         {
@@ -265,6 +272,24 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 var imported = type.Module.ImportReference(methodDefinition);
                 return type is GenericInstanceType genericInstanceType ? imported.MakeHostInstanceGeneric(genericInstanceType.GenericArguments) : imported;
             }
+        }
+
+        public static FieldReference FindField(this TypeReference type, string name)
+        {
+            if (type is TypeDefinition definition)
+                return definition.FindField(name);
+            if (type is GenericInstanceType genericInstanceType)
+                return genericInstanceType.FindField(name);
+            var typeDefinition = type.ToDefinition();
+            var fieldDefinition = typeDefinition.Fields.Single(x => x.Name == name);
+            if (fieldDefinition.Module == type.Module)
+                return fieldDefinition;
+            return type.Module.ImportReference(fieldDefinition);
+        }
+
+        public static FieldReference FindField(this TypeDefinition type, string name)
+        {
+            return type.Fields.Single(x => x.Name == name);
         }
 
         public static FieldReference FindField(this GenericInstanceType type, string name)

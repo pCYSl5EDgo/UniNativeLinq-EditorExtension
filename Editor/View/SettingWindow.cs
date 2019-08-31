@@ -251,8 +251,6 @@ namespace UniNativeLinq.Editor
                 case "MinByUInt32":
                 case "MinByUInt64":
                     {
-                        var keyName = api.Name.Substring(5);
-                        var isMax = api.Name[1] == 'a';
                         switch (api.Description)
                         {
                             case "Operator":
@@ -489,40 +487,25 @@ namespace UniNativeLinq.Editor
                     }
                     break;
                 case "AdjustedZip":
-                    switch (api.Description)
-                    {
-                        case "None":
-                            list.Add(new AdjustedZipNone(api));
-                            break;
-                        case "Operator":
-                            list.Add(new AdjustedZipOperator(api));
-                            break;
-                        case "Func":
-                            list.Add(new AdjustedZipFunc(api));
-                            break;
-                        case "RefFunc":
-                            list.Add(new AdjustedZipRefFunc(api));
-                            break;
-                    }
-                    break;
                 case "ExceptionalZip":
                     switch (api.Description)
                     {
                         case "None":
-                            list.Add(new ExceptionalZipNone(api));
+                            list.Add(new ZipNone(api));
                             break;
                         case "Operator":
-                            list.Add(new ExceptionalZipOperator(api));
+                            list.Add(new ZipOperator(api));
                             break;
                         case "Func":
-                            list.Add(new ExceptionalZipFunc(api));
+                            list.Add(new ZipFunc(api));
                             break;
                         case "RefFunc":
-                            list.Add(new ExceptionalZipRefFunc(api));
+                            list.Add(new ZipRefFunc(api));
                             break;
                     }
                     break;
                 case "Except":
+                case "Intersect":
                     switch (api.Description)
                     {
                         case "None":
@@ -536,23 +519,6 @@ namespace UniNativeLinq.Editor
                             break;
                         case "RefFunc":
                             list.Add(new ExceptRefFunc(api));
-                            break;
-                    }
-                    break;
-                case "Intersect":
-                    switch (api.Description)
-                    {
-                        case "None":
-                            list.Add(new IntersectNone(api));
-                            break;
-                        case "Operator":
-                            list.Add(new IntersectOperator(api));
-                            break;
-                        case "Func":
-                            list.Add(new IntersectFunc(api));
-                            break;
-                        case "RefFunc":
-                            list.Add(new IntersectRefFunc(api));
                             break;
                     }
                     break;
