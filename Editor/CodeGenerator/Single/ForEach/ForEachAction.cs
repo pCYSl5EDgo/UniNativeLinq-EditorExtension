@@ -39,7 +39,7 @@ namespace UniNativeLinq.Editor.CodeGenerator.ForEach
 
             if (isSpecial)
             {
-                var (baseEnumerable, enumerable, _) = T.MakeSpecialTypePair(name);
+                var (baseEnumerable, _, _) = T.MakeSpecialTypePair(name);
                 switch (name)
                 {
                     case "T[]":
@@ -72,7 +72,7 @@ namespace UniNativeLinq.Editor.CodeGenerator.ForEach
             variables.Add(new VariableDefinition(T));
 
             var closing = Instruction.Create(OpCodes.Ldloca_S, variables[0]);
-            var loopStart = Instruction.Create(OpCodes.Ldarg_1);
+            var loopStart = Instruction.Create(OpCodes.Ldloca_S, variables[0]);
 
             body.GetILProcessor()
                 .LdArg(0)
@@ -80,11 +80,11 @@ namespace UniNativeLinq.Editor.CodeGenerator.ForEach
                 .StLoc(0)
 
                 .Add(loopStart)
-                .LdLocA(0)
                 .LdLocA(1)
                 .Call(enumerator.FindMethod("TryMoveNext"))
                 .BrFalseS(closing)
 
+                .LdArg(1)
                 .LdLoc(1)
                 .CallVirtual(action.FindMethod("Invoke"))
                 .BrS(loopStart)
@@ -107,6 +107,7 @@ namespace UniNativeLinq.Editor.CodeGenerator.ForEach
             var @continue = Instruction.Create(OpCodes.Ldarg_1);
 
             body.GetILProcessor()
+
                 .Add(loopStart)
                 .LdLen()
                 .LdLoc(0)
