@@ -89,8 +89,10 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
             body.GetILProcessor()
                 .LdArg(0)
+                .LdLocA(0)
+                .LdFldA(selector.FindField("Func"))
                 .LdArg(1)
-                .StLoc(0)
+                .StObj(func)
                 .LdLocA(0)
                 .NewObj(method.ReturnType.FindMethod(".ctor", 2))
                 .Ret();
@@ -111,8 +113,10 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .LdArg(0)
                 .Call(enumerable.FindMethod(".ctor", 1))
 
+                .LdLocA(1)
+                .LdFldA(selector.FindField("Func"))
                 .LdArg(1)
-                .StLoc(1)
+                .StObj(func)
 
                 .LdLocA(0)
                 .LdLocA(1)
