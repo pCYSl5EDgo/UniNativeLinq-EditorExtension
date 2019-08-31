@@ -80,9 +80,10 @@ namespace UniNativeLinq.Editor.CodeGenerator.ForEach
             var variables = body.Variables;
             variables.Add(new VariableDefinition(enumerator));
             variables.Add(new VariableDefinition(method.Module.TypeSystem.Boolean));
-            
-            var closing = Instruction.Create(OpCodes.Pop);
-            var loopStart = Instruction.Create(OpCodes.Ldarg_1);
+            variables.Add(new VariableDefinition(new ByReferenceType(T)));
+
+            var closing = Instruction.Create(OpCodes.Ldloca_S, variables[0]);
+            var loopStart = Instruction.Create(OpCodes.Ldloca_S, variables[0]);
 
             body.GetILProcessor()
                 .LdArg(0)
@@ -90,18 +91,19 @@ namespace UniNativeLinq.Editor.CodeGenerator.ForEach
                 .StLoc(0)
 
                 .Add(loopStart)
-                .LdLocA(0)
                 .LdLocA(1)
                 .Call(enumerator.FindMethod("TryGetNext"))
+                .StLoc(2)
                 .LdLoc(1)
                 .BrFalseS(closing)
 
+                .LdArg(1)
+                .LdLoc(2)
                 .Constrained(TAction)
                 .CallVirtual(action.FindMethod("Execute"))
                 .BrS(loopStart)
 
                 .Add(closing)
-                .LdLocA(0)
                 .Call(enumerator.FindMethod("Dispose", 0))
                 .Ret();
         }
