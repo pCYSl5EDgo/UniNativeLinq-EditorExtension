@@ -6,7 +6,6 @@ using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
 using Mono.Collections.Generic;
-using UnityEditor;
 
 // ReSharper disable InconsistentNaming
 
@@ -29,6 +28,31 @@ namespace UniNativeLinq.Editor.CodeGenerator
         static Helper()
         {
             Initialize();
+        }
+
+        public static ILProcessor ArgumentNullCheck(this ILProcessor processor, int index, Instruction next)
+        {
+            if (!Settings.EnableNullCheckOnRuntime) return processor.Add(next);
+            return processor
+                .LdArg(index)
+                .BrTrueS(next)
+                .NewObj(processor.Body.Method.Module.ImportReference(SystemModule.GetType("System", "ArgumentNullException")).FindMethod(".ctor", 0))
+                .Throw()
+                .Add(next);
+        }
+
+        public static ILProcessor ArgumentNullCheck(this ILProcessor processor, int index0, int index1, Instruction next)
+        {
+            if (!Settings.EnableNullCheckOnRuntime) return processor.Add(next);
+            var fail = Instruction.Create(OpCodes.Newobj, processor.Body.Method.Module.ImportReference(SystemModule.GetType("System", "ArgumentNullException")).FindMethod(".ctor", 0));
+            return processor
+                .LdArg(index0)
+                .BrFalseS(fail)
+                .LdArg(index1)
+                .BrTrueS(next)
+                .Add(fail)
+                .Throw()
+                .Add(next);
         }
 
         public static ILProcessor GetEnumeratorEnumerable(this ILProcessor processor, GenericParameter TEnumerable) => processor.Constrained(TEnumerable).CallVirtual(TEnumerable.Constraints.First(x => x.ToDefinition().Name == "IRefEnumerable`2").FindMethod("GetEnumerator"));
@@ -72,16 +96,8 @@ namespace UniNativeLinq.Editor.CodeGenerator
         public static ILProcessor LoadFuncArgumentAndStoreToLocalVariableField(this ILProcessor processor, int argumentIndex, int variableIndex)
         {
             var success = Instruction.Create(variableIndex <= 255 ? OpCodes.Ldloca_S : OpCodes.Ldloca, processor.Body.Variables[variableIndex]);
-            if (Settings.EnableNullCheckOnRuntime)
-            {
-                processor = processor
-                    .LdArg(argumentIndex)
-                    .BrTrueS(success)
-                    .NewObj(processor.Body.Method.Module.ImportReference(SystemModule.GetType("System", "ArgumentNullException")).FindMethod(".ctor", 0))
-                    .Throw();
-            }
             return processor
-                .Add(success)
+                .ArgumentNullCheck(argumentIndex, success)
                 .LdArg(argumentIndex)
                 .StFld(processor.Body.Variables[variableIndex].VariableType.FindField("Func"));
         }
@@ -96,7 +112,9 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
         public static GenericParameter DefineUnmanagedGenericParameter(this MethodDefinition method, string name = "T")
         {
-            var x = method.Module.GetType("UniNativeLinq", "NativeEnumerable`1").GenericParameters[0];
+            var moduleDefinition = method.Module;
+            var typeDefinition = moduleDefinition.GetType("UniNativeLinq", "NativeEnumerable`1");
+            var x = typeDefinition.GenericParameters[0];
             return new GenericParameter(name, method)
             {
                 HasNotNullableValueTypeConstraint = true,
@@ -180,8 +198,8 @@ namespace UniNativeLinq.Editor.CodeGenerator
             if (!processor.TryGetEnabled(Api.Name, out var enabled) || !enabled) return;
             var array = processor.EnabledNameCollection.Intersect(Api.NameCollection).ToArray();
             if (!Api.ShouldDefine(array)) return;
-            TypeDefinition @static;
-            mainModule.Types.Add(@static = mainModule.DefineStatic(Api.Name + Api.Description + "Helper"));
+            TypeDefinition @static = mainModule.DefineStatic(Api.Name + Api.Description + "Helper");
+            mainModule.Types.Add(@static);
 
             foreach (var name in array)
             {

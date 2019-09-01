@@ -151,9 +151,6 @@ namespace UniNativeLinq.Editor
                 case "SelectIndex":
                     switch (api.Description)
                     {
-                        case "Operator":
-                            list.Add(new SelectIndexOperator(api));
-                            break;
                         case "Func":
                             list.Add(new SelectIndexFunc(api));
                             break;
@@ -214,9 +211,6 @@ namespace UniNativeLinq.Editor
                 case "Select":
                     switch (api.Description)
                     {
-                        case "Operator":
-                            list.Add(new SelectOperator(api));
-                            break;
                         case "Func":
                             list.Add(new SelectFunc(api));
                             break;

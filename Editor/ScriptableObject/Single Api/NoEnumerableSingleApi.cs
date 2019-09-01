@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace UniNativeLinq.Editor
 {
-    public class NoEnumerableSingleApi : String2BoolArrayTuple, ISingleApi
+    public sealed class NoEnumerableSingleApi : String2BoolArrayTuple, ISingleApi
     {
         string ISingleApi.Name
         {
