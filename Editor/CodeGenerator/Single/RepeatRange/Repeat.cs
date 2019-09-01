@@ -22,6 +22,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             if (@static is null)
             {
                 @static = mainModule.DefineStatic("Enumerable");
+                @static.CustomAttributes.Clear();
                 mainModule.Types.Add(@static);
             }
 
@@ -29,7 +30,6 @@ namespace UniNativeLinq.Editor.CodeGenerator
             {
                 DeclaringType = @static,
                 AggressiveInlining = true,
-                CustomAttributes = { Helper.ExtensionAttribute }
             };
             @static.Methods.Add(method);
 

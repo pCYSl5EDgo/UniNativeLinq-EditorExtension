@@ -28,6 +28,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             if (@static is null)
             {
                 @static = mainModule.DefineStatic("Enumerable");
+                @static.CustomAttributes.Clear();
                 mainModule.Types.Add(@static);
             }
 
@@ -43,7 +44,6 @@ namespace UniNativeLinq.Editor.CodeGenerator
             {
                 DeclaringType = @static,
                 AggressiveInlining = true,
-                CustomAttributes = { Helper.ExtensionAttribute }
             };
             @static.Methods.Add(method);
 
@@ -56,14 +56,12 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 GenericArguments = { T, TAction }
             };
 
-            method.Parameters.Add(new ParameterDefinition("value", ParameterAttributes.In, new ByReferenceType(T))
-            {
-                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
-            });
+            method.Parameters.Add(new ParameterDefinition("value", ParameterAttributes.None, T));
             method.Parameters.Add(new ParameterDefinition("count", ParameterAttributes.None, mainModule.TypeSystem.Int64));
 
             method.Body.GetILProcessor()
-                .LdArgs(0, 2)
+                .LdArgA(0)
+                .LdArg(1)
                 .NewObj(method.ReturnType.FindMethod(".ctor", 2))
                 .Ret();
         }
