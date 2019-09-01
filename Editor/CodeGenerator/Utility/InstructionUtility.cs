@@ -698,6 +698,7 @@
 
  */
 using System;
+using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Collections.Generic;
 
@@ -734,6 +735,19 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 case Code.Ldc_I4:
                     return (int)loadConstantInstruction.Operand;
                 default: throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        public static Instruction LoadArgument(this Collection<ParameterDefinition> parameters, int index)
+        {
+            switch (index)
+            {
+                case 0: return Instruction.Create(OpCodes.Ldarg_0);
+                case 1: return Instruction.Create(OpCodes.Ldarg_1);
+                case 2: return Instruction.Create(OpCodes.Ldarg_2);
+                case 3: return Instruction.Create(OpCodes.Ldarg_3);
+                default:
+                    return Instruction.Create(index <= 255 ? OpCodes.Ldarg_S : OpCodes.Ldarg, parameters[index]);
             }
         }
 
