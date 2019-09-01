@@ -55,6 +55,13 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .Add(next);
         }
 
+        public static ILProcessor ThrowInvalidOperationException(this ILProcessor processor)
+        {
+            return processor
+                .NewObj(processor.Body.Method.Module.ImportReference(SystemModule.GetType("System", "InvalidOperationException")).FindMethod(".ctor", 0))
+                .Throw();
+        }
+
         public static ILProcessor GetEnumeratorEnumerable(this ILProcessor processor, GenericParameter TEnumerable) => processor.Constrained(TEnumerable).CallVirtual(TEnumerable.Constraints.First(x => x.ToDefinition().Name == "IRefEnumerable`2").FindMethod("GetEnumerator"));
         public static ILProcessor MoveNextEnumerator(this ILProcessor processor, GenericParameter TEnumerator) => processor.Constrained(TEnumerator).CallVirtual(MainModule.ImportReference(SystemModule.GetType("System.Collections", "IEnumerator")).FindMethod("MoveNext"));
         public static ILProcessor DisposeEnumerator(this ILProcessor processor, GenericParameter TEnumerator) => processor.Constrained(TEnumerator).CallVirtual(MainModule.ImportReference(SystemModule.GetType("System", "IDisposable")).FindMethod("Dispose"));
