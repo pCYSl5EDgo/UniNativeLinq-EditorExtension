@@ -6,6 +6,7 @@ using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
 using Mono.Collections.Generic;
+using UnityEditor;
 
 // ReSharper disable InconsistentNaming
 
@@ -23,6 +24,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
         internal const TypeAttributes StaticExtensionClassTypeAttributes = TypeAttributes.AnsiClass | TypeAttributes.AutoLayout | TypeAttributes.BeforeFieldInit | TypeAttributes.Sealed | TypeAttributes.Public | TypeAttributes.Abstract;
         internal const MethodAttributes StaticMethodAttributes = MethodAttributes.Public | MethodAttributes.Static | MethodAttributes.HideBySig;
         internal static Dictionary<string, (TypeDefinition, Func<TypeReference, TypeReference>)> SpecialTypeDictionary;
+        internal static GlobalSettings Settings;
 
         static Helper()
         {
@@ -68,10 +70,21 @@ namespace UniNativeLinq.Editor.CodeGenerator
         }
 
         public static ILProcessor LoadFuncArgumentAndStoreToLocalVariableField(this ILProcessor processor, int argumentIndex, int variableIndex)
-            => processor
-                .LdLocA(variableIndex)
+        {
+            var success = Instruction.Create(variableIndex <= 255 ? OpCodes.Ldloca_S : OpCodes.Ldloca, processor.Body.Variables[variableIndex]);
+            if (Settings.EnableNullCheckOnRuntime)
+            {
+                processor = processor
+                    .LdArg(argumentIndex)
+                    .BrTrueS(success)
+                    .NewObj(processor.Body.Method.Module.ImportReference(SystemModule.GetType("System", "ArgumentNullException")).FindMethod(".ctor", 0))
+                    .Throw();
+            }
+            return processor
+                .Add(success)
                 .LdArg(argumentIndex)
                 .StFld(processor.Body.Variables[variableIndex].VariableType.FindField("Func"));
+        }
 
         public static void DefineAllocatorParam(this MethodDefinition method)
         {
@@ -276,6 +289,8 @@ namespace UniNativeLinq.Editor.CodeGenerator
                     tx => tx.MakeArrayType())}
             };
             Allocator = nativeEnumerable1.Methods.First(x => x.Name == "ToNativeArray").Parameters[0].ParameterType;
+
+            Settings = AssetDatabase.LoadAssetAtPath<GlobalSettings>(AssetDatabase.GUIDToAssetPath(AssetDatabase.FindAssets("t:" + nameof(GlobalSettings))[0]));
         }
 
         public static GenericInstanceType MakeGenericInstanceType(this TypeReference self, IEnumerable<TypeReference> arguments)
