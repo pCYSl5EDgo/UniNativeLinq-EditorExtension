@@ -23,7 +23,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
         {
             var returnTypeDefinition = mainModule.GetType("UniNativeLinq", Api.Name + "Enumerable`5");
 
-            var method = new MethodDefinition(Api.Name, Helper.StaticMethodAttributes, mainModule.TypeSystem.Boolean)
+            var method = new MethodDefinition("Select", Helper.StaticMethodAttributes, mainModule.TypeSystem.Boolean)
             {
                 DeclaringType = @static,
                 AggressiveInlining = true,
