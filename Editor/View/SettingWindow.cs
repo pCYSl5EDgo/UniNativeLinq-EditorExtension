@@ -19,6 +19,7 @@ namespace UniNativeLinq.Editor
         private IDoubleApi[] doubleApis;
         private IDependency[] dependencies;
         private IApiExtensionMethodGenerator[] extensionMethodGenerators;
+        private GlobalSettings settings;
 
         private bool AnyNull
             => enumerableCollectionProcessor is null ||
@@ -70,6 +71,8 @@ namespace UniNativeLinq.Editor
                 whetherToUseApiOrNotView = new DrawableImplWhetherToUseApiOrNot(enumerableCollectionProcessor, singleApis, doubleApis);
             dllGenerator?.Dispose();
             dllGenerator = new DllGenerator(Helper.MainModule, Helper.SystemModule, Helper.UnityCoreModule);
+
+            settings = GlobalSettings.Instance;
 
             InitializeExtensionMethodsGenerator();
         }
@@ -557,6 +560,14 @@ namespace UniNativeLinq.Editor
             }
             whetherToIncludeEnumerableOrNotView.Draw(ref scrollPosition);
             whetherToUseApiOrNotView.Draw(ref scrollPosition);
+            {
+                var enable = EditorGUILayout.ToggleLeft("Enable Null Check", settings.EnableNullCheckOnRuntime, "button");
+                if (enable ^ settings.EnableNullCheckOnRuntime)
+                {
+                    settings.EnableNullCheckOnRuntime = enable;
+                    EditorUtility.SetDirty(settings);
+                }
+            }
             EditorGUILayout.EndScrollView();
         }
     }

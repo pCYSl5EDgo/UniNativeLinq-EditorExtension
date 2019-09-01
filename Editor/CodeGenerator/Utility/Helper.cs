@@ -290,7 +290,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             };
             Allocator = nativeEnumerable1.Methods.First(x => x.Name == "ToNativeArray").Parameters[0].ParameterType;
 
-            Settings = AssetDatabase.LoadAssetAtPath<GlobalSettings>(AssetDatabase.GUIDToAssetPath(AssetDatabase.FindAssets("t:" + nameof(GlobalSettings))[0]));
+            Settings = GlobalSettings.Instance;
         }
 
         public static GenericInstanceType MakeGenericInstanceType(this TypeReference self, IEnumerable<TypeReference> arguments)
