@@ -107,7 +107,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             body.Variables.Add(new VariableDefinition(method.Module.TypeSystem.Boolean));
 
             body.GetILProcessor()
-                .ArgumentNullCheck(2, 3, Instruction.Create(OpCodes.Br_S, condition))
+                .ArgumentNullCheck(0, 2, 3, Instruction.Create(OpCodes.Br_S, condition))
                 .Add(loopStart)
                 .LdArg(1)
                 .LdArg(0)

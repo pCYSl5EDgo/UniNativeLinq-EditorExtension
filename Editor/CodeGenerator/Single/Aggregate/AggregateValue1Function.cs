@@ -103,7 +103,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             var end = Instruction.Create(OpCodes.Ldarg_1);
 
             body.GetILProcessor()
-                .ArgumentNullCheck(2, loopStart)
+                .ArgumentNullCheck(0, 2, loopStart)
 
                 .LdLen()
                 .LdLoc(0)

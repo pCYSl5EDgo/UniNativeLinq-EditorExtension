@@ -55,6 +55,22 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .Add(next);
         }
 
+        public static ILProcessor ArgumentNullCheck(this ILProcessor processor, int index0, int index1, int index2, Instruction next)
+        {
+            if (!Settings.EnableNullCheckOnRuntime) return processor.Add(next);
+            var fail = Instruction.Create(OpCodes.Newobj, processor.Body.Method.Module.ImportReference(SystemModule.GetType("System", "ArgumentNullException")).FindMethod(".ctor", 0));
+            return processor
+                .LdArg(index0)
+                .BrFalseS(fail)
+                .LdArg(index1)
+                .BrFalseS(fail)
+                .LdArg(index2)
+                .BrTrueS(next)
+                .Add(fail)
+                .Throw()
+                .Add(next);
+        }
+
         public static ILProcessor ThrowInvalidOperationException(this ILProcessor processor)
         {
             return processor
