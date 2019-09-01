@@ -6,7 +6,6 @@ using UnityEngine;
 
 namespace UniNativeLinq.Editor
 {
-    [CreateAssetMenu(menuName = "Linq/a")]
     public sealed class RepeatSingleApi : String2BoolArrayTuple, ISingleApi
     {
         string ISingleApi.Name
