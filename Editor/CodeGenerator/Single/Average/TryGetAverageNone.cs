@@ -413,7 +413,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             var loopStart = Instruction.Create(OpCodes.Ldarg_0);
 
             var processor = body.GetILProcessor()
-                .LdArg(0)
+                .ArgumentNullCheck(0, Instruction.Create(OpCodes.Ldarg_0))
                 .LdLen()
                 .BrTrueS(loopStart)
                 .LdC(false)

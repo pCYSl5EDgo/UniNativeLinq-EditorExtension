@@ -40,10 +40,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             {
                 CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
             });
-            method.Parameters.Add(new ParameterDefinition("value", ParameterAttributes.In, new ByReferenceType(T))
-            {
-                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
-            });
+            method.Parameters.Add(new ParameterDefinition("value", ParameterAttributes.None, T));
             method.Parameters.Add(new ParameterDefinition("func", ParameterAttributes.None, TFunc));
 
             var body = method.Body;
@@ -51,18 +48,13 @@ namespace UniNativeLinq.Editor.CodeGenerator
             var enumeratorVariable = new VariableDefinition(TEnumerator);
             body.Variables.Add(enumeratorVariable);
             body.Variables.Add(new VariableDefinition(T));
-            body.Variables.Add(new VariableDefinition(T));
 
             var loopStart = Instruction.Create(OpCodes.Ldloca_S, enumeratorVariable);
             var fail = InstructionUtility.LoadConstant(false);
             var dispose = Instruction.Create(OpCodes.Ldloca_S, enumeratorVariable);
 
             body.GetILProcessor()
-                .LdArg(1)
-                .LdObj(T)
-                .StLoc(2)
-
-                .LdArg(0)
+                .ArgumentNullCheck(2, Instruction.Create(OpCodes.Ldarg_0))
                 .GetEnumeratorEnumerable(TEnumerable)
                 .StLoc(0)
 
@@ -73,7 +65,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
                 .LdArg(2)
                 .LdLoc(1)
-                .LdLoc(2)
+                .LdArg(1)
                 .CallVirtual(TFunc.FindMethod("Invoke"))
                 .BrFalseS(loopStart)
 
@@ -132,10 +124,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             {
                 CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
             });
-            method.Parameters.Add(new ParameterDefinition("value", ParameterAttributes.In, new ByReferenceType(T))
-            {
-                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
-            });
+            method.Parameters.Add(new ParameterDefinition("value", ParameterAttributes.None, T));
             method.Parameters.Add(new ParameterDefinition("func", ParameterAttributes.None, TFunc));
 
             var body = method.Body;
@@ -143,18 +132,13 @@ namespace UniNativeLinq.Editor.CodeGenerator
             var enumeratorVariable = new VariableDefinition(enumerator);
             body.Variables.Add(enumeratorVariable);
             body.Variables.Add(new VariableDefinition(T));
-            body.Variables.Add(new VariableDefinition(T));
 
             var loopStart = Instruction.Create(OpCodes.Ldloca_S, enumeratorVariable);
             var fail = InstructionUtility.LoadConstant(false);
             var dispose = Instruction.Create(OpCodes.Ldloca_S, enumeratorVariable);
 
             body.GetILProcessor()
-                .LdArg(1)
-                .LdObj(T)
-                .StLoc(2)
-
-                .LdArg(0)
+                .ArgumentNullCheck(2, Instruction.Create(OpCodes.Ldarg_0))
                 .Call(enumerable.FindMethod("GetEnumerator", 0))
                 .StLoc(0)
 
@@ -165,7 +149,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
                 .LdArg(2)
                 .LdLoc(1)
-                .LdLoc(2)
+                .LdArg(1)
                 .CallVirtual(TFunc.FindMethod("Invoke"))
                 .BrFalseS(loopStart)
 
@@ -184,41 +168,32 @@ namespace UniNativeLinq.Editor.CodeGenerator
             {
                 CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
             });
-            method.Parameters.Add(new ParameterDefinition("value", ParameterAttributes.In, new ByReferenceType(T))
-            {
-                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
-            });
+            method.Parameters.Add(new ParameterDefinition("value", ParameterAttributes.None, T));
             method.Parameters.Add(new ParameterDefinition("func", ParameterAttributes.None, TFunc));
 
             var body = method.Body;
             body.InitLocals = true;
             body.Variables.Add(new VariableDefinition(method.Module.TypeSystem.Int32));
-            body.Variables.Add(new VariableDefinition(T));
 
 
             var loopStart = Instruction.Create(OpCodes.Ldarg_2);
             var @return = InstructionUtility.LoadConstant(true);
-            var success = Instruction.Create(OpCodes.Ldarg_1);
 
             var getLength = enumerable.FindMethod("get_Length");
 
             body.GetILProcessor()
-                .LdArg(0)
+                .ArgumentNullCheck(2, Instruction.Create(OpCodes.Ldarg_0))
                 .Call(getLength)
-                .BrTrueS(success)
+                .BrTrueS(loopStart)
 
                 .LdC(false)
                 .Ret()
-
-                .Add(success)
-                .LdObj(T)
-                .StLoc(1)
 
                 .Add(loopStart)
                 .LdArg(0)
                 .LdLoc(0)
                 .Call(enumerable.FindMethod("get_Item"))
-                .LdLoc(1)
+                .LdArg(1)
                 .CallVirtual(TFunc.FindMethod("Invoke"))
                 .BrTrueS(@return)
 
@@ -241,38 +216,29 @@ namespace UniNativeLinq.Editor.CodeGenerator
         private static void GenerateArray(MethodDefinition method, TypeReference enumerable, GenericParameter T, TypeReference TFunc)
         {
             method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.None, enumerable));
-            method.Parameters.Add(new ParameterDefinition("value", ParameterAttributes.In, new ByReferenceType(T))
-            {
-                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
-            });
+            method.Parameters.Add(new ParameterDefinition("value", ParameterAttributes.None, T));
             method.Parameters.Add(new ParameterDefinition("func", ParameterAttributes.None, TFunc));
 
             var body = method.Body;
             body.InitLocals = true;
             body.Variables.Add(new VariableDefinition(method.Module.TypeSystem.IntPtr));
-            body.Variables.Add(new VariableDefinition(T));
 
             var loopStart = Instruction.Create(OpCodes.Ldarg_2);
             var @return = InstructionUtility.LoadConstant(true);
-            var success = Instruction.Create(OpCodes.Ldarg_1);
 
             body.GetILProcessor()
-                .LdArg(0)
+                .ArgumentNullCheck(0, 2, Instruction.Create(OpCodes.Ldarg_0))
                 .LdLen()
-                .BrTrueS(success)
+                .BrTrueS(loopStart)
 
                 .LdC(false)
                 .Ret()
-
-                .Add(success)
-                .LdObj(T)
-                .StLoc(1)
 
                 .Add(loopStart)
                 .LdArg(0)
                 .LdLoc(0)
                 .LdElem(T)
-                .LdLoc(1)
+                .LdArg(1)
                 .CallVirtual(TFunc.FindMethod("Invoke"))
                 .BrTrueS(@return)
 
