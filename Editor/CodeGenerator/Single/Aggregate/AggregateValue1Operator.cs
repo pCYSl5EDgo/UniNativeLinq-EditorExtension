@@ -60,7 +60,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
             var IRefAction = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "IRefAction`2"))
             {
-                GenericArguments = { T, TAccumulate }
+                GenericArguments = { TAccumulate, T }
             };
             var Func = new GenericParameter("TFunc", method)
             {
@@ -94,8 +94,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
         private static void GenerateArray(MethodDefinition method, TypeReference baseEnumerable, TypeReference T, TypeReference TAccumulate, TypeReference TFunc, TypeReference IRefAction)
         {
             method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.None, baseEnumerable));
-            var paramAccumulate = new ParameterDefinition("accumulate", ParameterAttributes.None, TAccumulate);
-            method.Parameters.Add(paramAccumulate);
+            method.Parameters.Add(new ParameterDefinition("accumulate", ParameterAttributes.None, TAccumulate));
             method.Parameters.Add(new ParameterDefinition("func", ParameterAttributes.In, new ByReferenceType(TFunc))
             {
                 CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
@@ -112,10 +111,10 @@ namespace UniNativeLinq.Editor.CodeGenerator
             body.GetILProcessor()
                 .BrS(condition)
                 .Add(loopStart)
+                .LdArgA(1)
                 .LdArg(0)
                 .LdLoc(0)
                 .LdElemA(T)
-                .LdArgAs(paramAccumulate)
                 .Constrained(TFunc)
                 .CallVirtual(IRefAction.FindMethod("Execute"))
 
@@ -136,8 +135,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
         private static void GenerateNativeArray(MethodDefinition method, TypeReference baseEnumerable, TypeReference enumerable, TypeReference enumerator, TypeReference T, TypeReference TAccumulate, TypeReference TFunc, TypeReference IRefAction)
         {
             method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.None, baseEnumerable));
-            var paramAccumulate = new ParameterDefinition("accumulate", ParameterAttributes.None, TAccumulate);
-            method.Parameters.Add(paramAccumulate);
+            method.Parameters.Add(new ParameterDefinition("accumulate", ParameterAttributes.None, TAccumulate));
             method.Parameters.Add(new ParameterDefinition("func", ParameterAttributes.In, new ByReferenceType(TFunc))
             {
                 CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
@@ -163,8 +161,8 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .StLoc(0)
                 .BrS(condition)
                 .Add(loopStart)
+                .LdArgA(1)
                 .LdLoc(2)
-                .LdArgAs(paramAccumulate)
                 .Constrained(TFunc)
                 .CallVirtual(IRefAction.FindMethod("Execute"))
                 .Add(condition)
@@ -197,7 +195,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
             var IRefAction = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "IRefAction`2"))
             {
-                GenericArguments = { T, TAccumulate }
+                GenericArguments = { TAccumulate, T }
             };
             var TFunc = new GenericParameter("TFunc", method)
             {
@@ -212,8 +210,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             {
                 CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
             });
-            var paramAccumulate = new ParameterDefinition("accumulate", ParameterAttributes.None, TAccumulate);
-            method.Parameters.Add(paramAccumulate);
+            method.Parameters.Add(new ParameterDefinition("accumulate", ParameterAttributes.None, TAccumulate));
             method.Parameters.Add(new ParameterDefinition("func", ParameterAttributes.In, new ByReferenceType(TFunc))
             {
                 CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
@@ -236,8 +233,8 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .StLoc(0)
                 .BrS(condition)
                 .Add(loopStart)
+                .LdArgA(1)
                 .LdLoc(2)
-                .LdArgAs(paramAccumulate)
                 .Constrained(TFunc)
                 .CallVirtual(IRefAction.FindMethod("Execute"))
                 .Add(condition)
@@ -259,8 +256,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             {
                 CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
             });
-            var paramAccumulate = new ParameterDefinition("accumulate", ParameterAttributes.None, TAccumulate);
-            method.Parameters.Add(paramAccumulate);
+            method.Parameters.Add(new ParameterDefinition("accumulate", ParameterAttributes.None, TAccumulate));
             method.Parameters.Add(new ParameterDefinition("func", ParameterAttributes.In, new ByReferenceType(TFunc))
             {
                 CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
@@ -283,8 +279,8 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .StLoc(0)
                 .BrS(condition)
                 .Add(loopStart)
+                .LdArgA(1)
                 .LdLoc(2)
-                .LdArgAs(paramAccumulate)
                 .Constrained(TFunc)
                 .CallVirtual(IRefAction.FindMethod("Execute"))
                 .Add(condition)

@@ -63,7 +63,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
             var TFunc = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "RefAction`2"))
             {
-                GenericArguments = { T, TAccumulate }
+                GenericArguments = { TAccumulate, T }
             };
 
             var TResultFunc = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "RefFunc`2"))
@@ -115,7 +115,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
             var TFunc = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "RefAction`2"))
             {
-                GenericArguments = { T, TAccumulate }
+                GenericArguments = { TAccumulate, T }
             };
 
             var TResultFunc = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "RefFunc`2"))
@@ -146,8 +146,8 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .GetEnumeratorEnumerable(TEnumerable)
                 .StLoc(0)
                 .Add(loopStart)
-                .LdLoc(2)
                 .LdArgA(1)
+                .LdLoc(2)
                 .CallVirtual(TFunc.FindMethod("Invoke"))
                 .Add(condition)
                 .LdLocA(1)
@@ -181,10 +181,10 @@ namespace UniNativeLinq.Editor.CodeGenerator
             body.GetILProcessor()
                 .ArgumentNullCheck(0, 2, 3, Instruction.Create(OpCodes.Br_S, condition))
                 .Add(loopStart)
+                .LdArgA(1)
                 .LdArg(0)
                 .LdLoc(0)
                 .LdElemA(T)
-                .LdArgA(1)
                 .CallVirtual(TFunc.FindMethod("Invoke"))
 
                 .LdLoc(0)
@@ -232,8 +232,8 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .StLoc(0)
                 .BrS(condition)
                 .Add(loopStart)
-                .LdLoc(2)
                 .LdArgA(1)
+                .LdLoc(2)
                 .CallVirtual(TFunc.FindMethod("Invoke"))
                 .Add(condition)
                 .LdLocA(1)
@@ -274,8 +274,8 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .StLoc(0)
                 .BrS(condition)
                 .Add(loopStart)
-                .LdLoc(2)
                 .LdArgA(1)
+                .LdLoc(2)
                 .CallVirtual(TFunc.FindMethod("Invoke"))
                 .Add(condition)
                 .LdLocA(1)

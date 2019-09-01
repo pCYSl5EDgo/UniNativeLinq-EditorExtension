@@ -51,7 +51,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
             var IRefAction = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "IRefAction`2"))
             {
-                GenericArguments = { T, TAccumulate }
+                GenericArguments = { TAccumulate, T }
             };
             var TFunc = new GenericParameter("TFunc", method)
             {
@@ -106,8 +106,8 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .StLoc(0)
                 .BrS(condition)
                 .Add(loopStart)
-                .LdLoc(2)
                 .LdArg(1)
+                .LdLoc(2)
                 .Constrained(TFunc)
                 .CallVirtual(IRefAction.FindMethod("Execute"))
                 .Add(condition)
