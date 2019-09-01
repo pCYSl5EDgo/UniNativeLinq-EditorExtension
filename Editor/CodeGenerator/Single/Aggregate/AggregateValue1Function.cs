@@ -103,8 +103,8 @@ namespace UniNativeLinq.Editor.CodeGenerator
             var end = Instruction.Create(OpCodes.Ldarg_1);
 
             body.GetILProcessor()
+                .ArgumentNullCheck(2, loopStart)
 
-                .Add(loopStart)
                 .LdLen()
                 .LdLoc(0)
 
@@ -147,7 +147,8 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
             body.GetILProcessor()
 
-                .Add(loopStart)
+                .ArgumentNullCheck(2, loopStart)
+
                 .Call(baseEnumerable.FindMethod("get_Length"))
                 .LdLoc(0)
 
@@ -211,16 +212,14 @@ namespace UniNativeLinq.Editor.CodeGenerator
             var loopStart = Instruction.Create(OpCodes.Ldloca_S, variables[0]);
 
             var processor = body.GetILProcessor()
-                .LdArg(0)
+                .ArgumentNullCheck(2, Instruction.Create(OpCodes.Ldarg_0))
                 .GetEnumeratorEnumerable(TEnumerable)
-                .StLoc(0);
-
-            processor.Add(loopStart)
+                .StLoc(0)
+                .Add(loopStart)
                 .LdLocA(1)
                 .TryMoveNextEnumerator(TEnumerator)
-                .BrFalseS(end);
-
-            processor.LdArg(2)
+                .BrFalseS(end)
+                .LdArg(2)
                 .LdArg(1)
                 .LdLoc(1)
                 .CallVirtual(TFunc.FindMethod("Invoke"))
@@ -254,7 +253,8 @@ namespace UniNativeLinq.Editor.CodeGenerator
             var loopStart = Instruction.Create(OpCodes.Ldloca_S, variables[0]);
 
             body.GetILProcessor()
-                .LdArg(0)
+                .ArgumentNullCheck(2, Instruction.Create(OpCodes.Ldarg_0))
+
                 .Call(enumerable.FindMethod("GetEnumerator", 0))
                 .StLoc(0)
 

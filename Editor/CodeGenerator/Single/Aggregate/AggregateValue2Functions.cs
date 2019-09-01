@@ -107,7 +107,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             body.Variables.Add(new VariableDefinition(method.Module.TypeSystem.Boolean));
 
             body.GetILProcessor()
-                .BrS(condition)
+                .ArgumentNullCheck(2, 3, Instruction.Create(OpCodes.Br_S, condition))
                 .Add(loopStart)
                 .LdArg(1)
                 .LdArg(0)
@@ -144,15 +144,16 @@ namespace UniNativeLinq.Editor.CodeGenerator
             var body = method.Body;
 
             var enumeratorVariable = new VariableDefinition(enumerator);
-            body.Variables.Add(enumeratorVariable);
-            body.Variables.Add(new VariableDefinition(T));
-            body.Variables.Add(new VariableDefinition(enumerable));
+            var variables = body.Variables;
+            variables.Add(enumeratorVariable);
+            variables.Add(new VariableDefinition(T));
+            variables.Add(new VariableDefinition(enumerable));
 
             var loopStart = Instruction.Create(OpCodes.Ldarg_2);
             var condition = Instruction.Create(OpCodes.Ldloca_S, enumeratorVariable);
 
             body.GetILProcessor()
-                .LdLocA(2)
+                .ArgumentNullCheck(2, 3, Instruction.Create(OpCodes.Ldloca_S, variables[2]))
                 .Dup()
                 .LdArg(0)
                 .Call(enumerable.FindMethod(".ctor", 1))
@@ -224,7 +225,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             var condition = Instruction.Create(OpCodes.Ldloca_S, enumeratorVariable);
 
             body.GetILProcessor()
-                .LdArg(0)
+                .ArgumentNullCheck(2, 3, Instruction.Create(OpCodes.Ldarg_0))
                 .GetEnumeratorEnumerable(TEnumerable)
                 .StLoc(0)
                 .BrS(condition)
@@ -267,7 +268,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             var condition = Instruction.Create(OpCodes.Ldloca_S, enumeratorVariable);
 
             body.GetILProcessor()
-                .LdArg(0)
+                .ArgumentNullCheck(2, 3, Instruction.Create(OpCodes.Ldarg_0))
                 .Call(enumerable.FindMethod("GetEnumerator", 0))
                 .StLoc(0)
                 .BrS(condition)
