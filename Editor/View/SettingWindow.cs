@@ -198,8 +198,18 @@ namespace UniNativeLinq.Editor
                     break;
                 case "Append":
                 case "Prepend":
-                case "DefaultIfEmpty":
                     list.Add(new AppendPrependDefaultIfEmpty(api));
+                    break;
+                case "DefaultIfEmpty":
+                    switch (api.Description)
+                    {
+                        case "None":
+                            list.Add(new DefaultIfEmptyNone(api));
+                            break;
+                        default:
+                            list.Add(new AppendPrependDefaultIfEmpty(api));
+                            break;
+                    }
                     break;
                 case "Skip":
                 case "SkipLast":

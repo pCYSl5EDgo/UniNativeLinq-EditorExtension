@@ -1,19 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+
 // ReSharper disable InconsistentNaming
 
 namespace UniNativeLinq.Editor.CodeGenerator
 {
-    public sealed class AppendPrependDefaultIfEmpty : ITypeDictionaryHolder, IApiExtensionMethodGenerator
+    public sealed class DefaultIfEmptyNone : ITypeDictionaryHolder, IApiExtensionMethodGenerator
     {
-        public AppendPrependDefaultIfEmpty(ISingleApi api)
+        public DefaultIfEmptyNone(ISingleApi api)
         {
             Api = api;
         }
+
         public readonly ISingleApi Api;
+
         public Dictionary<string, TypeDefinition> Dictionary { private get; set; }
+
         public void Generate(IEnumerableCollectionProcessor processor, ModuleDefinition mainModule, ModuleDefinition systemModule, ModuleDefinition unityModule)
         {
             Api.GenerateSingleWithEnumerable(processor, mainModule, systemModule, unityModule, GenerateEach);
@@ -21,8 +26,6 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
         private void GenerateEach(string name, bool isSpecial, TypeDefinition @static, ModuleDefinition mainModule, ModuleDefinition systemModule)
         {
-            var returnTypeDefinition = mainModule.GetType("UniNativeLinq", Api.Name + "Enumerable`3");
-
             var method = new MethodDefinition(Api.Name, Helper.StaticMethodAttributes, mainModule.TypeSystem.Boolean)
             {
                 DeclaringType = @static,
@@ -30,6 +33,8 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 CustomAttributes = { Helper.ExtensionAttribute }
             };
             @static.Methods.Add(method);
+
+            var returnTypeDefinition = mainModule.GetType("UniNativeLinq", Api.Name + "Enumerable`3");
 
             var T = method.DefineUnmanagedGenericParameter();
             method.GenericParameters.Add(T);
@@ -67,14 +72,12 @@ namespace UniNativeLinq.Editor.CodeGenerator
         private static void GenerateArray(MethodDefinition method, TypeReference baseEnumerable, GenericInstanceType enumerable, GenericParameter T)
         {
             method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.None, baseEnumerable));
-            method.Parameters.Add(new ParameterDefinition("element", ParameterAttributes.In, new ByReferenceType(T))
-            {
-                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
-            });
 
             var body = method.Body;
             body.InitLocals = true;
-            body.Variables.Add(new VariableDefinition(enumerable));
+            var variables = body.Variables;
+            variables.Add(new VariableDefinition(enumerable));
+            variables.Add(new VariableDefinition(T));
 
             body.GetILProcessor()
                 .ArgumentNullCheck(0, Instruction.Create(OpCodes.Ldloca_S, body.Variables[0]))
@@ -82,39 +85,20 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .Call(enumerable.FindMethod(".ctor", 1))
 
                 .LdLocA(0)
-                .LdArg(1)
+                .LdLocA(1)
                 .NewObj(method.ReturnType.FindMethod(".ctor", 2))
                 .Ret();
         }
 
-        private static void GenerateNormal(MethodDefinition method, TypeReference enumerable, TypeReference T)
-        {
-            method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(enumerable))
-            {
-                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
-            });
-            method.Parameters.Add(new ParameterDefinition("element", ParameterAttributes.In, new ByReferenceType(T))
-            {
-                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
-            });
-
-            method.Body.GetILProcessor()
-                .LdArgs(0, 2)
-                .NewObj(method.ReturnType.FindMethod(".ctor", 2))
-                .Ret();
-        }
-
-        private static void GenerateNativeArray(MethodDefinition method, TypeReference baseEnumerable, GenericInstanceType enumerable, TypeReference T)
+        private static void GenerateNativeArray(MethodDefinition method, TypeReference baseEnumerable, GenericInstanceType enumerable, GenericParameter T)
         {
             method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.None, baseEnumerable));
-            method.Parameters.Add(new ParameterDefinition("element", ParameterAttributes.In, new ByReferenceType(T))
-            {
-                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
-            });
 
             var body = method.Body;
             body.InitLocals = true;
-            body.Variables.Add(new VariableDefinition(enumerable));
+            var variables = body.Variables;
+            variables.Add(new VariableDefinition(enumerable));
+            variables.Add(new VariableDefinition(T));
 
             body.GetILProcessor()
                 .LdLocA(0)
@@ -122,7 +106,26 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .Call(enumerable.FindMethod(".ctor", 1))
 
                 .LdLocA(0)
-                .LdArg(1)
+                .LdLocA(1)
+                .NewObj(method.ReturnType.FindMethod(".ctor", 2))
+                .Ret();
+        }
+
+        private static void GenerateNormal(MethodDefinition method, TypeReference enumerable, GenericParameter T)
+        {
+            method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(enumerable))
+            {
+                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
+            });
+
+            var body = method.Body;
+            body.InitLocals = true;
+            var variables = body.Variables;
+            variables.Add(new VariableDefinition(T));
+
+            method.Body.GetILProcessor()
+                .LdArg(0)
+                .LdLocA(0)
                 .NewObj(method.ReturnType.FindMethod(".ctor", 2))
                 .Ret();
         }
