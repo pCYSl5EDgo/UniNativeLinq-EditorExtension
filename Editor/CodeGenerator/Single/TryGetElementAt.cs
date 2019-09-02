@@ -50,7 +50,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
             body.GetILProcessor()
                 .LdArg(1)
-                .LdC(0)
+                .LdC(0L)
                 .BgeS(notZero)
 
                 .LdC(false)
@@ -165,7 +165,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             var dispose = enumerator.FindMethod("Dispose", 0);
             body.GetILProcessor()
                 .LdArg(1)
-                .LdC(0)
+                .LdC(0L)
                 .BgeS(notZero)
 
                 .Add(fail)
@@ -213,7 +213,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
             body.GetILProcessor()
                 .LdArg(1)
-                .LdC(0)
+                .LdC(0L)
                 .BgeS(notMinus)
 
                 .Add(fail)
@@ -248,7 +248,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             var dispose = enumerator.FindMethod("Dispose", 0);
             body.GetILProcessor()
                 .LdArg(1)
-                .LdC(0)
+                .LdC(0L)
                 .BgeS(notZero)
 
                 .LdC(false)
@@ -332,7 +332,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
             method.Body.GetILProcessor()
                 .ArgumentNullCheck(0, Instruction.Create(OpCodes.Ldarg_1))
-                .LdC(0)
+                .LdC(0L)
                 .BltS(fail)
 
                 .LdArg(0)
