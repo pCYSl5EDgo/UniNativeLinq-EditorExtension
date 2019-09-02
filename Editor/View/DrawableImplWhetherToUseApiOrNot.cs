@@ -17,9 +17,16 @@ namespace UniNativeLinq.Editor
         {
             this.processor = processor;
             this.singleApis = singleApis ?? Array.Empty<ISingleApi>();
-            Array.Sort(this.singleApis);
             this.doubleApis = doubleApis ?? Array.Empty<IDoubleApi>();
-            Array.Sort(this.doubleApis);
+            try
+            {
+                Array.Sort(this.singleApis);
+                Array.Sort(this.doubleApis);
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning(e);
+            }
             foreach (var api in doubleApis)
             {
                 ((IDrawableWithEnumerableAndScrollPosition)api).RegisterEnumerableCollectionProcessor(processor);
