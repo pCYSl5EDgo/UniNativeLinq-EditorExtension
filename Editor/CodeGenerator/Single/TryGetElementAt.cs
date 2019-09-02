@@ -329,17 +329,13 @@ namespace UniNativeLinq.Editor.CodeGenerator
             method.Parameters.Add(new ParameterDefinition("value", ParameterAttributes.Out, new ByReferenceType(T)));
 
             var fail = InstructionUtility.LoadConstant(false);
-            var notMinus = Instruction.Create(OpCodes.Ldarg_0);
 
             method.Body.GetILProcessor()
-                .LdArg(1)
+                .ArgumentNullCheck(0, Instruction.Create(OpCodes.Ldarg_1))
                 .LdC(0)
-                .BgeS(notMinus)
+                .BltS(fail)
 
-                .Add(fail)
-                .Ret()
-
-                .Add(notMinus)
+                .LdArg(0)
                 .LdLen()
                 .LdArg(1)
                 .BleS(fail)
@@ -351,6 +347,9 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .CpObj(T)
 
                 .LdC(true)
+                .Ret()
+
+                .Add(fail)
                 .Ret();
         }
     }
