@@ -78,6 +78,9 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .Throw();
         }
 
+        public static ILProcessor HasValueNullableStruct(this ILProcessor processor, TypeReference nullableType) => processor.CallVirtual(nullableType.FindMethod("get_HasValue"));
+        public static ILProcessor ValueNullableStruct(this ILProcessor processor, TypeReference nullableType) => processor.CallVirtual(nullableType.FindMethod("get_Value"));
+
         public static ILProcessor GetEnumeratorEnumerable(this ILProcessor processor, GenericParameter TEnumerable) => processor.Constrained(TEnumerable).CallVirtual(TEnumerable.Constraints.First(x => x.ToDefinition().Name == "IRefEnumerable`2").FindMethod("GetEnumerator"));
         public static ILProcessor MoveNextEnumerator(this ILProcessor processor, GenericParameter TEnumerator) => processor.Constrained(TEnumerator).CallVirtual(MainModule.ImportReference(SystemModule.GetType("System.Collections", "IEnumerator")).FindMethod("MoveNext"));
         public static ILProcessor DisposeEnumerator(this ILProcessor processor, GenericParameter TEnumerator) => processor.Constrained(TEnumerator).CallVirtual(MainModule.ImportReference(SystemModule.GetType("System", "IDisposable")).FindMethod("Dispose"));

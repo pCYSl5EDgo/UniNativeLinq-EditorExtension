@@ -1,13 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using UnityEngine;
+using GenericInstanceType = Mono.Cecil.GenericInstanceType;
+
 // ReSharper disable InconsistentNaming
 
 
 namespace UniNativeLinq.Editor.CodeGenerator
 {
-    public sealed class TryGetAverageNone : ITypeDictionaryHolder, IApiExtensionMethodGenerator
+    public sealed class TryGetAverageNone
+        : ITypeDictionaryHolder,
+            IApiExtensionMethodGenerator
     {
         public TryGetAverageNone(ISingleApi api)
         {
@@ -20,449 +26,185 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
         public Dictionary<string, TypeDefinition> Dictionary { private get; set; }
 
-        private TypeReference CalcReturnTypeReference(MethodDefinition method)
+        private bool IsNullable => returnTypeName[0] == 'N';
+
+        private TypeReference CalcElementTypeReference(ModuleDefinition mainModule, ModuleDefinition systemModule)
         {
             switch (returnTypeName)
             {
                 case "Double":
-                    return method.Module.TypeSystem.Double;
+                    return mainModule.TypeSystem.Double;
                 case "Single":
-                    return method.Module.TypeSystem.Single;
+                    return mainModule.TypeSystem.Single;
                 case "Int32":
-                    return method.Module.TypeSystem.Int32;
+                    return mainModule.TypeSystem.Int32;
                 case "UInt32":
-                    return method.Module.TypeSystem.UInt32;
+                    return mainModule.TypeSystem.UInt32;
                 case "Int64":
-                    return method.Module.TypeSystem.Int64;
+                    return mainModule.TypeSystem.Int64;
                 case "UInt64":
-                    return method.Module.TypeSystem.UInt64;
+                    return mainModule.TypeSystem.UInt64;
+                case "Nullable<Double>":
+                    return new GenericInstanceType(mainModule.ImportReference(systemModule.GetType("System", "Nullable`1")))
+                    {
+                        GenericArguments = { mainModule.TypeSystem.Double }
+                    };
+                case "Nullable<Single>":
+                    return new GenericInstanceType(mainModule.ImportReference(systemModule.GetType("System", "Nullable`1")))
+                    {
+                        GenericArguments = { mainModule.TypeSystem.Single }
+                    };
+                case "Nullable<Int32>":
+                    return new GenericInstanceType(mainModule.ImportReference(systemModule.GetType("System", "Nullable`1")))
+                    {
+                        GenericArguments = { mainModule.TypeSystem.Int32 }
+                    };
+                case "Nullable<UInt32>":
+                    return new GenericInstanceType(mainModule.ImportReference(systemModule.GetType("System", "Nullable`1")))
+                    {
+                        GenericArguments = { mainModule.TypeSystem.UInt32 }
+                    };
+                case "Nullable<Int64>":
+                    return new GenericInstanceType(mainModule.ImportReference(systemModule.GetType("System", "Nullable`1")))
+                    {
+                        GenericArguments = { mainModule.TypeSystem.Int64 }
+                    };
+                case "Nullable<UInt64>":
+                    return new GenericInstanceType(mainModule.ImportReference(systemModule.GetType("System", "Nullable`1")))
+                    {
+                        GenericArguments = { mainModule.TypeSystem.UInt64 }
+                    };
                 default: throw new Exception();
             }
         }
 
-        public void Generate(IEnumerableCollectionProcessor processor, ModuleDefinition mainModule, ModuleDefinition systemModule, ModuleDefinition unityModule)
+        private TypeReference CalcArgumentTypeReference(ModuleDefinition mainModule, ModuleDefinition systemModule)
         {
-            Api.GenerateSingleNoEnumerable(processor, mainModule, GenerateEach, GenerateGeneric);
-        }
-
-        private void GenerateGeneric(TypeDefinition @static, ModuleDefinition mainModule)
-        {
-            var method = new MethodDefinition("TryGetAverage", Helper.StaticMethodAttributes, mainModule.TypeSystem.Boolean)
-            {
-                DeclaringType = @static,
-                AggressiveInlining = true,
-                CustomAttributes = { Helper.ExtensionAttribute }
-            };
-            @static.Methods.Add(method);
-            var returnType = CalcReturnTypeReference(method);
-
-            var IRefEnumerator = new GenericInstanceType(method.Module.GetType("UniNativeLinq", "IRefEnumerator`1"))
-            {
-                GenericArguments = { returnType }
-            };
-            var TEnumerator = new GenericParameter("TEnumerator", method)
-            {
-                HasNotNullableValueTypeConstraint = true,
-                Constraints = { IRefEnumerator }
-            };
-            method.GenericParameters.Add(TEnumerator);
-
-            var IRefEnumerable = new GenericInstanceType(method.Module.GetType("UniNativeLinq", "IRefEnumerable`2"))
-            {
-                GenericArguments = { TEnumerator, returnType }
-            };
-            var TEnumerable = new GenericParameter("TEnumerable", method)
-            {
-                HasNotNullableValueTypeConstraint = true,
-                Constraints = { IRefEnumerable }
-            };
-            method.GenericParameters.Add(TEnumerable);
-
-            method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(TEnumerable))
-            {
-                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
-            });
-            method.Parameters.Add(new ParameterDefinition("value", ParameterAttributes.Out, new ByReferenceType(returnType)));
-
-            var body = method.Body;
-            body.InitLocals = true;
-            var enumeratorVariable = new VariableDefinition(TEnumerator);
-            body.Variables.Add(enumeratorVariable);                                         // 0
-            body.Variables.Add(new VariableDefinition(returnType));                         // 1
-            body.Variables.Add(new VariableDefinition(returnType));                         // 2
-            body.Variables.Add(new VariableDefinition(method.Module.TypeSystem.Int64));     // 3
-
-            var firstSuccess = InstructionUtility.LoadConstant(1L);
-            var @return = Instruction.Create(OpCodes.Ldarg_1);
-            var loopStart = Instruction.Create(OpCodes.Ldloca_S, enumeratorVariable);
-
-            var processor = body.GetILProcessor()
-                .LdArg(0)
-                .GetEnumeratorEnumerable(TEnumerable)
-                .StLoc(0)
-
-                .LdLocA(0)
-                .LdLocA(1)
-                .TryMoveNextEnumerator(TEnumerator)
-                .BrTrueS(firstSuccess[0])
-
-                .LdLocA(0)
-                .DisposeEnumerator(TEnumerator)
-                .LdC(false)
-                .Ret()
-
-                .AddRange(firstSuccess)
-                .StLoc(3)
-
-                .Add(loopStart)
-                .LdLocA(2)
-                .TryMoveNextEnumerator(TEnumerator)
-                .BrFalseS(@return)
-
-                .LdLoc(3)
-                .LdC(1L)
-                .Add()
-                .StLoc(3)
-
-                .LdLoc(1)
-                .LdLoc(2)
-                .Add()
-                .StLoc(1)
-
-                .BrS(loopStart)
-
-                .Add(@return)
-                .LdLoc(1);
-
             switch (returnTypeName)
             {
-                case "Double":
-                    processor
-                        .LdLoc(3)
-                        .ConvR8()
-                        .Div();
-                    break;
                 case "Single":
-                    processor
-                        .LdLoc(3)
-                        .ConvR4()
-                        .Div();
-                    break;
+                    return mainModule.TypeSystem.Single;
+                case "Double":
                 case "Int32":
-                    processor
-                        .ConvI8()
-                        .LdLoc(3)
-                        .Div()
-                        .ConvI4();
-                    break;
                 case "UInt32":
-                    processor
-                        .ConvU8()
-                        .LdLoc(3)
-                        .DivUn()
-                        .ConvU4();
-                    break;
                 case "Int64":
-                    processor
-                        .Div();
-                    break;
                 case "UInt64":
-                    processor
-                        .LdLoc(3)
-                        .ConvU8()
-                        .DivUn();
-                    break;
+                    return mainModule.TypeSystem.Double;
+                case "Nullable<Double>":
+                case "Nullable<Int32>":
+                case "Nullable<UInt32>":
+                case "Nullable<Int64>":
+                case "Nullable<UInt64>":
+                    return new GenericInstanceType(mainModule.ImportReference(systemModule.GetType("System", "Nullable`1")))
+                    {
+                        GenericArguments = { mainModule.TypeSystem.Double }
+                    };
+                case "Nullable<Single>":
+                    return new GenericInstanceType(mainModule.ImportReference(systemModule.GetType("System", "Nullable`1")))
+                    {
+                        GenericArguments = { mainModule.TypeSystem.Single }
+                    };
+                default: throw new Exception();
             }
-
-            processor
-                .StObj(returnType)
-
-                .LdLocA(0)
-                .DisposeEnumerator(TEnumerator)
-
-                .LdC(true)
-                .Ret();
         }
 
-        private void GenerateEach(string name, bool isSpecial, TypeDefinition @static, ModuleDefinition mainModule)
+        private Instruction Conv => Instruction.Create(
+            returnTypeName == "Single" || returnTypeName == "Nullable<Single>"
+                ? OpCodes.Conv_R4
+                : returnTypeName == "UInt32" || returnTypeName == "UInt64" || returnTypeName == "Nullable<UInt32>" || returnTypeName == "Nullable<UInt64>"
+                  ? OpCodes.Conv_R_Un
+                  : OpCodes.Conv_R8);
+
+        public void Generate(IEnumerableCollectionProcessor processor, ModuleDefinition mainModule, ModuleDefinition systemModule, ModuleDefinition unityModule)
         {
-            var method = new MethodDefinition("TryGetAverage", Helper.StaticMethodAttributes, mainModule.TypeSystem.Boolean)
+            var array = processor.EnabledNameCollection.Intersect(Api.NameCollection).ToArray();
+            if (!Api.ShouldDefine(array)) return;
+            TypeDefinition @static;
+            mainModule.Types.Add(@static = mainModule.DefineStatic(Api.Name + Api.Description + "Helper"));
+
+            foreach (var name in array)
+            {
+                if (!processor.IsSpecialType(name, out var isSpecial)) throw new KeyNotFoundException();
+                if (!Api.TryGetEnabled(name, out var apiEnabled) || !apiEnabled) continue;
+                GenerateEach(name, isSpecial, @static, mainModule, systemModule);
+            }
+        }
+
+        private void GenerateEach(string name, bool isSpecial, TypeDefinition @static, ModuleDefinition mainModule, ModuleDefinition systemModule)
+        {
+            var method = new MethodDefinition(Api.Name, Helper.StaticMethodAttributes, mainModule.TypeSystem.Boolean)
             {
                 DeclaringType = @static,
                 AggressiveInlining = true,
                 CustomAttributes = { Helper.ExtensionAttribute }
             };
             @static.Methods.Add(method);
-            var returnType = CalcReturnTypeReference(method);
+
+            var T = CalcElementTypeReference(mainModule, systemModule);
+            var TArg = CalcArgumentTypeReference(mainModule, systemModule);
+
+            var TOperator = mainModule.GetType("UniNativeLinq.Average", (IsNullable ? "Nullable" : "") + returnTypeName + "Average");
+
+            var Aggregate = mainModule.GetType("UniNativeLinq", "AggregateRefValue1OperatorHelper");
+
+            var Func =
+                name == "T[]"
+                    ? Aggregate.Methods.First(x => x.Parameters[0].ParameterType.IsArray)
+                    : name == "NativeArray<T>"
+                        ? Aggregate.Methods.First(x => x.Parameters[0].ParameterType.ToDefinition().Name == "NativeArray`1")
+                        : Aggregate.Methods.First(x =>
+                        {
+                            var parameterType = x.Parameters[0].ParameterType;
+                            return !parameterType.IsArray && parameterType.ToDefinition().Name == Dictionary[name].Name;
+                        });
+
+            var genericFunc = new GenericInstanceMethod(Func)
+            {
+                GenericArguments = { T, TArg, TOperator }
+            };
 
             if (isSpecial)
             {
-                var (baseEnumerable, _, _) = returnType.MakeSpecialTypePair(name);
-                switch (name)
-                {
-                    case "T[]":
-                        GenerateArray(method, baseEnumerable, returnType);
-                        break;
-                    case "NativeArray<T>":
-                        GenerateNativeArray(method, baseEnumerable, returnType);
-                        break;
-                    default: throw new NotSupportedException(name);
-                }
+                var (baseEnumerable, _, _) = T.MakeSpecialTypePair(name);
+
+                method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.None, baseEnumerable));
+                method.Parameters.Add(new ParameterDefinition("value", ParameterAttributes.Out, new ByReferenceType(TArg)));
             }
             else
             {
-                GenerateNormal(method, Dictionary[name], returnType);
+                var typeDefinition = Dictionary[name];
+                var skipIndex = typeDefinition.GenericParameters.IndexOf(typeDefinition.GenericParameters.First(x => x.Name == "T"));
+                var (enumerable, _, _) = T.MakeFromCommonType(method, typeDefinition, "0");
+
+                var genericArguments = (enumerable as GenericInstanceType).GenericArguments;
+                foreach (var parameter in genericArguments.Take(skipIndex).Concat(genericArguments.Skip(skipIndex + 1)))
+                {
+                    genericFunc.GenericArguments.Add(parameter);
+                }
+
+                method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(enumerable))
+                {
+                    CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
+                });
+                method.Parameters.Add(new ParameterDefinition("value", ParameterAttributes.Out, new ByReferenceType(TArg)));
             }
-        }
 
-        private void GenerateNormal(MethodDefinition method, TypeDefinition type, TypeReference returnType)
-        {
-            var (enumerable, enumerator, _) = returnType.MakeFromCommonType(method, type, "0");
 
-            method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(enumerable))
-            {
-                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
-            });
-            method.Parameters.Add(new ParameterDefinition("value", ParameterAttributes.Out, new ByReferenceType(returnType)));
 
             var body = method.Body;
             body.InitLocals = true;
-            var enumeratorVariable = new VariableDefinition(enumerator);
-            body.Variables.Add(enumeratorVariable);                                         // 0
-            body.Variables.Add(new VariableDefinition(returnType));                         // 1
-            body.Variables.Add(new VariableDefinition(returnType));                         // 2
-            body.Variables.Add(new VariableDefinition(method.Module.TypeSystem.Int64));     // 3
+            body.Variables.Add(new VariableDefinition(TArg));
+            body.Variables.Add(new VariableDefinition(TOperator));
 
-            var firstSuccess = InstructionUtility.LoadConstant(1L);
-            var @return = Instruction.Create(OpCodes.Ldarg_1);
-            var loopStart = Instruction.Create(OpCodes.Ldloca_S, enumeratorVariable);
-
-            var TryMoveNext = enumerator.FindMethod("TryMoveNext", 1);
-            var Dispose = enumerator.FindMethod("Dispose", 0);
-
-            var processor = body.GetILProcessor()
+            body.GetILProcessor()
                 .LdArg(0)
-                .Call(enumerable.FindMethod("GetEnumerator", 0))
-                .StLoc(0)
-
                 .LdLocA(0)
                 .LdLocA(1)
-                .Call(TryMoveNext)
-                .BrTrueS(firstSuccess[0])
-
-                .LdLocA(0)
-                .Call(Dispose)
-                .LdC(false)
-                .Ret()
-
-                .AddRange(firstSuccess)
-                .StLoc(3)
-
-                .Add(loopStart)
-                .LdLocA(2)
-                .Call(TryMoveNext)
-                .BrFalseS(@return)
-
-                .LdLoc(3)
-                .LdC(1L)
-                .Add()
-                .StLoc(3)
-
-                .LdLoc(1)
-                .LdLoc(2)
-                .Add()
-                .StLoc(1)
-
-                .BrS(loopStart)
-
-                .Add(@return)
-                .LdLoc(1);
-
-            switch (returnTypeName)
-            {
-                case "Double":
-                    processor
-                        .LdLoc(3)
-                        .ConvR8()
-                        .Div();
-                    break;
-                case "Single":
-                    processor
-                        .LdLoc(3)
-                        .ConvR4()
-                        .Div();
-                    break;
-                case "Int32":
-                    processor
-                        .ConvI8()
-                        .LdLoc(3)
-                        .Div()
-                        .ConvI4();
-                    break;
-                case "UInt32":
-                    processor
-                        .ConvU8()
-                        .LdLoc(3)
-                        .DivUn()
-                        .ConvU4();
-                    break;
-                case "Int64":
-                    processor
-                        .Div();
-                    break;
-                case "UInt64":
-                    processor
-                        .LdLoc(3)
-                        .ConvU8()
-                        .DivUn();
-                    break;
-            }
-
-            processor
-                .StObj(returnType)
-
-                .LdLocA(0)
-                .Call(Dispose)
-
-                .LdC(true)
-                .Ret();
-        }
-
-
-        private void GenerateNativeArray(MethodDefinition method, TypeReference baseEnumerable, TypeReference returnType)
-        {
-            method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.In, new ByReferenceType(baseEnumerable))
-            {
-                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
-            });
-            method.Parameters.Add(new ParameterDefinition("value", ParameterAttributes.Out, new ByReferenceType(returnType)));
-
-            var body = method.Body;
-            body.InitLocals = true;
-            body.Variables.Add(new VariableDefinition(method.Module.TypeSystem.Int32));
-            body.Variables.Add(new VariableDefinition(returnType));
-
-            var loopStart = Instruction.Create(OpCodes.Ldarg_0);
-
-            var getLength = baseEnumerable.FindMethod("get_Length");
-            var getItem = baseEnumerable.FindMethod("get_Item");
-
-            var processor = body.GetILProcessor()
-                .LdArg(0)
-                .Call(getLength)
-                .BrTrueS(loopStart)
-                .LdC(false)
-                .Ret()
-                .Add(loopStart)
+                .Call(genericFunc)
+                .LdLocA(1)
                 .LdLoc(0)
-                .Call(getItem)
-                .LdLoc(1)
-                .Add()
-                .StLoc(1)
-                .LdLoc(0)
-                .LdC(1)
-                .Add()
-                .Dup()
-                .StLoc(0)
-                .LdArg(0)
-                .Call(getLength)
-                .BltS(loopStart)
                 .LdArg(1)
-                .LdLoc(1)
-                .LdArg(0)
-                .Call(getLength);
-
-            switch (returnTypeName)
-            {
-                case "Double":
-                    processor.ConvR8().Div();
-                    break;
-                case "Single":
-                    processor.ConvR4().Div();
-                    break;
-                case "Int32":
-                    processor.ConvI4().Div();
-                    break;
-                case "Int64":
-                    processor.ConvI8().Div();
-                    break;
-                case "UInt32":
-                    processor.ConvU4().DivUn();
-                    break;
-                case "UInt64":
-                    processor.ConvU8().DivUn();
-                    break;
-            }
-
-            processor
-                .StObj(returnType)
-                .LdC(true)
-                .Ret();
-        }
-
-        private void GenerateArray(MethodDefinition method, TypeReference baseEnumerable, TypeReference returnType)
-        {
-            method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.None, baseEnumerable));
-            method.Parameters.Add(new ParameterDefinition("value", ParameterAttributes.Out, new ByReferenceType(returnType)));
-
-            var body = method.Body;
-            body.InitLocals = true;
-            body.Variables.Add(new VariableDefinition(method.Module.TypeSystem.Int32));
-            body.Variables.Add(new VariableDefinition(returnType));
-
-            var loopStart = Instruction.Create(OpCodes.Ldarg_0);
-
-            var processor = body.GetILProcessor()
-                .ArgumentNullCheck(0, Instruction.Create(OpCodes.Ldarg_0))
-                .LdLen()
-                .BrTrueS(loopStart)
-                .LdC(false)
-                .Ret()
-                .Add(loopStart)
-                .LdLoc(0)
-                .LdElem(returnType)
-                .LdLoc(1)
-                .Add()
-                .StLoc(1)
-                .LdLoc(0)
-                .LdC(1)
-                .Add()
-                .Dup()
-                .StLoc(0)
-                .LdArg(0)
-                .LdLen()
-                .ConvI4()
-                .BltS(loopStart)
-                .LdArg(1)
-                .LdLoc(1)
-                .LdArg(0)
-                .LdLen();
-
-            switch (returnTypeName)
-            {
-                case "Double":
-                    processor.ConvR8().Div();
-                    break;
-                case "Single":
-                    processor.ConvR4().Div();
-                    break;
-                case "Int32":
-                    processor.ConvI4().Div();
-                    break;
-                case "Int64":
-                    processor.ConvI8().Div();
-                    break;
-                case "UInt32":
-                    processor.ConvU4().DivUn();
-                    break;
-                case "UInt64":
-                    processor.ConvU8().DivUn();
-                    break;
-            }
-
-            processor
-                .StObj(returnType)
-                .LdC(true)
+                .Call(TOperator.FindMethod("TryCalculateResult"))
                 .Ret();
         }
     }
