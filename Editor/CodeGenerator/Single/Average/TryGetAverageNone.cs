@@ -196,8 +196,18 @@ namespace UniNativeLinq.Editor.CodeGenerator
             body.Variables.Add(new VariableDefinition(TArg));
             body.Variables.Add(new VariableDefinition(TOperator));
 
-            body.GetILProcessor()
-                .LdArg(0)
+            var ld = Instruction.Create(OpCodes.Ldarg_0);
+
+            var processor = body.GetILProcessor();
+            if (name == "T[]")
+            {
+                processor.ArgumentNullCheck(0, ld);
+            }
+            else
+            {
+                processor.Add(ld);
+            }
+            processor
                 .LdLocA(0)
                 .LdLocA(1)
                 .Call(genericFunc)
