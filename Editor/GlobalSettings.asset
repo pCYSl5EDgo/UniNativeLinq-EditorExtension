@@ -12,4 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9086b07259c526945a08ebb06ff2eb26, type: 3}
   m_Name: GlobalSettings
   m_EditorClassIdentifier: 
-  EnableNullCheckOnRuntime: 0
+  EnableNullCheckOnRuntime: 1

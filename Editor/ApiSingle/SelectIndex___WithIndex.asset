@@ -102,4 +102,4 @@ MonoBehaviour:
   <RelatedEnumerableArray>k__BackingField:
   - SelectIndex
   <IsHided>k__BackingField: 0
-
+  <ExcludeEnumerableArray>k__BackingField: []

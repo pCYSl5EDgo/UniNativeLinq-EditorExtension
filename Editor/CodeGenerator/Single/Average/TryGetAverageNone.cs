@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using UnityEngine;
 using GenericInstanceType = Mono.Cecil.GenericInstanceType;
 
 // ReSharper disable InconsistentNaming
@@ -78,6 +77,27 @@ namespace UniNativeLinq.Editor.CodeGenerator
             }
         }
 
+        private TypeDefinition CalcOperator(ModuleDefinition mainModule)
+        {
+            switch (returnTypeName)
+            {
+                case "Double":
+                case "Single":
+                case "Int32":
+                case "UInt32":
+                case "Int64":
+                case "UInt64":
+                    return mainModule.GetType("UniNativeLinq.Average", returnTypeName + "Average");
+                case "Nullable<Double>": return mainModule.GetType("UniNativeLinq.Average", "NullableDoubleAverage");
+                case "Nullable<Single>": return mainModule.GetType("UniNativeLinq.Average", "NullableSingleAverage");
+                case "Nullable<Int32>": return mainModule.GetType("UniNativeLinq.Average", "NullableInt32Average");
+                case "Nullable<UInt32>": return mainModule.GetType("UniNativeLinq.Average", "NullableUInt32Average");
+                case "Nullable<Int64>": return mainModule.GetType("UniNativeLinq.Average", "NullableInt64Average");
+                case "Nullable<UInt64>": return mainModule.GetType("UniNativeLinq.Average", "NullableUInt64Average");
+                default: throw new Exception();
+            }
+        }
+
         private TypeReference CalcArgumentTypeReference(ModuleDefinition mainModule, ModuleDefinition systemModule)
         {
             switch (returnTypeName)
@@ -120,7 +140,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             var array = processor.EnabledNameCollection.Intersect(Api.NameCollection).ToArray();
             if (!Api.ShouldDefine(array)) return;
             TypeDefinition @static;
-            mainModule.Types.Add(@static = mainModule.DefineStatic(Api.Name + Api.Description + "Helper"));
+            mainModule.Types.Add(@static = mainModule.DefineStatic(Api.Name + (IsNullable ? Api.Description.Replace('<', '_').Replace('>', '_') : Api.Description) + "Helper"));
 
             foreach (var name in array)
             {
@@ -129,6 +149,8 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 GenerateEach(name, isSpecial, @static, mainModule, systemModule);
             }
         }
+
+
 
         private void GenerateEach(string name, bool isSpecial, TypeDefinition @static, ModuleDefinition mainModule, ModuleDefinition systemModule)
         {
@@ -143,7 +165,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             var T = CalcElementTypeReference(mainModule, systemModule);
             var TArg = CalcArgumentTypeReference(mainModule, systemModule);
 
-            var TOperator = mainModule.GetType("UniNativeLinq.Average", (IsNullable ? "Nullable" : "") + returnTypeName + "Average");
+            var TOperator = CalcOperator(mainModule);
 
             var Aggregate = mainModule.GetType("UniNativeLinq", "AggregateRefValue1OperatorHelper");
 
@@ -188,8 +210,6 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 });
                 method.Parameters.Add(new ParameterDefinition("value", ParameterAttributes.Out, new ByReferenceType(TArg)));
             }
-
-
 
             var body = method.Body;
             body.InitLocals = true;
