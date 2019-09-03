@@ -157,7 +157,6 @@ namespace UniNativeLinq.Editor.CodeGenerator
             var enumeratorVariable = new VariableDefinition(enumerator);
             body.Variables.Add(enumeratorVariable);
 
-            var notZero = Instruction.Create(OpCodes.Ldarg_0);
             var loopStart = Instruction.Create(OpCodes.Ldloca_S, enumeratorVariable);
             var @return = Instruction.Create(OpCodes.Ldarg_2);
             var fail = InstructionUtility.LoadConstant(false);
@@ -166,14 +165,11 @@ namespace UniNativeLinq.Editor.CodeGenerator
             body.GetILProcessor()
                 .LdArg(1)
                 .LdC(0L)
-                .BgeS(notZero)
+                .BltS(fail)
 
-                .Add(fail)
-                .Ret()
-
-                .Add(notZero)
-                .Call(enumerable.FindMethod("LongCount"))
                 .LdArg(1)
+                .LdArg(0)
+                .Call(enumerable.FindMethod("LongCount"))
                 .BgeS(fail)
 
                 .LdArg(0)
@@ -194,19 +190,23 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .StArgS(paramIndex)
                 .BrS(loopStart)
 
+                .Add(Instruction.Create(OpCodes.Nop))
                 .Add(@return)
                 .LdLocA(0)
                 .Call(enumerator.FindMethod("get_Current"))
-                .CpObj(T)
+                .LdObj(T)
+                .StObj(T)
                 .LdLocA(0)
                 .Call(dispose)
                 .LdC(true)
+                .Ret()
+
+                .Add(fail)
                 .Ret();
         }
 
         private static void GenerateCanIndexAccess(MethodDefinition method, GenericParameter T, TypeReference enumerable)
         {
-            var notMinus = Instruction.Create(OpCodes.Ldarg_0);
             var fail = Instruction.Create(OpCodes.Ldc_I4_0);
 
             var body = method.Body;
@@ -214,22 +214,23 @@ namespace UniNativeLinq.Editor.CodeGenerator
             body.GetILProcessor()
                 .LdArg(1)
                 .LdC(0L)
-                .BgeS(notMinus)
+                .BltS(fail)
 
-                .Add(fail)
-                .Ret()
-
-                .Add(notMinus)
-                .Call(enumerable.FindMethod("LongCount", 0))
                 .LdArg(1)
-                .BleS(fail)
-
+                .LdArg(0)
+                .Call(enumerable.FindMethod("LongCount", 0))
+                .BgeS(fail)
+                .Add(Instruction.Create(OpCodes.Nop))
                 .LdArg(2)
                 .LdArg(0)
                 .LdArg(1)
                 .Call(enumerable.FindMethod("get_Item"))
-                .CpObj(T)
+                .LdObj(T)
+                .StObj(T)
                 .LdC(true)
+                .Ret()
+
+                .Add(fail)
                 .Ret();
         }
 
@@ -276,11 +277,12 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .Sub()
                 .StArgS(paramIndex)
                 .BrS(loopStart)
-
+                .Add(Instruction.Create(OpCodes.Nop))
                 .Add(@return)
                 .LdLocA(0)
                 .Call(enumerator.FindMethod("get_Current"))
-                .CpObj(T)
+                .LdObj(T)
+                .StObj(T)
                 .LdLocA(0)
                 .Call(dispose)
                 .LdC(true)
@@ -311,7 +313,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .Call(baseEnumerable.FindMethod("get_Length"))
                 .LdArg(1)
                 .BleS(fail)
-
+                .Add(Instruction.Create(OpCodes.Nop))
                 .LdArg(2)
                 .LdArg(0)
                 .LdArg(1)
@@ -337,6 +339,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
                 .LdArg(0)
                 .LdLen()
+                .ConvI8()
                 .LdArg(1)
                 .BleS(fail)
 
