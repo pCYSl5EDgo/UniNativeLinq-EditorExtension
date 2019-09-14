@@ -226,7 +226,8 @@ namespace UniNativeLinq.Editor.CodeGenerator
             var notZero = Instruction.Create(OpCodes.Ldarg_1);
 
             method.Body.GetILProcessor()
-                .LdArg(0)
+                .ArgumentNullCheck(0, Instruction.Create(OpCodes.Ldarg_0))
+
                 .LdLen()
                 .BrTrueS(notZero)
 

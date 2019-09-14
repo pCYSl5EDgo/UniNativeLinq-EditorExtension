@@ -325,7 +325,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             body.Variables.Add(new VariableDefinition(new ByReferenceType(T)));
 
             method.Body.GetILProcessor()
-                .LdArg(0)
+                .ArgumentNullCheck(0, Instruction.Create(OpCodes.Ldarg_0))
                 .LdLen()
                 .BrFalseS(fail)
 

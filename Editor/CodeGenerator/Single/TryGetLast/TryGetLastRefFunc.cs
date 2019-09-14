@@ -54,7 +54,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             var @return = Instruction.Create(OpCodes.Ldloca_S, enumeratorVariable);
 
             body.GetILProcessor()
-                .LdArg(0)
+                .ArgumentNullCheck(2, Instruction.Create(OpCodes.Ldarg_0))
                 .GetEnumeratorEnumerable(TEnumerable)
                 .StLoc(0)
 
@@ -151,7 +151,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             var loopStart = Instruction.Create(OpCodes.Ldarg_2);
 
             body.GetILProcessor()
-                .LdArg(0)
+                .ArgumentNullCheck(2, Instruction.Create(OpCodes.Ldarg_0))
                 .Call(enumerable.FindMethod("LongCount", 0))
                 .Dup()
                 .StLoc(0)
@@ -198,7 +198,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             var TryMoveNext = enumerator.FindMethod("TryMoveNext");
             var Dispose = enumerator.FindMethod("Dispose", 0);
             body.GetILProcessor()
-                .LdArg(0)
+                .ArgumentNullCheck(2, Instruction.Create(OpCodes.Ldarg_0))
                 .Call(enumerable.FindMethod("GetEnumerator", 0))
                 .StLoc(0)
 
@@ -245,7 +245,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             var getLength = baseEnumerable.FindMethod("get_Length");
 
             method.Body.GetILProcessor()
-                .LdArgA(0)
+                .ArgumentNullCheck(2, Instruction.Create(OpCodes.Ldarg_0))
                 .Call(getLength)
                 .BrFalseS(fail)
 
@@ -301,7 +301,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             body.Variables.Add(new VariableDefinition(new ByReferenceType(T)));
 
             method.Body.GetILProcessor()
-                .LdArg(0)
+                .ArgumentNullCheck(0, 2, Instruction.Create(OpCodes.Ldarg_0))
                 .LdLen()
                 .BrFalseS(fail)
 

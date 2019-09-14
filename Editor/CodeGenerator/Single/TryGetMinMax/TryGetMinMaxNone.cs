@@ -277,7 +277,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             var il1E = Instruction.Create(OpCodes.Ldloc_0);
             var il22 = Instruction.Create(OpCodes.Ldloc_0);
             body.GetILProcessor()
-                .LdArg(0)
+                .ArgumentNullCheck(0, Instruction.Create(OpCodes.Ldarg_0))
                 .LdLen()
                 .BrTrueS(il09)
                 .LdC(false)

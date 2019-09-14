@@ -55,8 +55,10 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 switch (name)
                 {
                     case "T[]":
+                        GenerateArray(method, baseEnumerable, enumerable, TPredicate);
+                        break;
                     case "NativeArray<T>":
-                        GenerateSpecial(method, baseEnumerable, enumerable, TPredicate);
+                        GenerateNativeArray(method, baseEnumerable, enumerable, TPredicate);
                         break;
                     default: throw new NotSupportedException(name);
                 }
@@ -90,7 +92,30 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .Ret();
         }
 
-        private static void GenerateSpecial(MethodDefinition method, TypeReference baseEnumerable, GenericInstanceType enumerable, GenericParameter predicate)
+        private static void GenerateArray(MethodDefinition method, TypeReference baseEnumerable, GenericInstanceType enumerable, GenericParameter predicate)
+        {
+            method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.None, baseEnumerable));
+            method.Parameters.Add(new ParameterDefinition("predicate", ParameterAttributes.In, new ByReferenceType(predicate))
+            {
+                CustomAttributes = { Helper.GetSystemRuntimeCompilerServicesIsReadOnlyAttributeTypeReference() }
+            });
+
+            var body = method.Body;
+            body.InitLocals = true;
+            body.Variables.Add(new VariableDefinition(enumerable));
+
+            body.GetILProcessor()
+                .ArgumentNullCheck(0, Instruction.Create(OpCodes.Ldloca_S, body.Variables[0]))
+                .LdArg(0)
+                .Call(enumerable.FindMethod(".ctor", 1))
+
+                .LdLocA(0)
+                .LdArg(1)
+                .NewObj(method.ReturnType.FindMethod(".ctor", 2))
+                .Ret();
+        }
+
+        private static void GenerateNativeArray(MethodDefinition method, TypeReference baseEnumerable, GenericInstanceType enumerable, GenericParameter predicate)
         {
             method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.None, baseEnumerable));
             method.Parameters.Add(new ParameterDefinition("predicate", ParameterAttributes.In, new ByReferenceType(predicate))

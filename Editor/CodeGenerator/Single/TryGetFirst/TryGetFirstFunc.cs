@@ -55,7 +55,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
 
             body.GetILProcessor()
-                .LdArg(0)
+                .ArgumentNullCheck(2, Instruction.Create(OpCodes.Ldarg_0))
                 .GetEnumeratorEnumerable(TEnumerable)
                 .StLoc(0)
 
@@ -150,7 +150,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             var fail = Instruction.Create(OpCodes.Ldloca_S, enumeratorVariable);
 
             body.GetILProcessor()
-                .LdArg(0)
+                .ArgumentNullCheck(2, Instruction.Create(OpCodes.Ldarg_0))
                 .Call(enumerable.FindMethod("GetEnumerator", 0))
                 .StLoc(0)
 
@@ -204,7 +204,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             var getItem = baseEnumerable.FindMethod("get_Item");
 
             method.Body.GetILProcessor()
-                .LdArg(0)
+                .ArgumentNullCheck(2, Instruction.Create(OpCodes.Ldarg_0))
                 .Call(getLength)
                 .BrTrueS(loopStart)
 
@@ -258,7 +258,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             body.Variables.Add(new VariableDefinition(T));
 
             method.Body.GetILProcessor()
-                .LdArg(0)
+                .ArgumentNullCheck(0, 2, Instruction.Create(OpCodes.Ldarg_0))
                 .LdLen()
                 .BrTrueS(loopStart)
 

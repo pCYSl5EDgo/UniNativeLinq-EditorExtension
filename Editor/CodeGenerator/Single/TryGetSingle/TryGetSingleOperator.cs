@@ -64,7 +64,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             var @return = Instruction.Create(OpCodes.Ldloca_S, enumeratorVariable);
             var fail = Instruction.Create(OpCodes.Ldloca_S, enumeratorVariable);
 
-            
+
             body.GetILProcessor()
                 .LdArg(0)
                 .GetEnumeratorEnumerable(TEnumerable)
@@ -302,7 +302,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             body.Variables.Add(new VariableDefinition(method.Module.TypeSystem.Boolean));
 
             body.GetILProcessor()
-                .LdArg(0)
+                .ArgumentNullCheck(0, Instruction.Create(OpCodes.Ldarg_0))
                 .LdLen()
                 .BrTrueS(loopStart)
 

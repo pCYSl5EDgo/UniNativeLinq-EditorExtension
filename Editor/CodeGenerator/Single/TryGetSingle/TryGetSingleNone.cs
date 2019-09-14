@@ -180,7 +180,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             var fail = InstructionUtility.LoadConstant(false);
 
             method.Body.GetILProcessor()
-                .LdArg(0)
+                .ArgumentNullCheck(0, Instruction.Create(OpCodes.Ldarg_0))
                 .LdLen()
                 .LdC(1)
                 .BneS(fail)

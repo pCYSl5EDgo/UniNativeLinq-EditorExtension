@@ -156,7 +156,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             var shortJump = Instruction.Create(OpCodes.Ldarg_1);
 
             body.GetILProcessor()
-                .LdArg(0)
+                .ArgumentNullCheck(2, Instruction.Create(OpCodes.Ldarg_0))
                 .GetEnumeratorEnumerable(TEnumerable)
                 .StLoc(0)
                 .LdLocA(0)
@@ -255,7 +255,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             var getItem = baseEnumerable.FindMethod("get_Item", 1);
 
             body.GetILProcessor()
-                .LdArg(0)
+                .ArgumentNullCheck(2, Instruction.Create(OpCodes.Ldarg_0))
                 .Call(getLength)
                 .BrTrueS(il09)
                 .LdC(false)
@@ -316,7 +316,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             var il1E = Instruction.Create(OpCodes.Ldloc_0);
             var il22 = Instruction.Create(OpCodes.Ldloc_0);
             body.GetILProcessor()
-                .LdArg(0)
+                .ArgumentNullCheck(0, 2, Instruction.Create(OpCodes.Ldarg_0))
                 .LdLen()
                 .BrTrueS(il09)
                 .LdC(false)
@@ -381,7 +381,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             var enumeratorDispose = enumerator.FindMethod("Dispose", 0);
             var enumeratorTryMoveNext = enumerator.FindMethod("TryMoveNext", 1);
             body.GetILProcessor()
-                .LdArg(0)
+                .ArgumentNullCheck(2, Instruction.Create(OpCodes.Ldarg_0))
                 .Call(enumerable.FindMethod("GetEnumerator", 0))
                 .StLoc(0)
                 .LdLocA(0)
