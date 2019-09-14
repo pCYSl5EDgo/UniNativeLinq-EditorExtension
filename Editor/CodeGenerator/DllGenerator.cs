@@ -103,7 +103,7 @@ namespace UniNativeLinq.Editor
 
         private void Write()
         {
-            var destination = new Uri(new Uri(GetDllFolderHelper.GetFolder()), @"../../UniNativeLinq.dll").LocalPath;
+            var destination = new Uri(new Uri(GetDllFolderHelper.GetFolder()), @"../../UniNativeLinqDll.dll").LocalPath;
             EditorApplication.LockReloadAssemblies();
             try
             {
