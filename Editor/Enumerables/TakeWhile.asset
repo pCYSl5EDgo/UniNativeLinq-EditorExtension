@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: TakeWhile
   m_EditorClassIdentifier: 
   Enumerable: TakeWhile
-  Enabled: 0
+  Enabled: 1
   IsSpecial: 0
   GenericParameterCount: 4
   RelatedEnumerableArray: []
