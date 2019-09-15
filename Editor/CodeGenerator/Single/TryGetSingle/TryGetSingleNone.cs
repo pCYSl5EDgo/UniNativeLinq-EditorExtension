@@ -168,6 +168,9 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .Call(enumerable.FindMethod("get_Item"))
                 .StObj(T)
 
+                .LdC(true)
+                .Ret()
+
                 .Add(fail)
                 .Ret();
         }
@@ -190,6 +193,9 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .LdC(0)
                 .LdElemA(T)
                 .CpObj(T)
+
+                .LdC(true)
+                .Ret()
 
                 .Add(fail)
                 .Ret();
