@@ -17,7 +17,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             var condition = Instruction.Create(OpCodes.Ldloc_1);
             var loopStart = Instruction.Create(OpCodes.Ldloc_0);
             body.GetILProcessor()
-                .LdC(0)
+                .ArgumentNullCheck(0, InstructionUtility.LoadConstant(0))
                 .StLoc(1)
                 .BrS(condition)
                 .Add(loopStart)
