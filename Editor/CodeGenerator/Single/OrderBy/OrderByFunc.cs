@@ -112,7 +112,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .LdArg(0)
                 .Call(enumerable.FindMethod(".ctor", 1))
 
-                .LoadFuncArgumentAndStoreToLocalVariableField(1, 0)
+                .LoadFuncArgumentAndStoreToLocalVariableField(1, 1)
 
                 .LdLocA(0)
                 .LdLocA(1)
