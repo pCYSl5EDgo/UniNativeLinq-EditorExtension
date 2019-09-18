@@ -47,7 +47,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             var T = DefineT(mainModule, systemModule, method);
             var (baseEnumerable0, enumerable0, enumerator0) = T.MakeSpecialTypePair(rowName);
             var (baseEnumerable1, enumerable1, enumerator1) = T.MakeSpecialTypePair(columnName);
-            var TComparer = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "DefaultOrderByAscending`1"))
+            var TComparer = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "DefaultEqualityComparer`1"))
             {
                 GenericArguments = { T }
             };
@@ -72,7 +72,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
         private void GenerateSpecialNormal(string specialName, TypeDefinition type, ModuleDefinition mainModule, ModuleDefinition systemModule, MethodDefinition method, int specialIndex)
         {
             var T = DefineT(mainModule, systemModule, method);
-            var TComparer = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "DefaultOrderByAscending`1"))
+            var TComparer = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "DefaultEqualityComparer`1"))
             {
                 GenericArguments = { T }
             };
@@ -135,7 +135,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             var (enumerable0, enumerator0, _) = T.MakeFromCommonType(method, type0, "0");
             var (enumerable1, enumerator1, _) = T.MakeFromCommonType(method, type1, "1");
 
-            var TComparer = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "DefaultOrderByAscending`1"))
+            var TComparer = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "DefaultEqualityComparer`1"))
             {
                 GenericArguments = { T }
             };
@@ -189,7 +189,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
         private static GenericParameter DefineT(ModuleDefinition mainModule, ModuleDefinition systemModule, MethodDefinition method)
         {
             var T = method.DefineUnmanagedGenericParameter();
-            T.Constraints.Add(new GenericInstanceType(mainModule.ImportReference(systemModule.GetType("System", "IComparable`1")))
+            T.Constraints.Add(new GenericInstanceType(mainModule.ImportReference(systemModule.GetType("System", "IEquatable`1")))
             {
                 GenericArguments = { T }
             });

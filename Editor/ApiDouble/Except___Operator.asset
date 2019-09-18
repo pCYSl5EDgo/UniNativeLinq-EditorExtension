@@ -61,4 +61,6 @@ MonoBehaviour:
   DisplayName: Except
   <RelatedEnumerableArray>k__BackingField:
   - SetOperation
+  - Distinct
+  <ExcludeEnumerableArray>k__BackingField: []
   <IsHided>k__BackingField: 0

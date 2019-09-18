@@ -136,7 +136,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 {
                     new GenericInstanceType(mainModule.GetType("UniNativeLinq", "IRefFunc`3"))
                     {
-                        GenericArguments = {T, T, mainModule.TypeSystem.Int32}
+                        GenericArguments = {T, T, mainModule.TypeSystem.Boolean}
                     }
                 }
             };

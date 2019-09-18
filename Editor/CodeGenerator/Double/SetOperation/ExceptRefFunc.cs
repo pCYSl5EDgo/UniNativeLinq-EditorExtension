@@ -140,7 +140,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
         {
             return new GenericInstanceType(mainModule.GetType("UniNativeLinq", "DelegateRefFuncToStructOperatorFunc`3"))
             {
-                GenericArguments = { T, T, mainModule.TypeSystem.Int32 }
+                GenericArguments = { T, T, mainModule.TypeSystem.Boolean }
             };
         }
 
@@ -190,7 +190,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
         {
             method.Parameters.Add(new ParameterDefinition("comparer", ParameterAttributes.None, new GenericInstanceType(method.Module.GetType("UniNativeLinq", "RefFunc`3"))
             {
-                GenericArguments = { T, T, method.Module.TypeSystem.Int32 }
+                GenericArguments = { T, T, method.Module.TypeSystem.Boolean }
             }));
         }
 

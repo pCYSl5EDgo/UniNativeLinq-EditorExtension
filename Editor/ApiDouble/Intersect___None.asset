@@ -61,6 +61,7 @@ MonoBehaviour:
   DisplayName: Intersect
   <RelatedEnumerableArray>k__BackingField:
   - SetOperation
+  - Distinct
   <ExcludeEnumerableArray>k__BackingField:
   - GroupBy
   <IsHided>k__BackingField: 0
