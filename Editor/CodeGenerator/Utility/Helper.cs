@@ -136,6 +136,14 @@ namespace UniNativeLinq.Editor.CodeGenerator
             });
         }
 
+        public static void DefineGroupByDisposeOptions(this MethodDefinition method)
+        {
+            method.Parameters.Add(new ParameterDefinition("option", ParameterAttributes.HasDefault | ParameterAttributes.Optional, method.Module.GetType("UniNativeLinq", "GroupByDisposeOptions"))
+            {
+                Constant = 2,
+            });
+        }
+
         public static GenericParameter DefineUnmanagedGenericParameter(this MethodDefinition method, string name = "T")
         {
             var moduleDefinition = method.Module;

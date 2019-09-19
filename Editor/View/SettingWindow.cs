@@ -95,6 +95,29 @@ namespace UniNativeLinq.Editor
         {
             switch (api.Name)
             {
+                case "GroupBy":
+                    switch (api.Description)
+                    {
+                        case "Func1":
+                            list.Add(new GroupByFunc1DefaultEqualityComparer(api));
+                            break;
+                        case "Func2":
+                            list.Add(new GroupByFunc2DefaultEqualityComparer(api));
+                            break;
+                        case "Func3":
+                            list.Add(new GroupByFunc3(api));
+                            break;
+                        case "RefAction1":
+                            list.Add(new GroupByRefAction1DefaultEqualityComparer(api));
+                            break;
+                        case "RefAction2":
+                            list.Add(new GroupByRefAction2DefaultEqualityComparer(api));
+                            break;
+                        case "RefAction2_RefFunc1":
+                            list.Add(new GroupByRefAction3(api));
+                            break;
+                    }
+                    break;
                 case "RangeRepeat":
                     switch (api.Description)
                     {

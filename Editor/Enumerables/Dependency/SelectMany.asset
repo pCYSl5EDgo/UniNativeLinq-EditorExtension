@@ -14,6 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   <Enumerable>k__BackingField: SelectMany
   <Types>k__BackingField:
-  - AsIs`1
   - FlattenEnumerable
   <Methods>k__BackingField: []

@@ -54,8 +54,10 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 switch (name)
                 {
                     case "T[]":
+                        GenerateArray(method, baseEnumerable, enumerable, TComparer, Func);
+                        break;
                     case "NativeArray<T>":
-                        GenerateSpecial(method, baseEnumerable, enumerable, TComparer, Func);
+                        GenerateNativeArray(method, baseEnumerable, enumerable, TComparer, Func);
                         break;
                     default: throw new NotSupportedException(name);
                 }
@@ -86,7 +88,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             body.Variables.Add(new VariableDefinition(comparer));
 
             body.GetILProcessor()
-                
+
                 .LoadFuncArgumentAndStoreToLocalVariableField(1, 0)
 
                 .LdArg(0)
@@ -96,7 +98,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .Ret();
         }
 
-        private static void GenerateSpecial(MethodDefinition method, TypeReference baseEnumerable, GenericInstanceType enumerable, TypeReference comparer, TypeReference func)
+        private static void GenerateNativeArray(MethodDefinition method, TypeReference baseEnumerable, GenericInstanceType enumerable, TypeReference comparer, TypeReference func)
         {
             method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.None, baseEnumerable));
             method.Parameters.Add(new ParameterDefinition("comparer", ParameterAttributes.None, func));
@@ -109,6 +111,31 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
             body.GetILProcessor()
                 .LdLocA(0)
+                .LdArg(0)
+                .Call(enumerable.FindMethod(".ctor", 1))
+
+                .LoadFuncArgumentAndStoreToLocalVariableField(1, 1)
+
+                .LdLocA(0)
+                .LdLocA(1)
+                .LdArg(2)
+                .NewObj(method.ReturnType.FindMethod(".ctor", 3))
+                .Ret();
+        }
+
+        private static void GenerateArray(MethodDefinition method, TypeReference baseEnumerable, GenericInstanceType enumerable, TypeReference comparer, TypeReference func)
+        {
+            method.Parameters.Add(new ParameterDefinition("@this", ParameterAttributes.None, baseEnumerable));
+            method.Parameters.Add(new ParameterDefinition("comparer", ParameterAttributes.None, func));
+            method.DefineAllocatorParam();
+
+            var body = method.Body;
+            body.InitLocals = true;
+            body.Variables.Add(new VariableDefinition(enumerable));
+            body.Variables.Add(new VariableDefinition(comparer));
+
+            body.GetILProcessor()
+                .ArgumentNullCheck(0, Instruction.Create(OpCodes.Ldloca_S, body.Variables[0]))
                 .LdArg(0)
                 .Call(enumerable.FindMethod(".ctor", 1))
 
