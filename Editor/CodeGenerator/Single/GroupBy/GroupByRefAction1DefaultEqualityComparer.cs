@@ -42,7 +42,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 GenericArguments = { TKey }
             });
 
-            var KeyFunc = new GenericInstanceType(mainModule.ImportReference(systemModule.GetType("System", "RefAction`2")))
+            var KeyFunc = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "RefAction`2"))
             {
                 GenericArguments = { T, TKey }
             };

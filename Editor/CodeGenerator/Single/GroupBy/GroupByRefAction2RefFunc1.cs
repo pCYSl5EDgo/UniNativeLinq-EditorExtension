@@ -38,7 +38,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             var TKey = method.DefineUnmanagedGenericParameter("TKey");
             method.GenericParameters.Add(TKey);
 
-            var KeyFunc = new GenericInstanceType(mainModule.ImportReference(systemModule.GetType("System", "RefAction`2")))
+            var KeyFunc = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "RefAction`2"))
             {
                 GenericArguments = { T, TKey }
             };
@@ -51,7 +51,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             var TElement = method.DefineUnmanagedGenericParameter("TElement");
             method.GenericParameters.Add(TElement);
 
-            var ElementFunc = new GenericInstanceType(mainModule.ImportReference(systemModule.GetType("System", "RefAction`2")))
+            var ElementFunc = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "RefAction`2"))
             {
                 GenericArguments = { T, TElement }
             };
