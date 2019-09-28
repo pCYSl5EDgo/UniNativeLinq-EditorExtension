@@ -17,10 +17,10 @@ jobs:
     - run: git clone https://github.com/pCYSl5EDgo/UniNativeLinq-EditorExtension-Test.git
     - name: Copy
       run: |
-        cp -f -r Editor/CodeGenerator "UniNativeLinq-EditorExtension-Test/Assets/UniNativeLinq-EditorExtension/Editor/CodeGenerator"
-        cp -f -r Editor/ScriptableObject "UniNativeLinq-EditorExtension-Test/Assets/UniNativeLinq-EditorExtension/Editor/ScriptableObject"
-        cp -f -r Editor/View "UniNativeLinq-EditorExtension-Test/Assets/UniNativeLinq-EditorExtension/Editor/View"
-        cp -f -r Editor/Utility "UniNativeLinq-EditorExtension-Test/Assets/UniNativeLinq-EditorExtension/Editor/Utility"
+        cp -f -r Editor/CodeGenerator "UniNativeLinq-EditorExtension-Test/Assets/UniNativeLinq-EditorExtension/Editor"
+        cp -f -r Editor/ScriptableObject "UniNativeLinq-EditorExtension-Test/Assets/UniNativeLinq-EditorExtension/Editor"
+        cp -f -r Editor/View "UniNativeLinq-EditorExtension-Test/Assets/UniNativeLinq-EditorExtension/Editor"
+        cp -f -r Editor/Utility "UniNativeLinq-EditorExtension-Test/Assets/UniNativeLinq-EditorExtension/Editor"
         cp -f -r Editor/DLLs/UniNativeLinq.bytes "UniNativeLinq-EditorExtension-Test/Assets/UniNativeLinq-EditorExtension/Editor/DLLs/UniNativeLinq.bytes"
     - run: |
         cd UniNativeLinq-EditorExtension-Test
