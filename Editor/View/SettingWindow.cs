@@ -10,22 +10,22 @@ namespace UniNativeLinq.Editor
 {
     public sealed class SettingWindow : EditorWindow
     {
-        private IEnumerableCollectionProcessor enumerableCollectionProcessor;
+        internal IEnumerableCollectionProcessor EnumerableCollectionProcessor;
         private IDrawable whetherToIncludeEnumerableOrNotView;
         private IDrawable whetherToUseApiOrNotView;
         private Vector2 scrollPosition;
-        private IDllGenerator dllGenerator;
-        private ISingleApi[] singleApis;
-        private IDoubleApi[] doubleApis;
-        private IDependency[] dependencies;
-        private IApiExtensionMethodGenerator[] extensionMethodGenerators;
+        internal IDllGenerator DllGenerator;
+        internal ISingleApi[] SingleApis;
+        internal IDoubleApi[] DoubleApis;
+        internal IDependency[] Dependencies;
+        internal IApiExtensionMethodGenerator[] ExtensionMethodGenerators;
         private GlobalSettings settings;
 
         private bool AnyNull
-            => enumerableCollectionProcessor is null ||
-               dllGenerator is null ||
-               singleApis is null ||
-               doubleApis is null ||
+            => EnumerableCollectionProcessor is null ||
+               DllGenerator is null ||
+               SingleApis is null ||
+               DoubleApis is null ||
                whetherToUseApiOrNotView is null ||
                whetherToIncludeEnumerableOrNotView is null;
 
@@ -37,7 +37,7 @@ namespace UniNativeLinq.Editor
             window.Initialize();
         }
 
-        private void Initialize()
+        internal void Initialize()
         {
             Helper.Initialize();
             T1[] Gets<T0, T1>() where T0 : Object where T1 : class
@@ -57,20 +57,20 @@ namespace UniNativeLinq.Editor
                 return answer;
             }
 
-            if (enumerableCollectionProcessor is null)
-                enumerableCollectionProcessor = new EnumerableCollectionProcessor(Gets0<StringBoolTuple>());
+            if (EnumerableCollectionProcessor is null)
+                EnumerableCollectionProcessor = new EnumerableCollectionProcessor(Gets0<StringBoolTuple>());
             if (whetherToIncludeEnumerableOrNotView is null)
-                whetherToIncludeEnumerableOrNotView = new DrawableImplWhetherToIncludeEnumerable(enumerableCollectionProcessor);
-            if (singleApis is null)
-                singleApis = Gets<String2BoolArrayTuple, ISingleApi>();
-            if (doubleApis is null)
-                doubleApis = Gets<String2BoolMatrixTuple, IDoubleApi>();
-            if (dependencies is null)
-                dependencies = Gets<DependencyObject, IDependency>();
+                whetherToIncludeEnumerableOrNotView = new DrawableImplWhetherToIncludeEnumerable(EnumerableCollectionProcessor);
+            if (SingleApis is null)
+                SingleApis = Gets<String2BoolArrayTuple, ISingleApi>();
+            if (DoubleApis is null)
+                DoubleApis = Gets<String2BoolMatrixTuple, IDoubleApi>();
+            if (Dependencies is null)
+                Dependencies = Gets<DependencyObject, IDependency>();
             if (whetherToUseApiOrNotView is null)
-                whetherToUseApiOrNotView = new DrawableImplWhetherToUseApiOrNot(enumerableCollectionProcessor, singleApis, doubleApis);
-            dllGenerator?.Dispose();
-            dllGenerator = new DllGenerator(Helper.MainModule, Helper.SystemModule, Helper.UnityCoreModule);
+                whetherToUseApiOrNotView = new DrawableImplWhetherToUseApiOrNot(EnumerableCollectionProcessor, SingleApis, DoubleApis);
+            DllGenerator?.Dispose();
+            DllGenerator = new DllGenerator(Helper.MainModule, Helper.SystemModule, Helper.UnityCoreModule);
 
             settings = GlobalSettings.Instance;
 
@@ -80,15 +80,15 @@ namespace UniNativeLinq.Editor
         private void InitializeExtensionMethodsGenerator()
         {
             var list = new List<IApiExtensionMethodGenerator>();
-            foreach (var api in doubleApis)
+            foreach (var api in DoubleApis)
             {
                 RegisterEachDoubleApi(api, list);
             }
-            foreach (var api in singleApis)
+            foreach (var api in SingleApis)
             {
                 RegisterEachSingleApi(api, list);
             }
-            extensionMethodGenerators = list.ToArray();
+            ExtensionMethodGenerators = list.ToArray();
         }
 
         private static void RegisterEachSingleApi(ISingleApi api, List<IApiExtensionMethodGenerator> list)
@@ -582,7 +582,7 @@ namespace UniNativeLinq.Editor
             if (GUILayout.Button("Generate DLL"))
             {
                 AssetDatabase.SaveAssets();
-                dllGenerator.Execute(enumerableCollectionProcessor, extensionMethodGenerators, dependencies);
+                DllGenerator.Execute(EnumerableCollectionProcessor, ExtensionMethodGenerators, Dependencies);
                 Close();
             }
             whetherToIncludeEnumerableOrNotView.Draw(ref scrollPosition);
