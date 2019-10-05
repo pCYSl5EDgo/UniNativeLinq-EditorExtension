@@ -59,7 +59,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
             var TComparer = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "DefaultEqualityComparer`1"))
             {
-                GenericArguments = { T, }
+                GenericArguments = { TKey }
             };
 
             if (isSpecial)
