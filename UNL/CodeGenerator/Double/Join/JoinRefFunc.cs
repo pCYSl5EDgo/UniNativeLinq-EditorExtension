@@ -209,8 +209,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
         private static (GenericParameter TKey, GenericInstanceType TKeyEqualityComparer, GenericParameter T) Prepare(MethodDefinition method, ModuleDefinition mainModule)
         {
-            GenericParameter TKey = new GenericParameter(nameof(TKey), method) { HasNotNullableValueTypeConstraint = true };
-            TKey.CustomAttributes.Add(Helper.UnManagedAttribute);
+            var TKey = method.DefineUnmanagedGenericParameter("TKey");
             method.GenericParameters.Add(TKey);
 
             var TKeyEqualityComparer = new GenericInstanceType(mainModule.GetType("UniNativeLinq", "DelegateRefFuncToStructOperatorFunc`3"))
@@ -218,8 +217,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 GenericArguments = { TKey, TKey, mainModule.TypeSystem.Boolean }
             };
 
-            GenericParameter T = new GenericParameter(nameof(T), method) { HasNotNullableValueTypeConstraint = true };
-            T.CustomAttributes.Add(Helper.UnManagedAttribute);
+            var T = method.DefineUnmanagedGenericParameter();
             method.GenericParameters.Add(T);
             return (TKey, TKeyEqualityComparer, T);
         }

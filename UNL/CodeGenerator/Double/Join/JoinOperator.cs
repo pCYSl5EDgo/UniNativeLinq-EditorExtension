@@ -188,11 +188,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
         private static (GenericParameter TKey, GenericParameter TKeyEqualityComparer, GenericParameter T, TypeDefinition IRefFunc2) Prepare(MethodDefinition method, ModuleDefinition mainModule)
         {
-            GenericParameter TKey = new GenericParameter(nameof(TKey), method)
-            {
-                HasNotNullableValueTypeConstraint = true,
-                CustomAttributes = { Helper.UnManagedAttribute }
-            };
+            var TKey = method.DefineUnmanagedGenericParameter("TKey");
             method.GenericParameters.Add(TKey);
 
             GenericParameter TKeyEqualityComparer = new GenericParameter(nameof(TKeyEqualityComparer), method)
@@ -208,8 +204,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             };
             method.GenericParameters.Add(TKeyEqualityComparer);
 
-            GenericParameter T = new GenericParameter(nameof(T), method) { HasNotNullableValueTypeConstraint = true };
-            T.CustomAttributes.Add(Helper.UnManagedAttribute);
+            var T = method.DefineUnmanagedGenericParameter();
             method.GenericParameters.Add(T);
 
             var IRefFunc2 = mainModule.GetType("UniNativeLinq", "IRefFunc`2");
