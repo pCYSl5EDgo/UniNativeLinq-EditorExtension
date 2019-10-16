@@ -1,0 +1,104 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b98f8d701fd45434cb889bded0829d8d, type: 3}
+  m_Name: TryGetMin___D989B810
+  m_EditorClassIdentifier: 
+  Name: TryGetMin
+  Description: Operator --- Double
+  EnabledArray:
+  - Enumerable: NativeArray<T>
+    Enabled: 1
+  - Enumerable: T[]
+    Enabled: 1
+  - Enumerable: AdjustedZip
+    Enabled: 1
+  - Enumerable: Append
+    Enabled: 1
+  - Enumerable: Array
+    Enabled: 1
+  - Enumerable: Concat
+    Enabled: 1
+  - Enumerable: DefaultIfEmpty
+    Enabled: 1
+  - Enumerable: Distinct
+    Enabled: 1
+  - Enumerable: ExceptionalZip
+    Enabled: 1
+  - Enumerable: Grouping
+    Enabled: 1
+  - Enumerable: GroupJoin
+    Enabled: 1
+  - Enumerable: Join
+    Enabled: 1
+  - Enumerable: MaxByDouble
+    Enabled: 1
+  - Enumerable: MaxByInt32
+    Enabled: 1
+  - Enumerable: MaxByInt64
+    Enabled: 1
+  - Enumerable: MaxBySingle
+    Enabled: 1
+  - Enumerable: MaxByUInt32
+    Enabled: 1
+  - Enumerable: MaxByUInt64
+    Enabled: 1
+  - Enumerable: MinByDouble
+    Enabled: 1
+  - Enumerable: MinByInt32
+    Enabled: 1
+  - Enumerable: MinByInt64
+    Enabled: 1
+  - Enumerable: MinBySingle
+    Enabled: 1
+  - Enumerable: MinByUInt32
+    Enabled: 1
+  - Enumerable: MinByUInt64
+    Enabled: 1
+  - Enumerable: Native
+    Enabled: 1
+  - Enumerable: OrderBy
+    Enabled: 1
+  - Enumerable: Prepend
+    Enabled: 1
+  - Enumerable: RangeRepeat
+    Enabled: 1
+  - Enumerable: Repeat
+    Enabled: 1
+  - Enumerable: Reverse
+    Enabled: 1
+  - Enumerable: Select
+    Enabled: 1
+  - Enumerable: SelectIndex
+    Enabled: 1
+  - Enumerable: SelectMany
+    Enabled: 1
+  - Enumerable: SetOperation
+    Enabled: 1
+  - Enumerable: Skip
+    Enabled: 1
+  - Enumerable: SkipLast
+    Enabled: 1
+  - Enumerable: SkipWhile
+    Enabled: 1
+  - Enumerable: Take
+    Enabled: 1
+  - Enumerable: TakeLast
+    Enabled: 1
+  - Enumerable: TakeWhile
+    Enabled: 1
+  - Enumerable: Where
+    Enabled: 1
+  - Enumerable: WhereIndex
+    Enabled: 1
+  <IsHided>k__BackingField: 0
+  <ExcludeEnumerableArray>k__BackingField: []
+  EnableGenericApi: 0

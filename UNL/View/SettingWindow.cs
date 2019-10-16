@@ -41,7 +41,10 @@ namespace UniNativeLinq.Editor
         {
             Console.WriteLine("INITIALIZE");
             Helper.Initialize();
-            T1[] Gets<T0, T1>() where T0 : Object where T1 : class
+
+            T1[] Gets<T0, T1>()
+                where T0 : Object
+                where T1 : class
             {
                 var paths = AssetDatabase.FindAssets("t:" + typeof(T0).Name);
                 var answer = paths.Length == 0 ? Array.Empty<T1>() : new T1[paths.Length];
@@ -49,7 +52,9 @@ namespace UniNativeLinq.Editor
                     answer[i] = AssetDatabase.LoadAssetAtPath<T0>(AssetDatabase.GUIDToAssetPath(paths[i])) as T1;
                 return answer;
             }
-            T0[] Gets0<T0>() where T0 : Object
+
+            T0[] Gets0<T0>()
+                where T0 : Object
             {
                 var paths = AssetDatabase.FindAssets("t:" + typeof(T0).Name);
                 var answer = paths.Length == 0 ? Array.Empty<T0>() : new T0[paths.Length];
@@ -317,6 +322,20 @@ namespace UniNativeLinq.Editor
                             break;
                     }
                     break;
+                case "TryGetFirstIndexOf":
+                    switch (api.Description)
+                    {
+                        case "Func":
+                            list.Add(new TryGetFirstIndexOfFunc(api));
+                            break;
+                        case "RefFunc":
+                            list.Add(new TryGetFirstIndexOfRefFunc(api));
+                            break;
+                        case "Operator":
+                            list.Add(new TryGetFirstIndexOfOperator(api));
+                            break;
+                    }
+                    break;
                 case "TryGetFirst":
                     switch (api.Description)
                     {
@@ -409,7 +428,7 @@ namespace UniNativeLinq.Editor
                 case "TryGetMax":
                 case "TryGetMin":
                     {
-                        var result = api.Description.Split(new[] { " --- " }, StringSplitOptions.RemoveEmptyEntries);
+                        var result = api.Description.Split(new[] {" --- "}, StringSplitOptions.RemoveEmptyEntries);
                         if (result.Length != 2)
                         {
                             Debug.LogWarning(api.Name + "\n" + api.Description);
