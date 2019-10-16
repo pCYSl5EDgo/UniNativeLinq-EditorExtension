@@ -85,7 +85,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .LoadFuncArgumentAndStoreToLocalVariableField(5, 3)
                 .LdLocAs(4)
                 .LdArg(6)
-                .NewObj(@return.FindMethod(".ctor"))
+                .NewObj(@return.FindMethod(".ctor", 7))
                 .Ret();
         }
 
@@ -124,7 +124,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                     .LoadFuncArgumentAndStoreToLocalVariableField(5, 3)
                     .LdLocAs(4)
                     .LdArg(6)
-                    .NewObj(@return.FindMethod(".ctor"))
+                    .NewObj(@return.FindMethod(".ctor", 7))
                     .Ret();
             }
             else
@@ -156,7 +156,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                     .LoadFuncArgumentAndStoreToLocalVariableField(5, 3)
                     .LdLocAs(4)
                     .LdArg(6)
-                    .NewObj(@return.FindMethod(".ctor"))
+                    .NewObj(@return.FindMethod(".ctor", 7))
                     .Ret();
             }
         }
@@ -201,7 +201,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 .LoadFuncArgumentAndStoreToLocalVariableField(5, 3)
                 .LdLocAs(4)
                 .LdArg(6)
-                .NewObj(@return.FindMethod(".ctor"))
+                .NewObj(@return.FindMethod(".ctor", 7))
                 .Ret();
         }
 
