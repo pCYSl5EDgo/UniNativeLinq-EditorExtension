@@ -316,11 +316,11 @@ namespace UniNativeLinq.Editor.CodeGenerator
         {
             var defaultAssemblyResolver = new DefaultAssemblyResolver();
             defaultAssemblyResolver.AddSearchDirectory(Path.GetDirectoryName(UnityEditorInternal.InternalEditorUtility.GetEngineAssemblyPath()));
-            MainModule = AssemblyDefinition.ReadAssembly(GetDllFolderHelper.GetFolder() + "UniNativeLinq.bytes", new ReaderParameters(ReadingMode.Deferred)
+            MainModule = AssemblyDefinition.ReadAssembly(GetViewFolderHelper.GetFolder() + "../DLLs/UniNativeLinq.bytes", new ReaderParameters(ReadingMode.Deferred)
             {
                 AssemblyResolver = defaultAssemblyResolver
             }).MainModule;
-            SystemModule = AssemblyDefinition.ReadAssembly(GetDllFolderHelper.GetFolder() + "netstandard.bytes", new ReaderParameters(ReadingMode.Deferred)
+            SystemModule = AssemblyDefinition.ReadAssembly(GetViewFolderHelper.GetFolder() + "../DLLs/netstandard.bytes", new ReaderParameters(ReadingMode.Deferred)
             {
                 AssemblyResolver = defaultAssemblyResolver,
             }).MainModule;

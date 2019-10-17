@@ -106,7 +106,7 @@ namespace UniNativeLinq.Editor
 
         private void Write()
         {
-            var destination = new Uri(new Uri(GetDllFolderHelper.GetFolder()), @"../UniNativeLinqDll.dll").LocalPath;
+            var destination = new Uri(new Uri(GetViewFolderHelper.GetFolder()), @"../UniNativeLinqDll.dll").LocalPath;
             System.Console.WriteLine("DEST"+destination);
             EditorApplication.LockReloadAssemblies();
             try
