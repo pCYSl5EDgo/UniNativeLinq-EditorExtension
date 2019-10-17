@@ -10,6 +10,16 @@ namespace UniNativeLinq.Editor
 
         private static GlobalSettings _instance;
 
-        public static GlobalSettings Instance => _instance ?? (_instance = AssetDatabase.LoadAssetAtPath<GlobalSettings>(AssetDatabase.GUIDToAssetPath(AssetDatabase.FindAssets("t:" + nameof(GlobalSettings))[0])));
+        public static GlobalSettings Instance
+        {
+            get
+            {
+                if(!(_instance is null))
+                    return _instance;
+                var assetPath = "Assets/Plugins/UNL/Settings/GlobalSettings.asset";
+                _instance = AssetDatabase.LoadAssetAtPath<GlobalSettings>(assetPath);
+                return _instance;
+            }
+        }
     }
 }
