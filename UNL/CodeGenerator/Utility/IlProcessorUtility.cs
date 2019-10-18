@@ -697,6 +697,7 @@
    <https://www.gnu.org/licenses/why-not-lgpl.html>.
 
  */
+
 using System;
 using System.Collections.Generic;
 using Mono.Cecil;
@@ -730,23 +731,24 @@ namespace UniNativeLinq.Editor.CodeGenerator
             where T : unmanaged, IComparable<T>
         {
             if (typeof(T) == typeof(byte))
-                return processor.Sub((int)*(byte*)&value);
+                return processor.Sub((int) *(byte*) &value);
             if (typeof(T) == typeof(sbyte))
-                return processor.Sub(*(sbyte*)&value);
+                return processor.Sub(*(sbyte*) &value);
             if (typeof(T) == typeof(short))
-                return processor.Sub((int)*(short*)&value);
+                return processor.Sub((int) *(short*) &value);
             if (typeof(T) == typeof(ushort))
-                return processor.Sub((int)*(ushort*)&value);
+                return processor.Sub((int) *(ushort*) &value);
             if (typeof(T) == typeof(int))
-                return processor.Sub(*(int*)&value);
+                return processor.Sub(*(int*) &value);
             if (typeof(T) == typeof(uint))
-                return processor.Sub((int)*(uint*)&value);
+                return processor.Sub((int) *(uint*) &value);
             if (typeof(T) == typeof(long))
-                return processor.Sub(*(long*)&value);
+                return processor.Sub(*(long*) &value);
             if (typeof(T) == typeof(ulong))
-                return processor.Sub((long)*(ulong*)&value);
+                return processor.Sub((long) *(ulong*) &value);
             throw new ArgumentException("Type mismatch!" + typeof(T).Name);
         }
+
         public static ILProcessor Sub(this ILProcessor processor, sbyte value)
         {
             if (value == 0) return processor;
@@ -756,6 +758,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             }
             return processor.Add(InstructionUtility.LoadConstant(value)).Sub();
         }
+
         public static ILProcessor Sub(this ILProcessor processor, int value)
         {
             if (value == 0) return processor;
@@ -765,6 +768,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             }
             return processor.Add(InstructionUtility.LoadConstant(value)).Sub();
         }
+
         public static ILProcessor Sub(this ILProcessor processor, long value)
         {
             if (value == 0L) return processor;
@@ -794,6 +798,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
         public static ILProcessor And(this ILProcessor processor) => processor.Add(Instruction.Create(OpCodes.And));
 
         public static ILProcessor Dup(this ILProcessor processor) => processor.Add(Instruction.Create(OpCodes.Dup));
+
         public static ILProcessor Dup(this ILProcessor processor, uint count)
         {
             for (var i = 0u; i < count; i++)
@@ -805,30 +810,31 @@ namespace UniNativeLinq.Editor.CodeGenerator
 
         public static ILProcessor Pop(this ILProcessor processor) => processor.Add(Instruction.Create(OpCodes.Pop));
 
-        public static ILProcessor LdC<T>(this ILProcessor processor, T value) where T : unmanaged
+        public static ILProcessor LdC<T>(this ILProcessor processor, T value)
+            where T : unmanaged
         {
             if (typeof(T) == typeof(byte))
-                return processor.Add(InstructionUtility.LoadConstant((sbyte)*(byte*)&value));
+                return processor.Add(InstructionUtility.LoadConstant((sbyte) *(byte*) &value));
             if (typeof(T) == typeof(sbyte))
-                return processor.Add(InstructionUtility.LoadConstant(*(sbyte*)&value));
+                return processor.Add(InstructionUtility.LoadConstant(*(sbyte*) &value));
             if (typeof(T) == typeof(short))
-                return processor.Add(InstructionUtility.LoadConstant(*(short*)&value));
+                return processor.Add(InstructionUtility.LoadConstant(*(short*) &value));
             if (typeof(T) == typeof(ushort))
-                return processor.Add(InstructionUtility.LoadConstant(*(ushort*)&value));
+                return processor.Add(InstructionUtility.LoadConstant(*(ushort*) &value));
             if (typeof(T) == typeof(int))
-                return processor.Add(InstructionUtility.LoadConstant(*(int*)&value));
+                return processor.Add(InstructionUtility.LoadConstant(*(int*) &value));
             if (typeof(T) == typeof(uint))
-                return processor.Add(InstructionUtility.LoadConstant(*(int*)&value));
+                return processor.Add(InstructionUtility.LoadConstant(*(int*) &value));
             if (typeof(T) == typeof(long))
-                return processor.AddRange(InstructionUtility.LoadConstant(*(long*)&value));
+                return processor.AddRange(InstructionUtility.LoadConstant(*(long*) &value));
             if (typeof(T) == typeof(ulong))
-                return processor.AddRange(InstructionUtility.LoadConstant(*(long*)&value));
+                return processor.AddRange(InstructionUtility.LoadConstant(*(long*) &value));
             if (typeof(T) == typeof(float))
-                return processor.Add(InstructionUtility.LoadConstant(*(float*)&value));
+                return processor.Add(InstructionUtility.LoadConstant(*(float*) &value));
             if (typeof(T) == typeof(double))
-                return processor.Add(InstructionUtility.LoadConstant(*(double*)&value));
+                return processor.Add(InstructionUtility.LoadConstant(*(double*) &value));
             if (typeof(T) == typeof(bool))
-                return processor.Add(InstructionUtility.LoadConstant(*(bool*)&value));
+                return processor.Add(InstructionUtility.LoadConstant(*(bool*) &value));
             throw new ArgumentException("Type mismatch!" + typeof(T).Name);
         }
 
@@ -864,6 +870,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
         public static ILProcessor LdToken(this ILProcessor processor, FieldReference fieldReference) => processor.Add(Instruction.Create(OpCodes.Ldtoken, fieldReference));
         public static ILProcessor LdObj(this ILProcessor processor, TypeReference typeReference) => processor.Add(Instruction.Create(OpCodes.Ldobj, typeReference));
         public static ILProcessor LdLen(this ILProcessor processor) => processor.Add(Instruction.Create(OpCodes.Ldlen));
+
         public static ILProcessor LdLoc(this ILProcessor processor, int index)
         {
             switch (index)
@@ -891,6 +898,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             }
             return processor;
         }
+
         public static ILProcessor LdLocAs(this ILProcessor processor, int start, int length)
         {
             if (length > 0)
@@ -921,6 +929,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
         {
             return processor.Add(Instruction.Create(OpCodes.Ldarga_S, parameter));
         }
+
         public static ILProcessor LdArg(this ILProcessor processor, int index)
         {
             switch (index)
@@ -1061,6 +1070,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
             }
             return processor;
         }
+
         public static ILProcessor StLoc(this ILProcessor processor, int index)
         {
             switch (index)
@@ -1075,7 +1085,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                     return processor.Add(Instruction.Create(OpCodes.Stloc_3));
             }
             if (index <= byte.MaxValue)
-                return processor.Add(Instruction.Create(OpCodes.Stloc_S, (byte)index));
+                return processor.Add(Instruction.Create(OpCodes.Stloc_S, (byte) index));
             return processor.Add(Instruction.Create(OpCodes.Stloc, index));
         }
 
@@ -1140,6 +1150,8 @@ namespace UniNativeLinq.Editor.CodeGenerator
         public static ILProcessor CpObj(this ILProcessor processor, TypeReference typeReference) => processor.Add(Instruction.Create(OpCodes.Cpobj, typeReference));
 
         public static ILProcessor Throw(this ILProcessor processor) => processor.Add(Instruction.Create(OpCodes.Throw));
+
+        public static ILProcessor SizeOf(this ILProcessor processor, TypeReference typeReference) => processor.Add(Instruction.Create(OpCodes.Sizeof, typeReference));
 
         public static ILProcessor Ret(this ILProcessor processor) => processor.Add(Instruction.Create(OpCodes.Ret));
     }

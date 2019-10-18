@@ -105,6 +105,9 @@ namespace UniNativeLinq.Editor
         {
             switch (api.Name)
             {
+                case "Cast":
+                    list.Add(new Cast(api));
+                    break;
                 case "AsRefEnumerableUnsafe":
                     list.Add(new AsRefEnumerableUnsafe(api));
                     break;
