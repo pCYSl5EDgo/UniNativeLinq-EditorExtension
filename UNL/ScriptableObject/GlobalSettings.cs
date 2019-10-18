@@ -6,7 +6,6 @@ namespace UniNativeLinq.Editor
     public sealed class GlobalSettings : ScriptableObject
     {
         public bool EnableNullCheckOnRuntime;
-        public bool EnableRelaxedUnsafeAsRefEnumerable;
 
         private static GlobalSettings _instance;
 
