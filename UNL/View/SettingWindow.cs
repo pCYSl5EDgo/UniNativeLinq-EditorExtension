@@ -105,6 +105,9 @@ namespace UniNativeLinq.Editor
         {
             switch (api.Name)
             {
+                case "AsRefEnumerableUnsafe":
+                    list.Add(new AsRefEnumerableUnsafe(api));
+                    break;
                 case "GroupBy":
                     switch (api.Description)
                     {
@@ -619,6 +622,16 @@ namespace UniNativeLinq.Editor
                     EditorUtility.SetDirty(settings);
                 }
             }
+            #if !CSHARP_8_OR_NEWER
+            {
+                var enable = EditorGUILayout.ToggleLeft("Enable Relaxed Unsafe AsRefEnumerable before C#8", settings.EnableRelaxedUnsafeAsRefEnumerable, "button");
+                if (enable ^ settings.EnableRelaxedUnsafeAsRefEnumerable)
+                {
+                    settings.EnableRelaxedUnsafeAsRefEnumerable = enable;
+                    EditorUtility.SetDirty(settings);
+                }
+            }
+            #endif
             EditorGUILayout.EndScrollView();
         }
     }
