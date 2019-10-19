@@ -331,6 +331,9 @@ namespace UniNativeLinq.Editor
                 case "TryGetFirstIndexOf":
                     switch (api.Description)
                     {
+                        case "None":
+                            list.Add(new TryGetFirstIndexOfNone(api));
+                            break;
                         case "Func":
                             list.Add(new TryGetFirstIndexOfFunc(api));
                             break;
