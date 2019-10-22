@@ -51,7 +51,6 @@ namespace UniNativeLinq.Editor.CodeGenerator
             var TTo = method.DefineUnmanagedGenericParameter("TTo");
             method.GenericParameters.Add(TTo);
 
-            var type = Dictionary[name];
             if (name != "Native") throw new NotSupportedException(name);
             var typeDefinition = method.Module.GetType("UniNativeLinq", "NativeEnumerable`1");
             var enumerable = new GenericInstanceType(typeDefinition)

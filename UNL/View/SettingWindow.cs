@@ -105,6 +105,9 @@ namespace UniNativeLinq.Editor
         {
             switch (api.Name)
             {
+                case "Create":
+                    list.Add(new Create(api));
+                    break;
                 case "Cast":
                     list.Add(new Cast(api));
                     break;
