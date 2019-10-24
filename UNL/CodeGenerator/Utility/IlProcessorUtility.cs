@@ -726,6 +726,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
         public static ILProcessor Sub(this ILProcessor processor) => processor.Add(Instruction.Create(OpCodes.Sub));
         public static ILProcessor Div(this ILProcessor processor) => processor.Add(Instruction.Create(OpCodes.Div));
         public static ILProcessor DivUn(this ILProcessor processor) => processor.Add(Instruction.Create(OpCodes.Div_Un));
+        public static ILProcessor Mul(this ILProcessor processor) => processor.Add(Instruction.Create(OpCodes.Mul));
 
         public static ILProcessor Sub<T>(this ILProcessor processor, T value)
             where T : unmanaged, IComparable<T>
