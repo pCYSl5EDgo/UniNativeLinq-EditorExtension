@@ -329,7 +329,7 @@ namespace UniNativeLinq.Editor.CodeGenerator
                 AssemblyResolver = defaultAssemblyResolver,
             }).MainModule;
             ExtensionAttribute = new CustomAttribute(MainModule.ImportReference(SystemModule.GetType("System.Runtime.CompilerServices", "ExtensionAttribute")).FindMethod(".ctor"));
-            IsReadOnlyAttribute = MainModule.GetType("UniNativeLinq", "ZipValueTuple`2").CustomAttributes[2];
+            IsReadOnlyAttribute = MainModule.GetType("UniNativeLinq", "ZipValueTuple`2").CustomAttributes[0];
             var nativeEnumerable1 = MainModule.GetType("UniNativeLinq", "NativeEnumerable`1");
             var t = nativeEnumerable1.GenericParameters.First();
             UnManagedAttribute = t.CustomAttributes[0];

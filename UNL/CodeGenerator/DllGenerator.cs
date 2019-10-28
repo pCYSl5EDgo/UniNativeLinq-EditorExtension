@@ -106,7 +106,7 @@ namespace UniNativeLinq.Editor
 
         private void Write()
         {
-            var destination = Application.dataPath + "/Plugins/UNL/Settings/UniNativeLinqDll.dll";
+            var destination = Application.dataPath + "/Plugins/UNL/Settings/UniNativeLinq.dll";
             System.Console.WriteLine("DEST"+destination);
             EditorApplication.LockReloadAssemblies();
             try
