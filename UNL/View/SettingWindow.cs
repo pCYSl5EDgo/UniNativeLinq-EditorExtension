@@ -29,7 +29,7 @@ namespace UniNativeLinq.Editor
                whetherToUseApiOrNotView is null ||
                whetherToIncludeEnumerableOrNotView is null;
 
-        [MenuItem("UniNativeLinq/Open Settings &#d")]
+        [MenuItem("Tools/UniNativeLinq/Open Settings &#d")]
         // ReSharper disable once UnusedMember.Local
         private static void Open()
         {
